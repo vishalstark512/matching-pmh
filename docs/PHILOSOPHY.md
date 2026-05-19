@@ -60,4 +60,4 @@ Every script under `examples/` is copy-paste fodder. None are imported by the co
 - **New estimator** → implement Dk, catalog entry, nuisance_types.md, one walkthrough + example.
 - **Tests** cover math invariants; **examples** cover integrator experience.
 
-See [CONTRIBUTING.md](../CONTRIBUTING.md).
+See [CONTRIBUTING.md](https://github.com/vishalstark512/matching-pmh/blob/main/CONTRIBUTING.md).

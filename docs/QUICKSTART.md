@@ -1,6 +1,6 @@
 # Quickstart (10 minutes)
 
-Get from `pip install` to a trained model with matched PMH—without replacing your stack.
+**New users:** read [Getting started (adoption guide)](GETTING_STARTED.md) first—it is the main path for plugging into your own project.
 
 ---
 
@@ -9,8 +9,6 @@ Get from `pip install` to a trained model with matched PMH—without replacing y
 ```bash
 pip install matching-pmh torch
 ```
-
-Optional: `pip install "matching-pmh[vision]"` for ResNet/ViT examples.
 
 ---
 
@@ -22,82 +20,98 @@ cd matching-pmh
 python examples/01_domain_shift_d4.py
 ```
 
-You should see `preflight=...` then epoch logs with `task` and `pmh` losses.
+You should see `preflight=...` and training losses. The script uses **`PMHTrainer`** (Phase A + B in one call).
 
 ---
 
-## 3. Understand the two phases
+## 3. Two phases (the only contract)
 
-| Phase | Code | When |
+| Phase | What | When |
 |-------|------|------|
-| **A. Estimate** | `estimate_from_config(...)` | Once per nuisance story (or when data distribution shifts) |
-| **B. Train** | `pmh.capped_total(task_loss, h)` | Every training step |
+| **A. Estimate** | Compute Σ̂_task from deployment data | Once per nuisance story |
+| **B. Train** | Add matched PMH on hook `h` | Every step |
 
-The only contract: **`h` must be the same tensor** (same layer, same dim) in both phases.
+**Same hook `h` in both phases** — same layer, same dimension `[B, d]`.
 
 ---
 
-## 4. Copy into your project (minimal)
+## 4. Copy into your project
+
+### PyTorch (recommended)
 
 ```python
-from pmh import SigmaTaskConfig, PMHConfig, PMHLoss, collect_features, estimate_from_config
+from pmh import PMHTrainer, PMHConfig
 
-# --- your existing model ---
-def encode(x):
-    return model.backbone(x)  # [B, d]
+trainer = PMHTrainer(
+    model,
+    hook=backbone,
+    head=head,
+    nuisance="domain_shift",
+    pmh_config=PMHConfig.balanced(),
+    artifact_path="artifacts/sigma.pt",
+)
+trainer.fit(
+    train_loader,
+    source_batches=source_loader,
+    target_batches=target_loader,
+    epochs=20,
+)
+```
+
+### sklearn / frozen features
+
+```python
+from pmh import PMHMatcher
+
+matcher = PMHMatcher(nuisance="domain_shift", rank=16).fit(x_source, x_target)
+artifact = matcher.artifact_   # use with PMHLoss in torch, or matcher.transform(X)
+```
+
+### Manual loop (full control)
+
+```python
+from pmh import PMHConfig, PMHLoss, collect_features, estimate_from_config, SigmaTaskConfig
 
 # Phase A
-model.eval()
-h_src = collect_features(encode, source_loader, max_batches=50)
-h_tgt = collect_features(encode, target_loader, max_batches=50)
+h_src = collect_features(encoder, source_loader, max_batches=50)
+h_tgt = collect_features(encoder, target_loader, max_batches=50)
 artifact = estimate_from_config(SigmaTaskConfig.for_domain(rank=32), h_src, h_tgt)
-artifact.save("checkpoints/sigma_task")
 
 # Phase B
-pmh = PMHLoss(artifact, PMHConfig(weight=0.3, cap_ratio=0.3, warmup_epochs=2))
-model.train()
+pmh = PMHLoss(artifact, PMHConfig.balanced())
 for epoch in range(epochs):
     pmh.set_epoch(epoch)
     for x, y in train_loader:
-        opt.zero_grad()
-        h = encode(x)
+        h = encoder(x)
         task = loss_fn(head(h), y)
         (total, _) = pmh.capped_total(task, h)
         total.backward()
-        opt.step()
+        optimizer.step()
 ```
 
 ---
 
-## 5. Pick your walkthrough
+## 5. Pick your stack
 
-| If you use… | Open |
-|-------------|------|
-| Any PyTorch model | [Walkthrough 1](walkthroughs/01-pytorch-domain-d4.md) |
-| ResNet / ViT | [2](walkthroughs/02-resnet-vision-d4.md) or [12](walkthroughs/12-vit-cls-d4.md) |
-| Hugging Face LM | [6](walkthroughs/06-llm-style-d7.md), [7](walkthroughs/07-hf-trainer-d7-dpo.md) |
-| Molecules / graphs | [14](walkthroughs/14-qm9-molecule-d5.md) |
-| Code / tokens | [15](walkthroughs/15-codebert-tokens-d5.md) |
-| Speech | [13](walkthroughs/13-speech-whisper-d4.md) |
-
-Full list: [walkthroughs/index.md](walkthroughs/index.md).
+→ [Choose your setup](CHOOSE_YOUR_SETUP.md) (decision table)  
+→ [Gallery](gallery/README.md) (vision / tabular / NLP templates)
 
 ---
 
-## 6. Credible evaluation (required)
+## 6. Credible evaluation
 
-Train three arms and compare **deployment** metrics:
+Train **matched**, **wrong-W**, and **isotropic** — not only “with vs without PMH.”
 
-1. **Matched** — default `PMHLoss`
-2. **Wrong-W** — `mode="wrong_w"`
-3. **Isotropic** — `mode="isotropic"`
-
-→ [Walkthrough 8 — Falsification](walkthroughs/08-falsification-controls.md)
+→ [Walkthrough 8 — Controls](walkthroughs/08-falsification-controls.md)  
+→ `compare_arms` / `compare_arms_sklearn` in [Getting started](GETTING_STARTED.md)
 
 ---
 
 ## Next
 
-- [THEORY.md](THEORY.md) — mathematics and scope  
-- [ARCHITECTURES.md](ARCHITECTURES.md) — integration patterns  
-- [PHILOSOPHY.md](PHILOSOPHY.md) — why the API looks like this
+| Doc | Purpose |
+|-----|---------|
+| [GETTING_STARTED.md](GETTING_STARTED.md) | **Main adoption guide** |
+| [ADAPT_YOUR_PIPELINE.md](ADAPT_YOUR_PIPELINE.md) | Checklist + estimator table |
+| [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Errors and fixes |
+| [hooks.md](hooks.md) | ResNet, timm, HF hooks |

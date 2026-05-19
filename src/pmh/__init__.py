@@ -1,47 +1,98 @@
 """matching-pmh: estimate Sigma_task and apply matched PMH penalties."""
 
 from pmh.artifact import SigmaTaskEstimate
+from pmh.compare import compare_arms, compare_arms_sklearn
 from pmh.config import PMHConfig, PreflightConfig, SigmaTaskConfig
 from pmh.controls import signal_W_projector, wrong_W_projector
 from pmh.diagnostics import eigengap_ratio
 from pmh.estimate import estimate_from_config, estimate_sigma_task
-from pmh.features import collect_features, paired_batches
-from pmh.penalty import cap_pmh_term, pmh_penalty, pmh_penalty_feature_diff, pmh_penalty_on_rep
-from pmh.preflight import PreflightStatus, preflight_eigengap
-from pmh.training import PMHLoss
+from pmh.features import (
+    collect_augmentation_deltas,
+    collect_features,
+    collect_labeled_features,
+    collect_sequence_features,
+    paired_batches,
+)
+from pmh.hooks import (
+    detect_model_family,
+    encoder_gnn_mean_pool,
+    encoder_hf_hidden_states,
+    encoder_timm,
+    encoder_torchvision_resnet,
+    list_hook_families,
+    register_hook_family,
+    resolve_hook,
+    validate_representation,
+)
 from pmh.matcher import PMHMatcher
 from pmh.nuisance import config_from_nuisance, list_nuisance_names, resolve_method
+from pmh.penalty import cap_pmh_term, pmh_penalty, pmh_penalty_feature_diff, pmh_penalty_on_rep
+from pmh.preflight import PreflightStatus, preflight_eigengap
+from pmh.suggest import NuisanceSuggestion, suggest_nuisance
+from pmh.data_context import DataContext
+from pmh.multi import MultiPMHLoss
+from pmh.trainer import PMHTrainer, build_hybrid_trainer
+from pmh.training import PMHLoss
+from pmh.tune import TuneResult, tune_pmh_config, tune_sklearn_matcher
 
 __all__ = [
     "PMHMatcher",
-    "config_from_nuisance",
-    "list_nuisance_names",
-    "resolve_method",
-    "SigmaTaskConfig",
+    "PMHTrainer",
+    "build_hybrid_trainer",
+    "HFPMHTrainer",
+    "MultiPMHLoss",
+    "DataContext",
     "PMHConfig",
-    "PreflightConfig",
+    "PMHLoss",
+    "SigmaTaskConfig",
     "SigmaTaskEstimate",
+    "PreflightConfig",
     "estimate_sigma_task",
     "estimate_from_config",
     "collect_features",
+    "collect_labeled_features",
+    "collect_augmentation_deltas",
+    "collect_sequence_features",
     "paired_batches",
     "pmh_penalty",
     "pmh_penalty_on_rep",
     "pmh_penalty_feature_diff",
-    "PMHLoss",
     "cap_pmh_term",
     "wrong_W_projector",
     "signal_W_projector",
     "eigengap_ratio",
     "preflight_eigengap",
     "PreflightStatus",
+    "config_from_nuisance",
+    "list_nuisance_names",
+    "resolve_method",
+    "suggest_nuisance",
+    "NuisanceSuggestion",
+    "resolve_hook",
+    "validate_representation",
+    "detect_model_family",
+    "list_hook_families",
+    "register_hook_family",
+    "encoder_timm",
+    "encoder_torchvision_resnet",
+    "encoder_hf_hidden_states",
+    "encoder_gnn_mean_pool",
+    "compare_arms",
+    "compare_arms_sklearn",
+    "tune_sklearn_matcher",
+    "tune_pmh_config",
+    "TuneResult",
 ]
 
-__version__ = "0.8.0"
+__version__ = "1.2.0"
 
 
 def __getattr__(name: str):
     """Lazy subpackage exports."""
+    if name == "HFPMHTrainer":
+        from pmh.hf_trainer import HFPMHTrainer
+
+        return HFPMHTrainer
     if name in ("PMHCallback", "train_epoch_with_pmh", "PMHStepResult"):
         from pmh.integrations import PMHCallback, PMHStepResult, train_epoch_with_pmh
 

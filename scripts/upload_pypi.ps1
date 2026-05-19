@@ -51,7 +51,7 @@ twine check dist\*
 
 $target = if ($TestPyPI) { "TestPyPI" } else { "PyPI (production)" }
 Write-Host ""
-$ver = (python -c "import pathlib,re; t=pathlib.Path('pyproject.toml').read_text(); print(re.search(r'version\s*=\s*\"([^\"]+)\"', t).group(1))")
+$ver = python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])"
 Write-Host "Uploading matching-pmh $ver to $target ..." -ForegroundColor Cyan
 if ($TestPyPI) {
     twine upload --repository testpypi dist\*

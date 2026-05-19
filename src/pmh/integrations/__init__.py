@@ -1,11 +1,13 @@
 """Framework integrations (PyTorch training loops, HF, Lightning)."""
 
 from pmh.integrations.torch import PMHCallback, PMHStepResult, train_epoch_with_pmh
+from pmh.trainer import PMHTrainer
 
 __all__ = [
     "PMHCallback",
     "PMHStepResult",
     "train_epoch_with_pmh",
+    "PMHTrainer",
 ]
 
 

@@ -10,6 +10,7 @@ from pmh.artifact import SigmaTaskEstimate
 from pmh.config import SigmaTaskConfig
 from pmh.numpy_api import estimate_cross_domain_subspace_numpy, estimate_sigma_task_numpy
 from pmh.nuisance import config_from_nuisance, default_rank, resolve_method
+from pmh.suggest import resolve_nuisance_arg
 from pmh.sklearn_match import project_from_sigma, project_onto_complement
 
 try:
@@ -74,8 +75,20 @@ class PMHMatcher(_SklearnBase, _SklearnMixin):
         nuisance_indices: list[int] | None = None,
         seed: int = 0,
         n_pairs_per_class: int = 100,
+        has_source_labels: bool = True,
+        has_target_labels: bool = False,
+        has_target_domain: bool = True,
+        has_augmentation_modes: bool = False,
+        has_style_pairs: bool = False,
     ) -> None:
-        self.nuisance = nuisance
+        self.nuisance = resolve_nuisance_arg(
+            nuisance,
+            has_source_labels=has_source_labels,
+            has_target_labels=has_target_labels,
+            has_target_domain=has_target_domain,
+            has_augmentation_modes=has_augmentation_modes,
+            has_style_pairs=has_style_pairs,
+        )
         self.rank = rank
         self.shrinkage = shrinkage
         self.dim = dim
@@ -110,6 +123,8 @@ class PMHMatcher(_SklearnBase, _SklearnMixin):
         y_source: np.ndarray | None = None,
         X_target: np.ndarray | None = None,
         y_target: np.ndarray | None = None,
+        *,
+        aug_deltas: np.ndarray | None = None,
     ) -> PMHMatcher:
         """Estimate ``Sigma_task`` from source/target feature matrices.
 
@@ -117,11 +132,13 @@ class PMHMatcher(_SklearnBase, _SklearnMixin):
         D1 (subspace): labels required on both domains.
         D2 (isotropic): ``fit(X_source)`` infers ``dim`` from columns; or set ``dim=`` in ``__init__``.
         D5: pass compositional features as ``X_source`` with ``nuisance_indices``.
+        D3: ``aug_deltas=`` with shape ``[K, d]`` or ``[K, N, d]``.
+        D6: ``X_source`` with shape ``[N, T, d]``.
         """
         method = self._resolved_method()
         x_src = np.asarray(X_source, dtype=np.float32)
-        if x_src.ndim != 2:
-            raise ValueError("X_source must be 2D [n_samples, n_features]")
+        if method != "D6" and x_src.ndim != 2:
+            raise ValueError("X_source must be 2D [n_samples, n_features] (D6: [N, T, d])")
 
         # fit(X_source, X_target) shorthand for D4
         if (
@@ -187,9 +204,35 @@ class PMHMatcher(_SklearnBase, _SklearnMixin):
             self._transform_rank = len(self.nuisance_indices)
             return self
 
+        if method == "D3":
+            if aug_deltas is None:
+                raise ValueError(
+                    "D3: pass aug_deltas= (shape [K, d] or [K, N, d]) to fit(), "
+                    "or use PMHTrainer with augmentations=."
+                )
+            import torch
+            from pmh.estimate import estimate_from_config
+
+            deltas = torch.from_numpy(np.asarray(aug_deltas, dtype=np.float32))
+            cfg = SigmaTaskConfig.for_augmentation(shrinkage=self.shrinkage)
+            self.artifact_ = estimate_from_config(cfg, aug_deltas=deltas)
+            self._transform_rank = deltas.shape[0]
+            return self
+
+        if method == "D6":
+            if x_src.ndim != 3:
+                raise ValueError("temporal (D6): X_source must be [N, T, d] residuals or sequences")
+            import torch
+            from pmh.estimate import estimate_from_config
+
+            cfg = self._build_config(dim=x_src.shape[2], n_samples=x_src.shape[0])
+            self.artifact_ = estimate_from_config(cfg, torch.from_numpy(x_src))
+            self._transform_rank = cfg.rank
+            return self
+
         raise ValueError(
-            f"PMHMatcher numpy fit supports D1, D2, D4, D5; got {method}. "
-            "For D3/D6/D7 use estimate_from_config with tensors or see walkthroughs."
+            f"PMHMatcher numpy fit supports D1–D6; got {method}. "
+            "For D7 use HFPMHTrainer or estimate_style_sigma."
         )
 
     def transform(self, X: np.ndarray) -> np.ndarray:
@@ -209,8 +252,9 @@ class PMHMatcher(_SklearnBase, _SklearnMixin):
         y_source: np.ndarray | None = None,
         X_target: np.ndarray | None = None,
         y_target: np.ndarray | None = None,
+        **kwargs: Any,
     ) -> np.ndarray:
-        self.fit(X_source, y_source, X_target, y_target)
+        self.fit(X_source, y_source, X_target, y_target, **kwargs)
         return self.transform(X_source)
 
     def get_params(self, deep: bool = True) -> dict[str, Any]:

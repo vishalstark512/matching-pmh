@@ -1,6 +1,8 @@
 # Walkthroughs
 
-**17 templates** from nuisance story → estimate $\Sigma_{\mathrm{task}}$ → train → falsify.  
+**Before picking a walkthrough:** [Getting started](../GETTING_STARTED.md) · [Choose your setup](../CHOOSE_YOUR_SETUP.md)
+
+**18 templates** from nuisance story → estimate $\Sigma_{\mathrm{task}}$ → train → falsify.  
 Copy the closest row, swap **your** data and model. Runnable scripts live in `examples/`.
 
 | # | Walkthrough | Est. | Stack (example) | Script |
@@ -22,6 +24,7 @@ Copy the closest row, swap **your** data and model. Runnable scripts live in `ex
 | 15 | [Code tokens D5](15-codebert-tokens-d5.md) | D5 | Token embeddings | `17_code_tokens_d5.py` |
 | 16 | [Augmentations D3](16-augmentation-d3.md) | D3 | Known aug modes | `18_augmentation_d3.py` |
 | 17 | [Compare arms (your pipeline)](17-compare-arms-your-pipeline.md) | * | Your model + data | `20_compare_training_arms.py` |
+| 18 | [PMHTrainer quickstart](18-pmh-trainer-quickstart.md) | D4 | PyTorch facade | `01_domain_shift_d4.py` |
 
 Walkthroughs are **templates**—not paper task IDs. For a stack-agnostic checklist, see [ADAPT_YOUR_PIPELINE.md](../ADAPT_YOUR_PIPELINE.md).
 
@@ -52,4 +55,6 @@ flowchart TD
 - [THEORY.md](../THEORY.md) — mathematics  
 - [ARCHITECTURES.md](../ARCHITECTURES.md) — hook points  
 - [PHILOSOPHY.md](../PHILOSOPHY.md) — API design  
-- [examples/README.md](../../examples/README.md) — script catalog  
+- [examples/README.md](https://github.com/vishalstark512/matching-pmh/blob/main/examples/README.md) — script catalog  
+- [Gallery](../gallery/README.md) — vision / tabular / NLP copy-paste  
+- [Hook cookbook](../hooks.md) — timm, HF, ResNet  

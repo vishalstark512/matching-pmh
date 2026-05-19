@@ -72,9 +72,27 @@ The implementation applies a **finite-difference penalty on $h$** (not a full Ja
 
 ---
 
-## Pattern 1 — Plain PyTorch (any `nn.Module`)
+## Pattern 1 — `PMHTrainer` (recommended PyTorch)
 
-Same structure as `examples/01_domain_shift_d4.py`.
+One object for Phase A + B (`examples/01_domain_shift_d4.py`):
+
+```python
+from pmh import PMHTrainer, PMHConfig
+
+trainer = PMHTrainer(
+    model, hook=backbone, head=head,
+    nuisance="domain_shift",
+    pmh_config=PMHConfig.balanced(),
+    artifact_path="artifacts/sigma.pt",
+)
+trainer.fit(train_loader, source_batches=src_loader, target_batches=tgt_loader, epochs=20)
+```
+
+Hooks for ResNet / timm / HF: [hooks.md](hooks.md).
+
+## Pattern 2 — Plain PyTorch (manual loop)
+
+Same phases, explicit `PMHLoss`:
 
 ```python
 # --- Phase A: estimate (encoder eval, no PMH yet) ---

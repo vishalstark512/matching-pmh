@@ -135,6 +135,26 @@ class PMHConfig:
     def from_dict(cls, data: dict[str, Any]) -> PMHConfig:
         return cls(**{k: data[k] for k in cls.__dataclass_fields__ if k in data})  # type: ignore[attr-defined]
 
+    @classmethod
+    def conservative(cls) -> PMHConfig:
+        """Small PMH influence; good first try."""
+        return cls(weight=0.15, cap_ratio=0.2, warmup_epochs=3, warmup_ramp_epochs=5)
+
+    @classmethod
+    def balanced(cls) -> PMHConfig:
+        """Default-style settings."""
+        return cls(weight=0.3, cap_ratio=0.3, warmup_epochs=2, warmup_ramp_epochs=10)
+
+    @classmethod
+    def aggressive(cls) -> PMHConfig:
+        """Stronger geometry regularization (still capped)."""
+        return cls(weight=0.5, cap_ratio=0.4, warmup_epochs=1, warmup_ramp_epochs=5)
+
+    @classmethod
+    def finetune_llm(cls) -> PMHConfig:
+        """LoRA / LLM style fine-tunes: long warmup, gentle ramp."""
+        return cls(weight=0.2, cap_ratio=0.25, warmup_epochs=5, warmup_ramp_epochs=15)
+
 
 @dataclass
 class PreflightConfig:

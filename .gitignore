@@ -3,6 +3,7 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 dist/
+site/
 *.egg-info/
 .venv/
 .venv-pypi-test/
@@ -10,6 +11,7 @@ dist/
 venv/
 artifacts/
 results/
+demo_d4.*
 tmp_trainer/
 tmp_pmh_trainer/
 *.pt

@@ -13,6 +13,13 @@ from pmh.artifact import SigmaTaskEstimate
 from pmh.config import PMHConfig
 from pmh.training import PMHLoss
 
+try:
+    from pmh.multi import MultiPMHLoss
+
+    _PMHLossLike = PMHLoss | MultiPMHLoss
+except ImportError:
+    _PMHLossLike = PMHLoss  # type: ignore[misc,assignment]
+
 Encoder = Callable[[torch.Tensor], torch.Tensor]
 Batch = torch.Tensor | tuple[torch.Tensor, ...]
 BatchIterable = Iterable[Batch]
@@ -67,7 +74,7 @@ class PMHCallback:
 
     def __init__(
         self,
-        pmh_loss: PMHLoss,
+        pmh_loss: _PMHLossLike,
         encoder: Encoder,
         *,
         head: Callable[[torch.Tensor], torch.Tensor] | None = None,

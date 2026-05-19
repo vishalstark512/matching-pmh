@@ -2,7 +2,7 @@
 
 <p align="center"><em>Estimate deployment nuisance geometry. Train any encoder with matched PMH.</em></p>
 
-Reference implementation of the [**Matching Principle**](THEORY.md) for machine learning research and production fine-tuning.
+Reference implementation of the [**Matching Principle**](THEORY.md) for research and production fine-tuning.
 
 | | |
 |---|---|
@@ -10,17 +10,35 @@ Reference implementation of the [**Matching Principle**](THEORY.md) for machine 
 | Import | `import pmh` |
 | CLI | `pmh-train list-methods` |
 | PyPI | https://pypi.org/project/matching-pmh/ |
-| Source | https://github.com/vishalstark512/matching-pmh |
 
 ---
 
-## New here?
+## Start here (adoption)
 
-1. **[Quickstart](QUICKSTART.md)** — running example in 10 minutes  
-2. **[Walkthrough 1](walkthroughs/01-pytorch-domain-d4.md)** — PyTorch + domain shift (D4)  
-3. **[Walkthrough 8](walkthroughs/08-falsification-controls.md)** — matched vs wrong-W vs isotropic  
+**If you want to use PMH on your own model and data, read in this order:**
 
-Start with **[Adapt your pipeline](ADAPT_YOUR_PIPELINE.md)**, then pick a template from **[17 walkthroughs](walkthroughs/index.md)** (ViT, ResNet, speech, molecules, LLM D7, …).
+1. **[Getting started](GETTING_STARTED.md)** — adoption guide (recommended entry point)  
+2. **[Choose your setup](CHOOSE_YOUR_SETUP.md)** — pick API by stack and data  
+3. **[Gallery](gallery/README.md)** — copy-paste templates (vision / tabular / NLP)  
+4. **[Troubleshooting](TROUBLESHOOTING.md)** — when something breaks  
+
+Then: [Adapt your pipeline](ADAPT_YOUR_PIPELINE.md) checklist · [Hook cookbook](hooks.md) · [18 walkthroughs](walkthroughs/index.md)
+
+---
+
+## 60-second example
+
+```python
+from pmh import PMHTrainer, PMHConfig
+
+trainer = PMHTrainer(
+    model, hook=backbone, head=head,
+    nuisance="domain_shift",
+    pmh_config=PMHConfig.balanced(),
+    artifact_path="artifacts/sigma.pt",
+)
+trainer.fit(train_loader, source_batches=src_loader, target_batches=tgt_loader, epochs=20)
+```
 
 ---
 
@@ -28,42 +46,29 @@ Start with **[Adapt your pipeline](ADAPT_YOUR_PIPELINE.md)**, then pick a templa
 
 | Goal | Document |
 |------|----------|
-| Plug into my data & trainer | [ADAPT_YOUR_PIPELINE.md](ADAPT_YOUR_PIPELINE.md) |
-| Wire PMH into my model | [ARCHITECTURES.md](ARCHITECTURES.md) |
-| Understand the math | [THEORY.md](THEORY.md) |
-| See why the API is shaped this way | [PHILOSOPHY.md](PHILOSOPHY.md) |
-| Choose D1 vs D4 vs D7 | [Nuisance cookbook](nuisance_types.md) |
-| Run JSON / HPC jobs | [CLI](cli.md) |
-| Browse runnable scripts | [examples/README.md](../examples/README.md) |
-| Hugging Face / DPO | [HF integration](integrations-hf.md) |
+| **Integrate on my project** | [GETTING_STARTED.md](GETTING_STARTED.md) |
+| **Which API / nuisance?** | [CHOOSE_YOUR_SETUP.md](CHOOSE_YOUR_SETUP.md) |
+| **ResNet / ViT / HF hook** | [hooks.md](hooks.md) |
+| **Copy-paste by domain** | [gallery/README.md](gallery/README.md) |
+| **Prove it works (controls)** | [walkthroughs/08-falsification-controls.md](walkthroughs/08-falsification-controls.md) |
+| **Math** | [THEORY.md](THEORY.md) |
+| **Error / preflight fail** | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) |
 
 ---
 
 ## Two-phase recipe
 
-```mermaid
-flowchart LR
-  A[Phase A: estimate Sigma_task] --> B[Phase B: L_task + PMHLoss]
-```
-
 1. Name label-preserving deployment nuisance  
-2. Estimate with **D1–D7**  
-3. Preflight (`pass` / `marginal` / `fail`)  
-4. Train on representations $h=\phi(x)$  
-5. Report **controls** (wrong-W, isotropic)  
+2. Estimate **Σ_task** (D1–D7)  
+3. Train with **PMHLoss** on **h = φ(x)**  
+4. Compare **matched** vs **wrong-W** vs **isotropic**  
 
 ---
 
 ## Install extras
 
 ```bash
-pip install "matching-pmh[vision]"    # ResNet / ViT examples
-pip install "matching-pmh[hf-lora]"   # Qwen DPO walkthrough
-pip install "matching-pmh[all]"       # dev + docs
+pip install "matching-pmh[sklearn]"   # PMHMatcher
+pip install "matching-pmh[hf]"        # D7 / HFPMHTrainer
+pip install "matching-pmh[vision]"  # ResNet examples
 ```
-
----
-
-## Citation
-
-See [`CITATION.cff`](../CITATION.cff) and the Grand Unification / Matching Principle manuscript.

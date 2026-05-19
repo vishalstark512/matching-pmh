@@ -29,7 +29,16 @@ pipe.fit(x_train, y_train)
 
 `matcher.artifact_` is a `SigmaTaskEstimate` for PyTorch training with `PMHLoss`.
 
-Legacy helper: `MatchedSubspaceProjector` (D1 only) remains in `pmh.sklearn_match`.
+```python
+from pmh import suggest_nuisance, compare_arms_sklearn, tune_sklearn_matcher
+
+print(suggest_nuisance(has_target_labels=True, has_target_domain=True))
+compare_arms_sklearn(x_src, y_src, x_tgt, y_tgt, rank=16, report_dir="results/run1")
+```
+
+Use `nuisance="auto"` on `PMHMatcher` when unsure (see `suggest_nuisance` flags).
+
+Legacy: `MatchedSubspaceProjector` (D1 only) in `pmh.sklearn_match`.
 
 ## CORAL baseline
 

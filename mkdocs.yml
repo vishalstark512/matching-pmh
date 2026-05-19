@@ -20,12 +20,26 @@ theme:
 
 nav:
   - Home: index.md
-  - Quickstart: QUICKSTART.md
+  - "Start here":
+      - Getting started: GETTING_STARTED.md
+      - Legacy redirect: getting-started.md
+      - Quickstart (10 min): QUICKSTART.md
+      - Choose your setup: CHOOSE_YOUR_SETUP.md
+      - Adapt your pipeline: ADAPT_YOUR_PIPELINE.md
+      - Troubleshooting: TROUBLESHOOTING.md
+      - vs CORAL: COMPARE_TO_CORAL.md
   - Theory: THEORY.md
   - Integration:
-      - Adapt your pipeline: ADAPT_YOUR_PIPELINE.md
+      - Hook cookbook: hooks.md
+      - Hybrid nuisances: HYBRID_NUISANCE.md
       - Architecture patterns: ARCHITECTURES.md
       - Design philosophy: PHILOSOPHY.md
+      - Roadmap: ROADMAP.md
+  - Gallery:
+      - Overview: gallery/README.md
+      - Vision: gallery/vision.md
+      - Tabular: gallery/tabular.md
+      - NLP: gallery/nlp.md
   - Walkthroughs:
       - Overview: walkthroughs/index.md
       - "1 PyTorch D4": walkthroughs/01-pytorch-domain-d4.md
@@ -45,8 +59,8 @@ nav:
       - "15 Code tokens": walkthroughs/15-codebert-tokens-d5.md
       - "16 Augmentations D3": walkthroughs/16-augmentation-d3.md
       - "17 Compare arms": walkthroughs/17-compare-arms-your-pipeline.md
+      - "18 PMHTrainer": walkthroughs/18-pmh-trainer-quickstart.md
   - Reference:
-      - Getting started: getting-started.md
       - Nuisance cookbook: nuisance_types.md
       - CLI: cli.md
       - Training API: training.md

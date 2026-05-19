@@ -72,6 +72,15 @@ def test_nuisance_synonyms(nuisance: str):
     assert resolve_method(nuisance) == "D4"
 
 
+def test_matcher_auto_nuisance():
+    rng = np.random.default_rng(4)
+    xs = rng.standard_normal((50, 10)).astype(np.float32)
+    xt = xs + 0.1
+    m = PMHMatcher(nuisance="auto", has_target_domain=True, has_target_labels=False, rank=4)
+    m.fit(xs, xt)
+    assert m.artifact_.method == "D4"
+
+
 def test_sklearn_estimator_checks_if_available():
     sklearn = pytest.importorskip("sklearn")
     from sklearn.utils.estimator_checks import check_estimator

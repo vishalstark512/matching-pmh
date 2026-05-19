@@ -1,7 +1,10 @@
 # Examples catalog
 
-Runnable templates for the [matching principle](https://github.com/vishalstark512/matching-pmh).  
-Each script is **self-contained** (copy → adapt). Walkthrough prose: [docs/walkthroughs/](../docs/walkthroughs/index.md).
+Runnable templates for the [matching principle](https://github.com/vishalstark512/matching-pmh).
+
+**New users:** start with [docs/GETTING_STARTED.md](../docs/GETTING_STARTED.md), then copy the closest script below.
+
+Each example is **self-contained** (copy → adapt). Walkthrough prose: [docs/walkthroughs/](../docs/walkthroughs/index.md).
 
 ```bash
 pip install matching-pmh torch

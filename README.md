@@ -25,7 +25,8 @@ Estimate **Sigma_task** (D1–D7) · train any encoder with matched PMH · falsi
 
 Works with **your** stack: ResNet, ViT, GNN, Whisper-style encoders, causal LMs with LoRA, or frozen features + sklearn. Full math (LaTeX): [docs/THEORY.md](https://github.com/vishalstark512/matching-pmh/blob/main/docs/THEORY.md).
 
-> **Design goal:** two phases, one hook tensor `h`, no framework lock-in—not a paper reproduction kit. **Your** data, **your** architecture, **your** trainer. Start: [Adapt your pipeline](https://github.com/vishalstark512/matching-pmh/blob/main/docs/ADAPT_YOUR_PIPELINE.md).
+> **Design goal:** two phases, one hook tensor `h`, no framework lock-in—not a paper reproduction kit.  
+> **New users start here:** [Getting started (adoption guide)](https://github.com/vishalstark512/matching-pmh/blob/main/docs/GETTING_STARTED.md) → [Choose your setup](https://github.com/vishalstark512/matching-pmh/blob/main/docs/CHOOSE_YOUR_SETUP.md) → [Gallery templates](https://github.com/vishalstark512/matching-pmh/blob/main/docs/gallery/README.md)
 
 ---
 
@@ -38,19 +39,17 @@ pmh-train list-methods
 ```
 
 ```python
-import pmh
-from pmh import SigmaTaskConfig, PMHConfig, PMHLoss, collect_features, estimate_from_config
+from pmh import PMHMatcher, PMHTrainer, PMHConfig
 
-# Phase A — estimate (frozen encoder)
-artifact = estimate_from_config(SigmaTaskConfig.for_domain(rank=32), h_source, h_target)
-artifact.save("artifacts/sigma")
+# NumPy / sklearn frozen features
+matcher = PMHMatcher(nuisance="domain_shift", rank=32).fit(x_source, x_target)
 
-# Phase B — train (your loop)
-pmh_loss = PMHLoss(artifact, PMHConfig(weight=0.3, cap_ratio=0.3, warmup_epochs=2))
-total, _ = pmh_loss.capped_total(task_loss, h)
+# PyTorch — estimate + train in one call
+trainer = PMHTrainer(model, hook="backbone", nuisance="auto", pmh_config=PMHConfig.balanced())
+trainer.fit(train_loader, source_batches=src_loader, target_batches=tgt_loader, epochs=20)
 ```
 
-[Adapt your pipeline](https://github.com/vishalstark512/matching-pmh/blob/main/docs/ADAPT_YOUR_PIPELINE.md) · [Quickstart](https://github.com/vishalstark512/matching-pmh/blob/main/docs/QUICKSTART.md) · [17 walkthrough templates](https://github.com/vishalstark512/matching-pmh/blob/main/docs/walkthroughs/index.md)
+[Getting started](https://github.com/vishalstark512/matching-pmh/blob/main/docs/GETTING_STARTED.md) · [Choose setup](https://github.com/vishalstark512/matching-pmh/blob/main/docs/CHOOSE_YOUR_SETUP.md) · [Troubleshooting](https://github.com/vishalstark512/matching-pmh/blob/main/docs/TROUBLESHOOTING.md) · [18 walkthroughs](https://github.com/vishalstark512/matching-pmh/blob/main/docs/walkthroughs/index.md)
 
 ---
 
@@ -89,7 +88,7 @@ Matched loss (schematic): `L = L_task + lambda * Tr(J_phi^T J_phi Sigma')` with 
 
 ---
 
-## Walkthroughs (17 templates)
+## Walkthroughs (18 templates)
 
 | # | Guide | Run |
 |---|--------|-----|
@@ -110,6 +109,7 @@ Matched loss (schematic): `L = L_task + lambda * Tr(J_phi^T J_phi Sigma')` with 
 | 15 | [Code / tokens D5](https://github.com/vishalstark512/matching-pmh/blob/main/docs/walkthroughs/15-codebert-tokens-d5.md) | `examples/17_code_tokens_d5.py` |
 | 16 | [Augmentations D3](https://github.com/vishalstark512/matching-pmh/blob/main/docs/walkthroughs/16-augmentation-d3.md) | `examples/18_augmentation_d3.py` |
 | 17 | [Compare arms on your pipeline](https://github.com/vishalstark512/matching-pmh/blob/main/docs/walkthroughs/17-compare-arms-your-pipeline.md) | `examples/20_compare_training_arms.py` |
+| 18 | [PMHTrainer quickstart](https://github.com/vishalstark512/matching-pmh/blob/main/docs/walkthroughs/18-pmh-trainer-quickstart.md) | `examples/01_domain_shift_d4.py` |
 
 ---
 
@@ -161,11 +161,14 @@ cd matching-pmh && pip install -e ".[dev]" && pytest -q
 
 | Document | Purpose |
 |----------|---------|
-| [ADAPT_YOUR_PIPELINE.md](https://github.com/vishalstark512/matching-pmh/blob/main/docs/ADAPT_YOUR_PIPELINE.md) | Plug into your data, model, trainer |
-| [QUICKSTART.md](https://github.com/vishalstark512/matching-pmh/blob/main/docs/QUICKSTART.md) | First run in 10 minutes |
-| [THEORY.md](https://github.com/vishalstark512/matching-pmh/blob/main/docs/THEORY.md) | Full mathematics (LaTeX) |
-| [ARCHITECTURES.md](https://github.com/vishalstark512/matching-pmh/blob/main/docs/ARCHITECTURES.md) | Hook points per stack |
-| [walkthroughs/](https://github.com/vishalstark512/matching-pmh/blob/main/docs/walkthroughs/index.md) | 16 end-to-end guides |
+| **[GETTING_STARTED.md](https://github.com/vishalstark512/matching-pmh/blob/main/docs/GETTING_STARTED.md)** | **Main adoption guide (start here)** |
+| [CHOOSE_YOUR_SETUP.md](https://github.com/vishalstark512/matching-pmh/blob/main/docs/CHOOSE_YOUR_SETUP.md) | Pick API by stack and data |
+| [TROUBLESHOOTING.md](https://github.com/vishalstark512/matching-pmh/blob/main/docs/TROUBLESHOOTING.md) | Errors, preflight, hook dim |
+| [gallery/](https://github.com/vishalstark512/matching-pmh/blob/main/docs/gallery/README.md) | Copy-paste: vision / tabular / NLP |
+| [hooks.md](https://github.com/vishalstark512/matching-pmh/blob/main/docs/hooks.md) | ResNet, timm, HF hooks |
+| [ADAPT_YOUR_PIPELINE.md](https://github.com/vishalstark512/matching-pmh/blob/main/docs/ADAPT_YOUR_PIPELINE.md) | Integration checklist |
+| [walkthroughs/](https://github.com/vishalstark512/matching-pmh/blob/main/docs/walkthroughs/index.md) | 18 stack-specific tutorials |
+| [THEORY.md](https://github.com/vishalstark512/matching-pmh/blob/main/docs/THEORY.md) | Mathematics |
 
 ---
 

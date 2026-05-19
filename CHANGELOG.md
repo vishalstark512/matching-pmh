@@ -1,5 +1,40 @@
 # Changelog
 
+## 1.2.0
+
+### Documentation (adoption)
+
+- **[GETTING_STARTED.md](docs/GETTING_STARTED.md)** — main adoption guide with decision flow and checklists.
+- **[CHOOSE_YOUR_SETUP.md](docs/CHOOSE_YOUR_SETUP.md)** — pick API by stack and data.
+- **[TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** — common errors and fixes.
+- Restructured [ADAPT_YOUR_PIPELINE.md](docs/ADAPT_YOUR_PIPELINE.md), [QUICKSTART.md](docs/QUICKSTART.md), docs index, mkdocs nav.
+
+### Features
+
+- **D1–D7 in `PMHTrainer.estimate`**: labeled D1, D3 (`augmentations=` / `aug_deltas=`), D5 (`nuisance_indices=`), D6 (`sequences_batches=`), D7 (`style_jsonl` + HF model).
+- **`MultiPMHLoss`** / `build_hybrid_trainer` for hybrid nuisances.
+- **`HFPMHTrainer`**: HF hidden-state hook + `estimate_style` / `estimate_text_domains`.
+- **`PMHMatcher`**: D3 (`aug_deltas=`), D6 (`[N,T,d]`).
+- **`DataContext`**, `collect_labeled_features`, `collect_augmentation_deltas`, `collect_sequence_features`.
+- Docs: [HYBRID_NUISANCE.md](docs/HYBRID_NUISANCE.md).
+
+## 1.1.0
+
+- **Hook adapters:** `encoder_timm`, `encoder_torchvision_resnet`, `encoder_hf_hidden_states`, `encoder_gnn_mean_pool`; expanded `HOOK_REGISTRY` and [docs/hooks.md](docs/hooks.md).
+- **Gallery:** [docs/gallery/](docs/gallery/) templates (vision, tabular, NLP).
+- **Walkthrough 18:** PMHTrainer quickstart.
+- **CI:** `sklearn-compat` job with `check_get_params` / `check_set_params`.
+- **Fix:** `scripts/upload_pypi.ps1` version read on Windows (tomllib).
+
+## 1.0.0
+
+- **`PMHTrainer`**: Phase A estimate + Phase B `fit()` on your DataLoader; hook resolution via `pmh.hooks`.
+- **`nuisance="auto"`**: `suggest_nuisance()` picks D1/D4/etc. from data flags.
+- **`PMHConfig` presets**: `conservative()`, `balanced()`, `aggressive()`, `finetune_llm()`.
+- **Top-level `compare_arms` / `compare_arms_sklearn`**: credible B0 vs matched vs controls.
+- **`tune_sklearn_matcher` / `tune_pmh_config`**: small grid search helpers.
+- Examples `01` and `06` rewritten as showcases.
+
 ## 0.8.0
 
 - **`PMHMatcher`**: sklearn-style `fit` / `transform` / `get_params` on NumPy features (D1, D2, D4, D5).
