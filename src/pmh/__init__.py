@@ -108,7 +108,7 @@ __all__ = [
     "tune_result_from_grid_search",
 ]
 
-__version__ = "1.2.0"
+__version__ = "1.3.0"
 
 
 def __getattr__(name: str):

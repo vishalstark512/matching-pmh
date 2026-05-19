@@ -1,6 +1,6 @@
 # Roadmap
 
-**Current release: v1.2.0** — adoption docs + full D1–D7 trainer paths + hybrid nuisances.
+**Current release: v1.3.0** — sklearn-class API, TDI benchmarks, GridSearchCV helpers.
 
 | Area | Status |
 |------|--------|

@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.3.0
+
+### sklearn-class API
+
+- **`PMHMatcher`**: passes `sklearn.utils.estimator_checks.check_estimator` (isotropic path); `validate_data`, `n_features_in_`, standard `fit(X, y)` with `X_target` in `__init__` or kwargs.
+- **`Pipeline.fit`**: target domain via `PMHMatcher(X_target=...)` or metadata routing on the matcher.
+- **GridSearchCV**: `make_pmh_pipeline`, `default_pmh_param_grid`, `grid_search_pmh_pipeline`; `tune_sklearn_matcher(..., use_gridsearchcv=True)`.
+
+### TDI and benchmarks
+
+- **`pmh.tdi`**: `tdi_cls`, `tdi_feature_isotropic`, `directional_drift_numpy`, `geometry_report` (paper §6 layout / drift metrics).
+- **`compare_arms_sklearn`**: reports target accuracy + **TDI_cls** + **D_N/D_S** per arm; markdown table in `benchmark.md`.
+- **Example:** `examples/21_benchmark_sklearn_table.py`; docs: [BENCHMARKS.md](docs/BENCHMARKS.md).
+
+### Documentation
+
+- Sharpened README intro (value prop + 3-step table).
+- [BENCHMARKS.md](docs/BENCHMARKS.md) — where TDI lives (package vs paper replication code).
+
 ## 1.2.0
 
 ### Documentation (adoption)
