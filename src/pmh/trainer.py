@@ -386,6 +386,48 @@ class PMHTrainer:
             "total_loss": step.total_loss,
         }
 
+    @torch.no_grad()
+    def measure_trajectory_tdi(
+        self,
+        probe_batches: Iterable[Any],
+        *,
+        sigma: float = 0.01,
+        max_batches: int = 20,
+        seed: int = 0,
+    ) -> dict[str, float | list[float] | int]:
+        """Label-free trajectory TDI on hook representations (isotropic input noise).
+
+        Uses the same ``encoder`` / hook as training. Paper default: ``sigma=0.01``.
+        For per-layer ViT probes, use :func:`pmh.tdi.trajectory_tdi_layerwise` on
+        stacked layer features from your own hooks.
+
+        Parameters
+        ----------
+        probe_batches
+            Typically target-domain validation batches ``(x, y)`` or ``x`` only.
+        sigma
+            Gaussian perturbation scale on inputs.
+        max_batches
+            Cap for speed.
+
+        Returns
+        -------
+        dict
+            ``trajectory_tdi``, ``tdi_per_layer``, ``sigma``, ``n_samples``.
+        """
+        from pmh.tdi import trajectory_tdi_encoder
+
+        self.model.eval()
+        return trajectory_tdi_encoder(
+            self.model,
+            self.encoder,
+            probe_batches,
+            sigma=sigma,
+            max_batches=max_batches,
+            device=self.device,
+            seed=seed,
+        )
+
 
 def build_hybrid_trainer(
     model: nn.Module,

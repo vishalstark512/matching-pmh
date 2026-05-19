@@ -33,26 +33,26 @@ def suggest_nuisance(
     Use before ``PMHMatcher`` / ``PMHTrainer`` when unsure which Dk applies.
     """
     if has_style_pairs:
-        return NuisanceSuggestion("style", "D7", "Style/content-fixed pairs → D7 alignment Gram.")
+        return NuisanceSuggestion("style", "D7", "Style/content-fixed pairs -> D7 alignment Gram.")
     if has_augmentation_modes:
-        return NuisanceSuggestion("augmentation", "D3", "Known augmentation modes → D3.")
+        return NuisanceSuggestion("augmentation", "D3", "Known augmentation modes -> D3.")
     if has_temporal_sequences:
-        return NuisanceSuggestion("temporal", "D6", "Label-constant drift along time → D6.")
+        return NuisanceSuggestion("temporal", "D6", "Label-constant drift along time -> D6.")
     if has_nuisance_indices:
-        return NuisanceSuggestion("compositional", "D5", "Nuisance on known coordinates → D5.")
+        return NuisanceSuggestion("compositional", "D5", "Nuisance on known coordinates -> D5.")
     if noise_level_known and not has_target_domain:
-        return NuisanceSuggestion("isotropic", "D2", "Known noise level, no domain pair → D2.")
+        return NuisanceSuggestion("isotropic", "D2", "Known noise level, no domain pair -> D2.")
     if has_source_labels and has_target_labels and has_target_domain:
         return NuisanceSuggestion(
             "subspace",
             "D1",
-            "Paired domains with class labels → D1 subspace (class-aligned).",
+            "Paired domains with class labels -> D1 subspace (class-aligned).",
         )
     if has_target_domain:
         return NuisanceSuggestion(
             "domain_shift",
             "D4",
-            "Source/target domains without requiring target labels → D4 domain Gram.",
+            "Source/target domains without requiring target labels -> D4 domain Gram.",
         )
     return NuisanceSuggestion(
         "domain_shift",

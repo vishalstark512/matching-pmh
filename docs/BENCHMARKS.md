@@ -4,7 +4,7 @@
 
 | Location | What |
 |----------|------|
-| **This package** | `pmh.tdi` — `tdi_cls`, `tdi_feature_isotropic`, `directional_drift_numpy`, `geometry_report` |
+| **This package** | `pmh.tdi` — layout + trajectory TDI, `directional_drift_numpy`, `geometry_report`; `PMHTrainer.measure_trajectory_tdi` |
 | **Paper replication** | `Paper2/T3/Task3A/tdi_utils.py`, `T4/*/tdi.py`, `T6/*/eval_paper_metrics.py` (not imported by `pip install matching-pmh`) |
 | **Manuscript** | [Theory / diagnostics](THEORY.md) · Grand Unification §6 (trajectory TDI, layout TDI, \(D_N/D_S\)) |
 
@@ -18,8 +18,46 @@ Before v1.3, the library only exposed **eigengap** preflight (`pmh.diagnostics`,
 | `tdi_feature_isotropic` | No | Yes | Feature-space sensitivity proxy |
 | `D_N`, `D_S`, `D_N_over_D_S` | No (needs \(\hat W\)) | \(D_N/D_S\) context-dependent | Nuisance subspace available |
 | `target_accuracy` | Yes | No (higher better) | Standard DA benchmark |
+| `trajectory_tdi` | No | Yes | Input noise @ `sigma=0.01` on encoder hooks (paper T2A) |
 
-**Trajectory TDI** on deep nets (layer-averaged input Gaussian noise) is defined in the paper; implement with your encoder + `sigma=0.01` probes, or use `tdi_feature_isotropic` on frozen features for a quick sklearn comparison.
+**Trajectory TDI** (layer-averaged ratio of perturbed vs clean representation drift):
+
+```python
+from pmh import PMHTrainer, trajectory_tdi_layerwise
+
+# PyTorch encoder (single layer or CLS)
+metrics = trainer.measure_trajectory_tdi(val_loader, sigma=0.01)
+print(metrics["trajectory_tdi"], metrics["tdi_per_layer"])
+
+# NumPy per-layer stacks (ViT hooks)
+tdi, per_layer = trajectory_tdi_layerwise(clean_layers, pert_layers)
+```
+
+For frozen sklearn tables use `tdi_feature_isotropic` as a fast proxy.
+
+## Reference tables (metrics only, in git)
+
+| File | Protocol |
+|------|----------|
+| [office31_synthetic_reference.md](benchmarks/office31_synthetic_reference.md) | Synthetic Office-31-style shift, rank=16 |
+| [office31_amazon_to_dslr.md](benchmarks/office31_amazon_to_dslr.md) | **Real** Office-31: ResNet-18 penultimate features, Amazon → DSLR, rank=16, seed=0, ≤2000 samples/domain |
+
+**Real Office-31 snapshot (2026-05-19):** target accuracy — B0 **0.71**, matched **0.63**, wrong-W **0.71**, CORAL **0.68**. Matched does **not** beat B0 on accuracy here; use this table as a **protocol reference**, not a headline win. Re-run with your encoder, rank, and full data before claiming gains. Geometry (`TDI_cls`, `D_N/D_S`) is reported alongside accuracy for falsification (see table notes).
+
+Regenerate locally (no datasets committed):
+
+```bash
+pip install -e ".[sklearn,vision]"
+# Download Office-31 once (outside repo), e.g. Paper2 script or Tsinghua mirrors:
+#   python path/to/download_office31.py --root D:/data/office31
+python scripts/generate_reference_benchmark.py --office31-root D:/data/office31 --output docs/benchmarks/office31_amazon_to_dslr.md
+```
+
+Synthetic only (no download):
+
+```bash
+python scripts/generate_reference_benchmark.py
+```
 
 ## Standard sklearn benchmark (like scikit-learn example galleries)
 

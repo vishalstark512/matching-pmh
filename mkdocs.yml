@@ -1,6 +1,6 @@
 site_name: matching-pmh
 site_description: Matched PMH from estimated deployment nuisance geometry (Sigma_task, D1-D7)
-site_url: https://github.com/vishalstark512/matching-pmh
+site_url: https://vishalstark512.github.io/matching-pmh/
 repo_url: https://github.com/vishalstark512/matching-pmh
 repo_name: vishalstark512/matching-pmh
 edit_uri: edit/main/docs/
@@ -30,6 +30,8 @@ nav:
       - Troubleshooting: TROUBLESHOOTING.md
       - vs CORAL: COMPARE_TO_CORAL.md
       - Benchmarks & TDI: BENCHMARKS.md
+      - Reference table (synthetic): benchmarks/office31_synthetic_reference.md
+      - Reference table (Office-31 Amazon→DSLR): benchmarks/office31_amazon_to_dslr.md
       - Data policy: DATA_POLICY.md
   - Theory: THEORY.md
   - Integration:
@@ -83,9 +85,20 @@ nav:
       - Lightning: integrations-lightning.md
   - Classical ML: sklearn.md
   - Datasets: datasets.md
+  - API:
+      - Overview: api/index.md
 
 plugins:
   - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options:
+            docstring_style: numpy
+            show_source: false
+            members_order: source
+            heading_level: 3
 
 markdown_extensions:
   - admonition

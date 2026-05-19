@@ -82,8 +82,9 @@ def run_sklearn_benchmark(
     w_wrong = rng.standard_normal((x_src.shape[1], rank)).astype(np.float32)
     q_wrong, _ = np.linalg.qr(w_wrong)
 
-    u_full, _, _ = np.linalg.svd(x_tgt - x_tgt.mean(0), full_matrices=False)
-    q_iso = u_full[:rank].T.astype(np.float32)
+    _, _, vt = np.linalg.svd(x_tgt - x_tgt.mean(0), full_matrices=False)
+    r_iso = min(rank, vt.shape[0])
+    q_iso = vt[:r_iso].T.astype(np.float32)  # [d, r] — top directions in feature space
 
     sigma_np = artifact.sigma.detach().cpu().numpy()
     w_sigma = _basis_from_sigma(sigma_np, rank)

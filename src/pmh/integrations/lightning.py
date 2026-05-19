@@ -19,6 +19,11 @@ except ImportError:
         _pl = None  # type: ignore[assignment]
 
 
+def lightning_available() -> bool:
+    """True if ``lightning`` or legacy ``pytorch_lightning`` is importable."""
+    return _pl is not None
+
+
 def _require_lightning() -> Any:
     if _pl is None:
         raise ImportError(

@@ -158,6 +158,8 @@ python examples/21_benchmark_sklearn_table.py --office31-root YOUR_OFFICE31_ROOT
 
 Copy **only** the markdown summary into docs if publishing reference numbers — not raw features.
 
+Bundled reference (metrics only): [office31_amazon_to_dslr.md](../benchmarks/office31_amazon_to_dslr.md) — regenerate with `scripts/generate_reference_benchmark.py --office31-root YOUR_PATH`.
+
 ---
 
 ## Adaptation worksheet

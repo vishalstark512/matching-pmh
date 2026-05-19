@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.4.0
+
+### Trajectory TDI (paper T2A)
+
+- **`trajectory_tdi_layerwise`**, **`trajectory_tdi_encoder`**: isotropic input noise @ `sigma=0.01` (default).
+- **`PMHTrainer.measure_trajectory_tdi`**: probe batches on the training hook encoder.
+- **`TDIReport`**: optional `trajectory_tdi`, `tdi_per_layer`.
+
+### Docs and benchmarks
+
+- **mkdocstrings** API reference (`docs/api/index.md`) on GitHub Pages.
+- **`scripts/generate_reference_benchmark.py`** → `docs/benchmarks/*.md` (metrics only; [DATA_POLICY](docs/DATA_POLICY.md)).
+- [BENCHMARKS.md](docs/BENCHMARKS.md) updated for trajectory TDI and reference tables.
+
 ## 1.3.0
 
 ### sklearn-class API

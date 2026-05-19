@@ -130,6 +130,17 @@ compare_arms(
 
 Sklearn features: [Walkthrough 17](17-compare-arms-your-pipeline.md).
 
+### Trajectory TDI (label-free, paper σ=0.01)
+
+After training, probe **target** batches on the same hook encoder:
+
+```python
+metrics = trainer.measure_trajectory_tdi(val_loader, sigma=0.01, max_batches=20)
+print(metrics["trajectory_tdi"], metrics["tdi_per_layer"])
+```
+
+For per-layer ViT stacks, call `pmh.trajectory_tdi_layerwise(clean_layers, pert_layers)` from your own hooks. See [Benchmarks & TDI](../BENCHMARKS.md).
+
 ---
 
 ## Verify success

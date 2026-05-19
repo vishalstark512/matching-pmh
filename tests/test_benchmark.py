@@ -64,6 +64,15 @@ def test_benchmark_protocol_runs_four_arms():
     assert "matched" in md and "wrong_w" in md
 
 
+def test_sklearn_benchmark_high_d():
+    """Isotropic arm uses Vt (feature directions); must work when n < d."""
+    from pmh.benchmark.sklearn_protocol import run_sklearn_benchmark, synthetic_office31_features
+
+    xs, y, xt, yt = synthetic_office31_features(n=80, d=256, seed=1)
+    res = run_sklearn_benchmark(xs, y, xt, yt, rank=8, include_coral=False, seed=1)
+    assert "isotropic" in res.arms
+
+
 def test_sklearn_benchmark_synthetic():
     import numpy as np
 

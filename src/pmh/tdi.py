@@ -9,6 +9,7 @@ is the packaged API for ``matching-pmh`` users.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 
@@ -17,6 +18,8 @@ __all__ = [
     "tdi_cls",
     "tdi_layout",
     "tdi_feature_isotropic",
+    "trajectory_tdi_layerwise",
+    "trajectory_tdi_encoder",
     "directional_drift_numpy",
     "geometry_report",
 ]
@@ -28,6 +31,8 @@ class TDIReport:
 
     tdi_cls: float | None = None
     tdi_feature_iso: float | None = None
+    trajectory_tdi: float | None = None
+    tdi_per_layer: list[float] | None = None
     d_n: float | None = None
     d_s: float | None = None
     d_n_over_d_s: float | None = None
@@ -36,6 +41,8 @@ class TDIReport:
         return {
             "tdi_cls": self.tdi_cls,
             "tdi_feature_iso": self.tdi_feature_iso,
+            "trajectory_tdi": self.trajectory_tdi,
+            "tdi_per_layer": self.tdi_per_layer,
             "D_N": self.d_n,
             "D_S": self.d_s,
             "D_N_over_D_S": self.d_n_over_d_s,
@@ -140,6 +147,103 @@ def tdi_feature_isotropic(
             numer_acc += float((diff**2).sum())
             count += 1
     return numer_acc / max(count, 1) / denom
+
+
+def trajectory_tdi_layerwise(
+    layers_clean: list[np.ndarray],
+    layers_perturbed: list[np.ndarray],
+) -> tuple[float, list[float]]:
+    """Layer-averaged trajectory TDI (paper Eq. trajectory; Task 2A ``compute_paper_tdi_layerwise``).
+
+    For each depth ``ell``, computes mean_i ||phi_ell(x_i + delta_i) - phi_ell(x_i)||^2 / mean_i ||phi_ell(x_i)||^2,
+    then averages across layers. **Lower is better.**
+
+    Parameters
+    ----------
+    layers_clean, layers_perturbed
+        Lists of paired ``[N, d_ell]`` arrays in the same sample order.
+    """
+    if len(layers_clean) != len(layers_perturbed):
+        raise ValueError(
+            f"Layer count mismatch: clean={len(layers_clean)}, perturbed={len(layers_perturbed)}"
+        )
+    ratios: list[float] = []
+    for c, p in zip(layers_clean, layers_perturbed):
+        cc = np.asarray(c, dtype=np.float64)
+        pp = np.asarray(p, dtype=np.float64)
+        if cc.shape != pp.shape:
+            raise ValueError(f"Shape mismatch: clean={cc.shape}, perturbed={pp.shape}")
+        num = np.square(np.linalg.norm(pp - cc, axis=1))
+        den = np.square(np.linalg.norm(cc, axis=1))
+        den_mean = float(np.mean(den))
+        if den_mean <= 0:
+            ratios.append(0.0)
+        else:
+            ratios.append(float(np.mean(num) / den_mean))
+    tdi = float(np.mean(ratios)) if ratios else 0.0
+    return tdi, ratios
+
+
+def trajectory_tdi_encoder(
+    model: Any,
+    encoder: Any,
+    batches: Any,
+    *,
+    sigma: float = 0.01,
+    max_batches: int = 20,
+    device: Any = None,
+    seed: int = 0,
+) -> dict[str, float | list[float] | int]:
+    """Estimate trajectory TDI@sigma with isotropic input noise on a PyTorch encoder.
+
+    Default: single representation ``h = encoder(x)`` (final layer / CLS).
+    Perturbs inputs ``x' = x + sigma * eps``, recomputes ``h`` on the same batches.
+
+    Matches paper probe at ``sigma=0.01`` (T2A-style); use :func:`trajectory_tdi_layerwise`
+    directly when you have per-layer CLS tensors from timm/ViT hooks.
+    """
+    import torch
+
+    if device is None:
+        device = next(model.parameters()).device if any(True for _ in model.parameters()) else "cpu"
+    dev = torch.device(device)
+    model.eval()
+
+    clean_parts: list[np.ndarray] = []
+    pert_parts: list[np.ndarray] = []
+    gen = torch.Generator(device=dev)
+    gen.manual_seed(seed)
+    n_batches = 0
+
+    for item in batches:
+        if max_batches is not None and n_batches >= max_batches:
+            break
+        x = item[0] if isinstance(item, (tuple, list)) else item
+        x = x.to(dev)
+        eps = torch.randn(x.shape, generator=gen, device=dev, dtype=x.dtype) * sigma
+        x_pert = x + eps
+
+        with torch.no_grad():
+            h0 = encoder(x).detach().float().cpu().numpy()
+            h1 = encoder(x_pert).detach().float().cpu().numpy()
+        if h0.ndim != 2:
+            raise ValueError(f"encoder must return [B, d], got {h0.shape}")
+        clean_parts.append(h0)
+        pert_parts.append(h1)
+        n_batches += 1
+
+    if not clean_parts:
+        raise ValueError("probe_batches yielded no data")
+
+    h_clean = np.concatenate(clean_parts, axis=0)
+    h_pert = np.concatenate(pert_parts, axis=0)
+    tdi, per_layer = trajectory_tdi_layerwise([h_clean], [h_pert])
+    return {
+        "trajectory_tdi": tdi,
+        "tdi_per_layer": per_layer,
+        "sigma": float(sigma),
+        "n_samples": int(h_clean.shape[0]),
+    }
 
 
 def directional_drift_numpy(

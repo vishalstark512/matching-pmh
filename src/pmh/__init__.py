@@ -12,6 +12,8 @@ from pmh.tdi import (
     tdi_cls,
     tdi_feature_isotropic,
     tdi_layout,
+    trajectory_tdi_encoder,
+    trajectory_tdi_layerwise,
 )
 from pmh.estimate import estimate_from_config, estimate_sigma_task
 from pmh.features import (
@@ -79,6 +81,8 @@ __all__ = [
     "tdi_cls",
     "tdi_layout",
     "tdi_feature_isotropic",
+    "trajectory_tdi_layerwise",
+    "trajectory_tdi_encoder",
     "directional_drift_numpy",
     "geometry_report",
     "TDIReport",
