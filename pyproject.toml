@@ -53,8 +53,13 @@ packages = ["src/pmh"]
 exclude = [
   "/.github",
   "/artifacts",
+  "/data",
+  "/results",
   "/tmp_trainer",
   "/tmp_pmh_trainer",
+  "*.tar.gz",
+  "*.npy",
+  "*.npz",
 ]
 
 [tool.pytest.ini_options]

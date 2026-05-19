@@ -28,8 +28,11 @@ One command — synthetic Office-31-style shift or real Office-31 features:
 ```bash
 pip install "matching-pmh[sklearn]"
 python examples/21_benchmark_sklearn_table.py
+# Real Office-31: path outside the repo (never commit the dataset)
 python examples/21_benchmark_sklearn_table.py --office31-root /data/office31 --report results/run1
 ```
+
+See [DATA_POLICY.md](DATA_POLICY.md) — datasets and `.npy` features are **not** stored in git or PyPI.
 
 Programmatic:
 

@@ -29,6 +29,7 @@ nav:
       - Troubleshooting: TROUBLESHOOTING.md
       - vs CORAL: COMPARE_TO_CORAL.md
       - Benchmarks & TDI: BENCHMARKS.md
+      - Data policy: DATA_POLICY.md
   - Theory: THEORY.md
   - Integration:
       - Hook cookbook: hooks.md

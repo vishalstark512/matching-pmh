@@ -16,3 +16,33 @@ tmp_trainer/
 tmp_pmh_trainer/
 *.pt
 .DS_Store
+
+# --- Datasets and large downloads (never commit to git or ship in wheels) ---
+/data/*
+!/data/README.md
+data/*
+!data/README.md
+downloads/
+_downloads/
+office31/
+Office31/
+tmp.tar.gz
+*.tar.gz
+*.tar
+*.tgz
+*.zip
+*.7z
+*.npy
+*.npz
+*.h5
+*.hdf5
+*.pkl
+*.pickle
+*.parquet
+*.feather
+*.ckpt
+*.safetensors
+# Keep tiny JSONL demos under examples/data/ only (tracked on purpose).
+
+# Local benchmark outputs with raw tensors
+docs/benchmarks/raw/

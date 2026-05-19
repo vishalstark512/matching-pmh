@@ -19,6 +19,13 @@ ruff check src tests examples
 
 ---
 
+## Data and benchmarks
+
+**Do not commit datasets, archives, or extracted features** (Office-31, `.npy`, `.tar.gz`, checkpoints).  
+See [docs/DATA_POLICY.md](docs/DATA_POLICY.md). Benchmark docs may include **metric tables only**.
+
+---
+
 ## What to contribute
 
 | Type | Where |
