@@ -17,16 +17,20 @@ Estimate **Sigma_task** (D1–D7) · train any encoder with matched PMH · falsi
 
 ---
 
-**matching-pmh** is a research-grade PyTorch library for the **Matching Principle**:
+**matching-pmh** implements the **Matching Principle**: make your encoder robust along the directions that actually shift between train and deploy—**not** every input direction that happens to correlate with labels.
 
-1. Name what changes at deployment **without changing the label**.
-2. Estimate that nuisance geometry **Sigma_task** (covariance of label-preserving deployment variation).
-3. Add a **matched** Jacobian penalty on **your** representations `h = phi_theta(x)`.
+| Step | What you do | What the library does |
+|------|-------------|------------------------|
+| **1. Nuisance** | Name what can change at deployment **without changing the label** (site, lighting, sensor, format, …). | Registry + `suggest_nuisance` / `nuisance="auto"` to pick an estimator family. |
+| **2. Geometry** | Collect source/target (or augmentation) batches that expose that variation. | Estimate **Σ_task** — covariance of label-preserving deployment nuisance — via **D1–D7** (shift, augment, sequence, style Gram, …). |
+| **3. Training** | Keep your task loss; point a hook at representations `h = φ_θ(x)`. | Add **matched PMH**: shrink Jacobian sensitivity **along Σ_task** (matched penalty), not isotropic VAT/CORAL-on-weights alone. |
 
-Works with **your** stack: ResNet, ViT, GNN, Whisper-style encoders, causal LMs with LoRA, or frozen features + sklearn. Full math (LaTeX): [docs/THEORY.md](https://github.com/vishalstark512/matching-pmh/blob/main/docs/THEORY.md).
+**Your stack, your hook.** ResNet / ViT (`timm`, `torchvision`), GNN mean-pool, Whisper-style encoders, causal LMs with LoRA, or frozen features + `PMHMatcher` / sklearn. Two phases (estimate once → train every step), one tensor `h`, no framework lock-in.
 
-> **Design goal:** two phases, one hook tensor `h`, no framework lock-in—not a paper reproduction kit.  
-> **New users start here:** [Getting started (adoption guide)](https://github.com/vishalstark512/matching-pmh/blob/main/docs/GETTING_STARTED.md) → [Choose your setup](https://github.com/vishalstark512/matching-pmh/blob/main/docs/CHOOSE_YOUR_SETUP.md) → [Gallery templates](https://github.com/vishalstark512/matching-pmh/blob/main/docs/gallery/README.md)
+**Theory:** definitions, lemmas, and loss forms in [docs/THEORY.md](https://github.com/vishalstark512/matching-pmh/blob/main/docs/THEORY.md) (LaTeX-friendly).
+
+> **Not a paper reproduction kit** — adapt your own pipeline.  
+> **Start here:** [Getting started](https://github.com/vishalstark512/matching-pmh/blob/main/docs/GETTING_STARTED.md) → [Choose your setup](https://github.com/vishalstark512/matching-pmh/blob/main/docs/CHOOSE_YOUR_SETUP.md) → [Gallery](https://github.com/vishalstark512/matching-pmh/blob/main/docs/gallery/README.md)
 
 ---
 

@@ -1,8 +1,8 @@
 # matching-pmh
 
-<p align="center"><em>Estimate deployment nuisance geometry. Train any encoder with matched PMH.</em></p>
+<p align="center"><em>Name deployment nuisances. Estimate Σ_task. Train with matched PMH on your representations.</em></p>
 
-Reference implementation of the [**Matching Principle**](THEORY.md) for research and production fine-tuning.
+[**Matching Principle**](THEORY.md) library: estimate label-preserving deployment geometry (D1–D7), then add a matched Jacobian penalty on `h = φ_θ(x)`—on your encoder, not a fixed benchmark recipe.
 
 | | |
 |---|---|
