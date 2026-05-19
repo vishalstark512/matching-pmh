@@ -40,11 +40,11 @@ all = ["matching-pmh[dev,sklearn,hf,hf-lora,lightning,vision,docs]"]
 pmh-train = "pmh.cli.main:main"
 
 [project.urls]
-Homepage = "https://github.com/matching-pmh/matching-pmh"
-Documentation = "https://github.com/matching-pmh/matching-pmh#readme"
-Repository = "https://github.com/matching-pmh/matching-pmh"
-Issues = "https://github.com/matching-pmh/matching-pmh/issues"
-Changelog = "https://github.com/matching-pmh/matching-pmh/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/vishalstark512/matching-pmh"
+Documentation = "https://github.com/vishalstark512/matching-pmh#readme"
+Repository = "https://github.com/vishalstark512/matching-pmh"
+Issues = "https://github.com/vishalstark512/matching-pmh/issues"
+Changelog = "https://github.com/vishalstark512/matching-pmh/blob/main/CHANGELOG.md"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/pmh"]

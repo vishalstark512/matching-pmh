@@ -6,7 +6,12 @@ Paper: *The Matching Principle* (separate repository). **v0.2** adds typed confi
 
 ## Install
 
+**From PyPI:** `pip install matching-pmh` ([project page](https://pypi.org/project/matching-pmh/))
+
+**From source:**
+
 ```bash
+git clone https://github.com/vishalstark512/matching-pmh.git
 cd matching-pmh
 pip install -e ".[dev]"
 pytest

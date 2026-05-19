@@ -5,8 +5,8 @@ type: software
 authors:
   - family-names: Rajput
     given-names: Vishal
-repository-code: "https://github.com/matching-pmh/matching-pmh"
-url: "https://github.com/matching-pmh/matching-pmh"
+repository-code: "https://github.com/vishalstark512/matching-pmh"
+url: "https://github.com/vishalstark512/matching-pmh"
 license: MIT
 version: 0.6.0
 keywords:

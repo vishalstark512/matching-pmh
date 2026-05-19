@@ -1,6 +1,6 @@
 site_name: matching-pmh
 site_description: Reference library for the matching principle (Sigma_task + PMH)
-repo_url: https://github.com/matching-pmh/matching-pmh
+repo_url: https://github.com/vishalstark512/matching-pmh
 theme:
   name: material
   palette:
