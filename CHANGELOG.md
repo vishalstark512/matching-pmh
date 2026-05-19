@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.1
+
+- README: PyPI-safe formatting (no LaTeX); clear intro and D1–D7 table with plain `P(y given x)` and full `SigmaTaskConfig` examples.
+
 ## 0.7.0
 
 - **Lab-grade docs:** Quickstart, Philosophy, 16 walkthroughs (ViT, Whisper, QM9, CodeBERT, D3 aug), examples catalog.

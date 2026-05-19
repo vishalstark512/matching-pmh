@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "matching-pmh"
-version = "0.7.0"
-description = "Architecture-agnostic matching principle: estimate Sigma_task (D1-D7) and train any encoder with matched PMH penalties"
+version = "0.7.1"
+description = "Matching Principle for PyTorch: estimate Sigma_task (D1-D7), matched PMH on any encoder (ResNet, ViT, GNN, LLM)"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
