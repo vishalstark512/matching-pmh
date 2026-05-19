@@ -53,7 +53,7 @@ trainer = PMHTrainer(model, hook="backbone", nuisance="auto", pmh_config=PMHConf
 trainer.fit(train_loader, source_batches=src_loader, target_batches=tgt_loader, epochs=20)
 ```
 
-[Getting started](https://github.com/vishalstark512/matching-pmh/blob/main/docs/GETTING_STARTED.md) · [Choose setup](https://github.com/vishalstark512/matching-pmh/blob/main/docs/CHOOSE_YOUR_SETUP.md) · [Troubleshooting](https://github.com/vishalstark512/matching-pmh/blob/main/docs/TROUBLESHOOTING.md) · [18 walkthroughs](https://github.com/vishalstark512/matching-pmh/blob/main/docs/walkthroughs/index.md)
+[Getting started](https://github.com/vishalstark512/matching-pmh/blob/main/docs/GETTING_STARTED.md) · [Choose setup](https://github.com/vishalstark512/matching-pmh/blob/main/docs/CHOOSE_YOUR_SETUP.md) · [Benchmarks & TDI](https://github.com/vishalstark512/matching-pmh/blob/main/docs/BENCHMARKS.md) · [Troubleshooting](https://github.com/vishalstark512/matching-pmh/blob/main/docs/TROUBLESHOOTING.md) · [18 walkthroughs](https://github.com/vishalstark512/matching-pmh/blob/main/docs/walkthroughs/index.md)
 
 ---
 

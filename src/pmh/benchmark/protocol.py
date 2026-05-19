@@ -37,15 +37,19 @@ class ArmRunResult:
     metric_name: str = "val_accuracy"
     epochs: list[ArmEpochRecord] = field(default_factory=list)
     final: dict[str, float] = field(default_factory=dict)
+    geometry: dict[str, float | None] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        out: dict[str, Any] = {
             "arm": self.arm,
             "metric_name": self.metric_name,
             "val_metric": self.val_metric,
             "final": self.final,
             "epochs": [e.__dict__ for e in self.epochs],
         }
+        if self.geometry:
+            out["geometry"] = self.geometry
+        return out
 
 
 @dataclass

@@ -28,6 +28,7 @@ nav:
       - Adapt your pipeline: ADAPT_YOUR_PIPELINE.md
       - Troubleshooting: TROUBLESHOOTING.md
       - vs CORAL: COMPARE_TO_CORAL.md
+      - Benchmarks & TDI: BENCHMARKS.md
   - Theory: THEORY.md
   - Integration:
       - Hook cookbook: hooks.md

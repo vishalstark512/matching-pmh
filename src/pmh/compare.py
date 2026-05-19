@@ -67,10 +67,11 @@ def compare_arms_sklearn(
     *,
     rank: int = 16,
     include_coral: bool = True,
+    include_geometry: bool = True,
     report_dir: str | Path | None = None,
     **kwargs: Any,
 ) -> BenchmarkResult:
-    """Four-arm compare on frozen NumPy features (optional CORAL)."""
+    """Four-arm compare on frozen NumPy features (optional CORAL + TDI / D_N/D_S)."""
     result = run_sklearn_benchmark(
         x_source,
         y_source,
@@ -78,6 +79,7 @@ def compare_arms_sklearn(
         y_target,
         rank=rank,
         include_coral=include_coral,
+        include_geometry=include_geometry,
         **kwargs,
     )
     if report_dir is not None:

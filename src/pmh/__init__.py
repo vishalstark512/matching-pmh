@@ -5,6 +5,14 @@ from pmh.compare import compare_arms, compare_arms_sklearn
 from pmh.config import PMHConfig, PreflightConfig, SigmaTaskConfig
 from pmh.controls import signal_W_projector, wrong_W_projector
 from pmh.diagnostics import eigengap_ratio
+from pmh.tdi import (
+    TDIReport,
+    directional_drift_numpy,
+    geometry_report,
+    tdi_cls,
+    tdi_feature_isotropic,
+    tdi_layout,
+)
 from pmh.estimate import estimate_from_config, estimate_sigma_task
 from pmh.features import (
     collect_augmentation_deltas,
@@ -68,6 +76,12 @@ __all__ = [
     "signal_W_projector",
     "eigengap_ratio",
     "preflight_eigengap",
+    "tdi_cls",
+    "tdi_layout",
+    "tdi_feature_isotropic",
+    "directional_drift_numpy",
+    "geometry_report",
+    "TDIReport",
     "PreflightStatus",
     "config_from_nuisance",
     "list_nuisance_names",

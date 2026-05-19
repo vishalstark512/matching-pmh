@@ -17,6 +17,7 @@
 | `check_estimator` on `PMHMatcher` (isotropic path) | Shipped |
 | `Pipeline.fit` via `X_target` in `__init__` or metadata routing | Shipped |
 | `GridSearchCV` (`make_pmh_pipeline`, `grid_search_pmh_pipeline`) | Shipped |
+| TDI + sklearn benchmark table (`pmh.tdi`, `examples/21_*`) | Shipped |
 | mkdocstrings API reference + Pages | Backlog |
 
 ## Ideas (backlog)

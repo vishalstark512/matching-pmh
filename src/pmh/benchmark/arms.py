@@ -12,7 +12,6 @@ STANDARD_ARMS: tuple[ArmName, ...] = ("b0", "matched", "wrong_w", "isotropic")
 
 # Task 7B naming (alias map for reports).
 ARM_ALIASES: dict[str, str] = {
-    "b0": "baseline",
     "baseline": "b0",
     "matched": "matched",
     "pmh_matched": "matched",

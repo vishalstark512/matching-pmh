@@ -35,21 +35,28 @@ def benchmark_to_markdown(
         f"Estimator: **{art.get('method', '?')}** · preflight: `{art.get('preflight')}` · "
         f"eigengap: {_fmt(art.get('eigengap'))}",
         "",
-        "| Arm | Label | val metric | task loss | PMH loss |",
-        "|-----|-------|------------|-----------|----------|",
+        "| Arm | Label | val metric | TDI_cls (low) | D_N/D_S | task loss | PMH loss |",
+        "|-----|-------|------------|-----------|---------|-----------|----------|",
     ]
-    order = [normalize_arm(a) for a in STANDARD_ARMS if normalize_arm(a) in arms_data]
+    order: list[str] = []
+    for a in STANDARD_ARMS:
+        key = normalize_arm(a)
+        if key in arms_data and key not in order:
+            order.append(key)
     for a in arms_data:
-        if normalize_arm(a) not in order:
-            order.append(normalize_arm(a))
+        key = normalize_arm(a)
+        if key not in order:
+            order.append(key)
 
     for arm in order:
-        row = arms_data.get(arm, {})
+        row = arms_data.get(arm, arms_data.get(normalize_arm(arm), {}))
         spec = ARM_SPECS.get(arm)  # type: ignore[arg-type]
         label = spec.label if spec else arm
         final = row.get("final") or {}
+        geom = row.get("geometry") or {}
         lines.append(
             f"| `{arm}` | {label} | {_fmt(row.get('val_metric'))} | "
+            f"{_fmt(geom.get('tdi_cls'))} | {_fmt(geom.get('D_N_over_D_S'))} | "
             f"{_fmt(final.get('task_loss'))} | {_fmt(final.get('pmh_loss'))} |"
         )
 
@@ -57,7 +64,10 @@ def benchmark_to_markdown(
     lines.append(
         "- **Matched** should beat **B0** on deployment-relevant `val_metric` when the nuisance story is correct."
     )
-    lines.append("- **Wrong-W** and **isotropic** should not beat **matched** (Lemma C).")
+    lines.append(
+        "- **TDI_cls** (class-layout) and **D_N/D_S** track geometry separately from accuracy (paper §6)."
+    )
+    lines.append("- **Wrong-W** and **isotropic** should not beat **matched** on both accuracy and geometry (Lemma C).")
     lines.append("- If only matched wins vs B0 but wrong-W also wins, the gain may be generic regularization.")
 
     notes = data.get("notes") or []
