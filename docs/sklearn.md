@@ -38,10 +38,44 @@ matcher.fit(x_source, y_source, x_target, y_target)
 `matcher.artifact_` is a `SigmaTaskEstimate` for PyTorch training with `PMHLoss`.
 
 ```python
+from pmh import (
+    suggest_nuisance,
+    compare_arms_sklearn,
+    make_pmh_pipeline,
+    default_pmh_param_grid,
+    grid_search_pmh_pipeline,
+)
+from sklearn.model_selection import GridSearchCV
+
+# GridSearchCV (target domain fixed on the matcher)
+search = grid_search_pmh_pipeline(
+    x_source, y_source, x_target,
+    param_grid=default_pmh_param_grid(rank_grid=(8, 16, 32)),
+    cv=5,
+    return_search=True,
+)
+print(search.best_params_, search.best_score_)
+best_pipe = search.best_estimator_
+
+# Or build the pipeline yourself
+pipe = make_pmh_pipeline(x_target, nuisance="domain_shift")
+GridSearchCV(pipe, {"pmh__rank": [8, 16, 32]}, cv=5).fit(x_source, y_source)
+```
+
+```python
 from pmh import suggest_nuisance, compare_arms_sklearn, tune_sklearn_matcher
 
 print(suggest_nuisance(has_target_labels=True, has_target_domain=True))
 compare_arms_sklearn(x_src, y_src, x_tgt, y_tgt, rank=16, report_dir="results/run1")
+
+# Same grid via helper flag
+tune_sklearn_matcher(
+    x_src, y_src, x_tgt, y_tgt,
+    scorer=None,
+    use_gridsearchcv=True,
+    nuisance="domain_shift",
+    rank_grid=(8, 16, 32),
+)
 ```
 
 Use `nuisance="auto"` on `PMHMatcher` when unsure (see `suggest_nuisance` flags).

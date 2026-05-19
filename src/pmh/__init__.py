@@ -33,6 +33,12 @@ from pmh.data_context import DataContext
 from pmh.multi import MultiPMHLoss
 from pmh.trainer import PMHTrainer, build_hybrid_trainer
 from pmh.training import PMHLoss
+from pmh.sklearn_pipeline import (
+    default_pmh_param_grid,
+    grid_search_pmh_pipeline,
+    make_pmh_pipeline,
+    tune_result_from_grid_search,
+)
 from pmh.tune import TuneResult, tune_pmh_config, tune_sklearn_matcher
 
 __all__ = [
@@ -82,6 +88,10 @@ __all__ = [
     "tune_sklearn_matcher",
     "tune_pmh_config",
     "TuneResult",
+    "make_pmh_pipeline",
+    "default_pmh_param_grid",
+    "grid_search_pmh_pipeline",
+    "tune_result_from_grid_search",
 ]
 
 __version__ = "1.2.0"

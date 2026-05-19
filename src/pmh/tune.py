@@ -26,17 +26,37 @@ def tune_sklearn_matcher(
     x_target: np.ndarray,
     y_target: np.ndarray,
     *,
-    scorer: Callable[[np.ndarray, np.ndarray], float],
+    scorer: Callable[[np.ndarray, np.ndarray], float] | None = None,
     nuisance: str = "subspace",
     rank_grid: Iterable[int] = (4, 8, 16, 32),
     n_folds: int = 3,
     seed: int = 0,
+    use_gridsearchcv: bool = False,
 ) -> TuneResult:
-    """Grid search ``rank`` for :class:`PMHMatcher` + downstream ``scorer(x_proj, y)``.
+    """Grid search ``rank`` for :class:`PMHMatcher` + downstream classifier.
 
-    ``scorer`` should return a metric to **maximize** (e.g. validation accuracy).
-    Uses simple holdout splits on source for speed.
+    If ``scorer`` is ``None`` and ``use_gridsearchcv=True`` (requires sklearn), uses
+    :func:`pmh.sklearn_pipeline.grid_search_pmh_pipeline` with accuracy scoring.
+    If ``scorer`` is provided, runs a manual K-fold loop on projected features (legacy).
     """
+    if scorer is None and use_gridsearchcv:
+        from pmh.sklearn_pipeline import grid_search_pmh_pipeline
+
+        return grid_search_pmh_pipeline(
+            x_source,
+            y_source,
+            x_target,
+            y_target=y_target,
+            nuisance=nuisance,
+            param_grid={"pmh__rank": list(rank_grid)},
+            cv=n_folds,
+        )
+
+    if scorer is None:
+        raise ValueError(
+            "Provide scorer=callable or use_gridsearchcv=True for sklearn GridSearchCV."
+        )
+
     from sklearn.model_selection import KFold
 
     ranks = list(rank_grid)

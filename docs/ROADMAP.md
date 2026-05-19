@@ -16,7 +16,7 @@
 |------|--------|
 | `check_estimator` on `PMHMatcher` (isotropic path) | Shipped |
 | `Pipeline.fit` via `X_target` in `__init__` or metadata routing | Shipped |
-| `GridSearchCV` integration | Backlog |
+| `GridSearchCV` (`make_pmh_pipeline`, `grid_search_pmh_pipeline`) | Shipped |
 | mkdocstrings API reference + Pages | Backlog |
 
 ## Ideas (backlog)
