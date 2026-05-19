@@ -1,28 +1,32 @@
-# matching-pmh
+# matching-pmh documentation
 
-Estimate **$\Sigma_{\mathrm{task}}$** (deployment nuisance covariance) and train with **matched PMH** penalties.
+This package implements the **matching principle** for machine learning:
 
-Companion to the paper *The Matching Principle* — this package is a **separate repository** from the manuscript experiments.
+1. **Estimate** \(\Sigma_{\mathrm{task}}\) — covariance of label-preserving deployment nuisance.
+2. **Train** with a matched PMH penalty on representations \(h = \phi(x)\).
+
+It is the public, installable companion to the Grand Unification research line (theory + thirteen empirical blocks). The paper proves *when* range matching is necessary; this library shows *how* to estimate and train in practice.
+
+## Start here
+
+| I want to… | Read |
+|------------|------|
+| Understand what this is for | [README](../README.md) on GitHub / PyPI |
+| Pick D1 vs D4 vs D7 for my task | [Nuisance cookbook](nuisance_types.md) |
+| Run a job from JSON | [CLI](cli.md) |
+| Wire PyTorch training | [Training](training.md) |
+| Use Hugging Face / DPO | [HF integration](integrations-hf.md), example `11_dpo_lora_style_pmh.py` |
+| See symptom → method | [Getting started](getting-started.md) |
 
 ## Install
 
 ```bash
 pip install matching-pmh
-# or from source
-pip install -e ".[dev,sklearn,docs]"
+pip install "matching-pmh[hf]"      # language-model style (D7)
+pip install "matching-pmh[hf-lora]" # DPO + LoRA example
 ```
 
-## Minimal example
+## Links
 
-```python
-from pmh import SigmaTaskConfig, estimate_from_config, PMHLoss, PMHConfig
-import torch
-
-artifact = estimate_from_config(
-    SigmaTaskConfig.for_domain(rank=32),
-    source_feats, target_feats,
-)
-pmh = PMHLoss(artifact, PMHConfig(weight=0.3, cap_ratio=0.3))
-```
-
-See [Getting started](getting-started.md) and [Estimators](estimators/index.md).
+- PyPI: https://pypi.org/project/matching-pmh/
+- Source: https://github.com/vishalstark512/matching-pmh

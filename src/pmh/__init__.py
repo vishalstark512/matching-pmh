@@ -31,7 +31,7 @@ __all__ = [
     "PreflightStatus",
 ]
 
-__version__ = "0.6.0"
+__version__ = "0.6.1"
 
 
 def __getattr__(name: str):
