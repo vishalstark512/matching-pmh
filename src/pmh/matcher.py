@@ -15,10 +15,13 @@ from pmh.sklearn_match import project_from_sigma, project_onto_complement
 
 try:
     from sklearn.base import BaseEstimator, TransformerMixin
+    from sklearn.utils.validation import check_array, check_is_fitted, validate_data
 
     _SklearnBase = BaseEstimator
     _SklearnMixin = TransformerMixin
+    _HAS_SKLEARN = True
 except ImportError:
+    _HAS_SKLEARN = False
 
     class _SklearnBase:  # type: ignore[no-redef]
         pass
@@ -26,9 +29,40 @@ except ImportError:
     class _SklearnMixin:  # type: ignore[no-redef]
         pass
 
+    def check_array(X, *args, **kwargs):  # type: ignore[misc]
+        return np.asarray(X)
 
-class PMHMatcher(_SklearnBase, _SklearnMixin):
+    def check_is_fitted(estimator, attributes=None):  # type: ignore[misc]
+        if not hasattr(estimator, "artifact_"):
+            raise RuntimeError("Call fit() before transform().")
+
+    def validate_data(  # type: ignore[misc]
+        self,
+        X,
+        y=None,
+        *,
+        reset=True,
+        validate_separately=False,
+        skip_check_array=False,
+        **check_params,
+    ):
+        X = np.asarray(X, dtype=np.float32)
+        if reset:
+            self.n_features_in_ = X.shape[1]
+        return X, y
+
+
+class PMHMatcher(_SklearnMixin, _SklearnBase):
     """Estimate deployment nuisance geometry and optionally project features.
+
+    sklearn contract
+    ----------------
+    * ``fit(X, y=None)`` — standard entry point; for D4 pass ``X_target`` via
+      ``__init__``, ``fit(..., X_target=...)``, or metadata routing
+      ``pipe.fit(X, y, pmh__X_target=xt)`` after ``set_fit_request(X_target=True)``.
+    * ``transform(X)`` — project onto complement of estimated nuisance subspace.
+    * ``get_params`` / ``set_params`` / ``clone`` — compatible with
+      :class:`~sklearn.pipeline.Pipeline` and :class:`~sklearn.model_selection.GridSearchCV`.
 
     Parameters
     ----------
@@ -44,13 +78,20 @@ class PMHMatcher(_SklearnBase, _SklearnMixin):
         For D5 compositional blocks.
     seed : int
         D1 class-pair sampling seed.
+    X_target, y_target : array, optional
+        Target-domain data stored at construction (enables ``Pipeline.fit(X, y)``
+        without metadata routing).
+    has_source_labels, has_target_labels, has_target_domain, ...
+        Flags for ``nuisance="auto"``.
 
     Attributes
     ----------
     artifact_ : SigmaTaskEstimate
         Fitted nuisance estimate (use with :class:`PMHLoss` in PyTorch).
-    w_ : ndarray or None
+    w_ : ndarray
         D1 subspace basis ``[d, r]`` when applicable.
+    n_features_in_ : int
+        Number of features seen during ``fit``.
 
     Examples
     --------
@@ -59,7 +100,7 @@ class PMHMatcher(_SklearnBase, _SklearnMixin):
     >>> rng = np.random.default_rng(0)
     >>> xs = rng.standard_normal((100, 20), dtype=np.float32)
     >>> xt = xs + 0.3
-    >>> m = PMHMatcher(nuisance="domain_shift", rank=8).fit(xs, xt)
+    >>> m = PMHMatcher(nuisance="domain_shift", rank=8).fit(xs, X_target=xt)
     >>> m.transform(xs).shape
     (100, 20)
     """
@@ -75,20 +116,25 @@ class PMHMatcher(_SklearnBase, _SklearnMixin):
         nuisance_indices: list[int] | None = None,
         seed: int = 0,
         n_pairs_per_class: int = 100,
+        X_target: np.ndarray | None = None,
+        y_target: np.ndarray | None = None,
         has_source_labels: bool = True,
         has_target_labels: bool = False,
         has_target_domain: bool = True,
         has_augmentation_modes: bool = False,
         has_style_pairs: bool = False,
     ) -> None:
-        self.nuisance = resolve_nuisance_arg(
-            nuisance,
-            has_source_labels=has_source_labels,
-            has_target_labels=has_target_labels,
-            has_target_domain=has_target_domain,
-            has_augmentation_modes=has_augmentation_modes,
-            has_style_pairs=has_style_pairs,
-        )
+        if isinstance(nuisance, str):
+            self.nuisance = resolve_nuisance_arg(
+                nuisance,
+                has_source_labels=has_source_labels,
+                has_target_labels=has_target_labels,
+                has_target_domain=has_target_domain,
+                has_augmentation_modes=has_augmentation_modes,
+                has_style_pairs=has_style_pairs,
+            )
+        else:
+            self.nuisance = nuisance
         self.rank = rank
         self.shrinkage = shrinkage
         self.dim = dim
@@ -96,11 +142,17 @@ class PMHMatcher(_SklearnBase, _SklearnMixin):
         self.nuisance_indices = nuisance_indices
         self.seed = seed
         self.n_pairs_per_class = n_pairs_per_class
-        self.artifact_: SigmaTaskEstimate | None = None
-        self.w_: np.ndarray | None = None
-        self._transform_rank: int | None = None
+        self.X_target = X_target
+        self.y_target = y_target
+        self.has_source_labels = has_source_labels
+        self.has_target_labels = has_target_labels
+        self.has_target_domain = has_target_domain
+        self.has_augmentation_modes = has_augmentation_modes
+        self.has_style_pairs = has_style_pairs
 
     def _resolved_method(self) -> str:
+        if not isinstance(self.nuisance, str):
+            raise ValueError(f"nuisance must be a string, got {type(self.nuisance).__name__}")
         return resolve_method(self.nuisance)
 
     def _build_config(self, *, dim: int | None = None, n_samples: int = 0) -> SigmaTaskConfig:
@@ -117,81 +169,153 @@ class PMHMatcher(_SklearnBase, _SklearnMixin):
             nuisance_indices=self.nuisance_indices,
         )
 
+    @staticmethod
+    def _coerce_target_features(y: Any, n_features: int) -> np.ndarray | None:
+        """``fit(xs, xt)`` shorthand: second argument is unlabeled target features."""
+        if y is None:
+            return None
+        arr = np.asarray(y)
+        if arr.ndim == 2 and arr.shape[1] == n_features:
+            return arr.astype(np.float32, copy=False)
+        return None
+
+    def _validate_X(self, X: np.ndarray, *, allow_3d: bool = False) -> np.ndarray:
+        if _HAS_SKLEARN and not allow_3d:
+            return check_array(
+                X,
+                dtype=[np.float64, np.float32],
+                ensure_2d=True,
+                accept_sparse=False,
+            )
+        x = np.asarray(X, dtype=np.float32)
+        if not allow_3d and x.ndim != 2:
+            raise ValueError("X must be 2D [n_samples, n_features] (D6: [N, T, d])")
+        return x
+
+    def _resolve_fit_domains(
+        self,
+        X: np.ndarray,
+        y: np.ndarray | None,
+        *,
+        X_target: np.ndarray | None,
+        y_target: np.ndarray | None,
+    ) -> tuple[np.ndarray, np.ndarray | None, np.ndarray | None, np.ndarray | None]:
+        method = self._resolved_method()
+        allow_3d = method == "D6"
+        x_src = self._validate_X(X, allow_3d=allow_3d)
+
+        xt = X_target if X_target is not None else self.X_target
+        yt = y_target if y_target is not None else self.y_target
+        ys = y
+
+        # fit(xs, xt) positional shorthand for D4
+        if xt is None:
+            coerced = self._coerce_target_features(y, x_src.shape[1])
+            if coerced is not None and method == "D4":
+                xt = coerced
+                ys = None
+
+        if xt is not None:
+            xt = np.asarray(xt, dtype=np.float32)
+        if ys is not None:
+            ys = np.asarray(ys)
+        if yt is not None:
+            yt = np.asarray(yt)
+
+        return x_src, ys, xt, yt
+
     def fit(
         self,
-        X_source: np.ndarray,
-        y_source: np.ndarray | None = None,
+        X: np.ndarray,
+        y: np.ndarray | None = None,
+        *args: np.ndarray,
         X_target: np.ndarray | None = None,
         y_target: np.ndarray | None = None,
-        *,
         aug_deltas: np.ndarray | None = None,
     ) -> PMHMatcher:
-        """Estimate ``Sigma_task`` from source/target feature matrices.
+        """Estimate ``Sigma_task`` from source (and optional target) feature matrices.
 
-        D4 (domain shift): ``fit(X_source, X_target=...)`` or ``fit(X_source, None, X_target)``.
-        D1 (subspace): labels required on both domains.
-        D2 (isotropic): ``fit(X_source)`` infers ``dim`` from columns; or set ``dim=`` in ``__init__``.
-        D5: pass compositional features as ``X_source`` with ``nuisance_indices``.
-        D3: ``aug_deltas=`` with shape ``[K, d]`` or ``[K, N, d]``.
-        D6: ``X_source`` with shape ``[N, T, d]``.
+        Standard sklearn: ``fit(X, y=None)`` with ``X_target`` / ``y_target`` in
+        ``__init__``, as keyword arguments, or via metadata routing.
+
+        Legacy positional: ``fit(X, y, X_target)`` or ``fit(X, y, X_target, y_target)``;
+        ``fit(X, X_target)`` when the second argument is a 2D feature matrix (D4).
         """
-        method = self._resolved_method()
-        x_src = np.asarray(X_source, dtype=np.float32)
-        if method != "D6" and x_src.ndim != 2:
-            raise ValueError("X_source must be 2D [n_samples, n_features] (D6: [N, T, d])")
+        if len(args) == 1 and X_target is None:
+            X_target = args[0]
+        elif len(args) == 2:
+            if X_target is None:
+                X_target = args[0]
+            if y_target is None:
+                y_target = args[1]
+        elif len(args) > 2:
+            raise TypeError(
+                "PMHMatcher.fit accepts at most two extra positional arguments "
+                "(X_target, y_target). Use keyword arguments."
+            )
 
-        # fit(X_source, X_target) shorthand for D4
-        if (
-            X_target is None
-            and y_source is not None
-            and method == "D4"
-            and np.asarray(y_source).ndim == 2
-            and np.asarray(y_source).shape[1] == x_src.shape[1]
-        ):
-            X_target = y_source
-            y_source = None
+        x_src, y_source, x_tgt, y_tgt = self._resolve_fit_domains(
+            X, y, X_target=X_target, y_target=y_target
+        )
+        method = self._resolved_method()
+        if method != "D6" and _HAS_SKLEARN:
+            validated = validate_data(
+                self,
+                x_src,
+                y=y_source,
+                reset=True,
+                accept_sparse=False,
+                dtype=[np.float64, np.float32],
+            )
+            if y_source is not None:
+                x_src, y_source = validated
+            else:
+                x_src = validated
+        elif method != "D6":
+            self.n_features_in_ = int(x_src.shape[1])
 
         if method == "D2":
-            dim = self.dim or x_src.shape[1]
+            # Always match feature dimension of X (sklearn check_estimator varies d).
+            dim = int(x_src.shape[1]) if x_src.ndim == 2 else int(self.dim or 10)
             cfg = self._build_config(dim=dim)
             self.artifact_ = estimate_sigma_task_numpy(config=cfg)
             self._transform_rank = min(self.rank or 8, dim)
             return self
 
         if method == "D4":
-            if X_target is None:
+            if x_tgt is None:
                 raise ValueError(
-                    "domain_shift (D4) requires X_target. "
-                    "Call fit(X_source, X_target=xt) or fit(X_source, None, X_target)."
+                    "domain_shift (D4) requires target-domain features. Pass "
+                    "X_target= in fit(), set PMHMatcher(X_target=...) in __init__, "
+                    "or use metadata routing: "
+                    "matcher.set_fit_request(X_target=True); "
+                    "pipe.fit(X, y, pmh__X_target=xt)."
                 )
-            x_tgt = np.asarray(X_target, dtype=np.float32)
             cfg = self._build_config(dim=x_src.shape[1], n_samples=len(x_src) + len(x_tgt))
             self.artifact_ = estimate_sigma_task_numpy(x_src, x_tgt, config=cfg)
             self._transform_rank = cfg.rank
             return self
 
         if method == "D1":
-            if y_source is None or X_target is None or y_target is None:
+            if y_source is None or x_tgt is None or y_tgt is None:
                 raise ValueError(
-                    "subspace (D1) requires fit(X_source, y_source, X_target, y_target)"
+                    "subspace (D1) requires fit(X, y, X_target=xt, y_target=yt) "
+                    "or y_target= in __init__ with labels on both domains."
                 )
-            y_s = np.asarray(y_source)
-            y_t = np.asarray(y_target)
-            x_tgt = np.asarray(X_target, dtype=np.float32)
             cfg = self._build_config(dim=x_src.shape[1], n_samples=len(x_src))
             r = cfg.rank
             assert r is not None
             self.w_ = estimate_cross_domain_subspace_numpy(
                 x_src,
-                y_s,
+                y_source,
                 x_tgt,
-                y_t,
+                y_tgt,
                 rank=r,
                 seed=self.seed,
                 n_pairs_per_class=self.n_pairs_per_class,
             )
             self.artifact_ = estimate_sigma_task_numpy(
-                x_src, y_s, x_tgt, y_t, config=cfg
+                x_src, y_source, x_tgt, y_tgt, config=cfg
             )
             self._transform_rank = r
             return self
@@ -221,7 +345,7 @@ class PMHMatcher(_SklearnBase, _SklearnMixin):
 
         if method == "D6":
             if x_src.ndim != 3:
-                raise ValueError("temporal (D6): X_source must be [N, T, d] residuals or sequences")
+                raise ValueError("temporal (D6): X must be [N, T, d] residuals or sequences")
             import torch
             from pmh.estimate import estimate_from_config
 
@@ -237,10 +361,22 @@ class PMHMatcher(_SklearnBase, _SklearnMixin):
 
     def transform(self, X: np.ndarray) -> np.ndarray:
         """Project onto complement of estimated nuisance subspace (optional preprocessing)."""
-        if self.artifact_ is None:
-            raise RuntimeError("Call fit() before transform().")
-        x = np.asarray(X, dtype=np.float32)
-        if self.w_ is not None:
+        check_is_fitted(self, "artifact_")
+        method = self._resolved_method()
+        allow_3d = method == "D6"
+        if allow_3d:
+            x = self._validate_X(X, allow_3d=True)
+        elif _HAS_SKLEARN:
+            x = validate_data(
+                self,
+                X,
+                reset=False,
+                accept_sparse=False,
+                dtype=[np.float64, np.float32],
+            )
+        else:
+            x = self._validate_X(X, allow_3d=False)
+        if getattr(self, "w_", None) is not None:
             return project_onto_complement(x, self.w_)
         sigma = self.artifact_.sigma.detach().cpu().numpy()
         r = self._transform_rank or self.rank or min(32, sigma.shape[0] // 4)
@@ -248,14 +384,12 @@ class PMHMatcher(_SklearnBase, _SklearnMixin):
 
     def fit_transform(
         self,
-        X_source: np.ndarray,
-        y_source: np.ndarray | None = None,
-        X_target: np.ndarray | None = None,
-        y_target: np.ndarray | None = None,
+        X: np.ndarray,
+        y: np.ndarray | None = None,
+        *args: np.ndarray,
         **kwargs: Any,
     ) -> np.ndarray:
-        self.fit(X_source, y_source, X_target, y_target, **kwargs)
-        return self.transform(X_source)
+        return self.fit(X, y, *args, **kwargs).transform(X)
 
     def get_params(self, deep: bool = True) -> dict[str, Any]:
         return {
@@ -267,11 +401,19 @@ class PMHMatcher(_SklearnBase, _SklearnMixin):
             "nuisance_indices": self.nuisance_indices,
             "seed": self.seed,
             "n_pairs_per_class": self.n_pairs_per_class,
+            "X_target": self.X_target,
+            "y_target": self.y_target,
+            "has_source_labels": self.has_source_labels,
+            "has_target_labels": self.has_target_labels,
+            "has_target_domain": self.has_target_domain,
+            "has_augmentation_modes": self.has_augmentation_modes,
+            "has_style_pairs": self.has_style_pairs,
         }
 
     def set_params(self, **params: Any) -> PMHMatcher:
+        known = set(self.get_params())
         for key, value in params.items():
-            if not hasattr(self, key):
+            if key not in known:
                 raise ValueError(f"Unknown parameter: {key}")
             setattr(self, key, value)
         return self

@@ -81,22 +81,12 @@ def test_matcher_auto_nuisance():
     assert m.artifact_.method == "D4"
 
 
-def test_sklearn_estimator_checks_if_available():
-    sklearn = pytest.importorskip("sklearn")
-    from sklearn.utils.estimator_checks import check_estimator
-
-    # Minimal check: fit/transform roundtrip on toy D4 data
-    rng = np.random.default_rng(0)
+def test_legacy_four_arg_fit():
+    rng = np.random.default_rng(5)
     xs = rng.standard_normal((60, 12)).astype(np.float32)
-    xt = xs + 0.2
-
-    class _Matcher(PMHMatcher):
-        def fit(self, X, y=None):  # type: ignore[override]
-            return super().fit(X, X_target=xt)
-
-    # check_estimator is heavy; run a subset via manual clone
-    from sklearn.base import clone
-
-    est = clone(PMHMatcher(nuisance="domain_shift", rank=4))
-    est.fit(xs, X_target=xt)
-    est.transform(xs[:5])
+    y = rng.integers(0, 3, 60)
+    xt = xs + 0.1
+    yt = y.copy()
+    m = PMHMatcher(nuisance="subspace", rank=4, seed=0)
+    m.fit(xs, y, xt, yt)
+    assert m.w_ is not None

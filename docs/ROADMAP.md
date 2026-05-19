@@ -10,6 +10,15 @@
 | Hook adapters + gallery | Shipped |
 | vs CORAL guide | Shipped |
 
+## In progress (sklearn-class)
+
+| Item | Status |
+|------|--------|
+| `check_estimator` on `PMHMatcher` (isotropic path) | Shipped |
+| `Pipeline.fit` via `X_target` in `__init__` or metadata routing | Shipped |
+| `GridSearchCV` integration | Backlog |
+| mkdocstrings API reference + Pages | Backlog |
+
 ## Ideas (backlog)
 
 - Colab notebook linked from gallery

@@ -14,17 +14,25 @@ from sklearn.linear_model import LogisticRegression
 
 # Domain shift on frozen features (D4)
 matcher = PMHMatcher(nuisance="domain_shift", rank=16)
-matcher.fit(x_source, x_target)
+matcher.fit(x_source, X_target=x_target)
 
-# Or class-aligned subspace (D1)
-matcher = PMHMatcher(nuisance="subspace", rank=16)
-matcher.fit(x_source, y_source, x_target, y_target)
-
+# Pipeline: store target domain on the matcher (or use metadata routing)
 pipe = Pipeline([
-    ("pmh", matcher),
+    ("pmh", PMHMatcher(nuisance="domain_shift", rank=16, X_target=x_target)),
     ("clf", LogisticRegression(max_iter=500)),
 ])
-pipe.fit(x_train, y_train)
+pipe.fit(x_source, y_source)
+
+# Metadata routing on the matcher (sklearn >= 1.4; enable routing first):
+import sklearn
+sklearn.set_config(enable_metadata_routing=True)
+pmh = PMHMatcher(nuisance="domain_shift", rank=16)
+pmh.set_fit_request(X_target=True)
+pmh.fit(x_source, y_source, X_target=x_target)
+
+# Class-aligned subspace (D1)
+matcher = PMHMatcher(nuisance="subspace", rank=16)
+matcher.fit(x_source, y_source, x_target, y_target)
 ```
 
 `matcher.artifact_` is a `SigmaTaskEstimate` for PyTorch training with `PMHLoss`.
