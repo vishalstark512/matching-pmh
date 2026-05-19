@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "matching-pmh"
-version = "0.6.1"
-description = "Estimate deployment nuisance covariance (D1-D7) and train with matched PMH penalties for robust vision, time series, and LLM alignment"
+version = "0.6.2"
+description = "Architecture-agnostic matching principle: estimate Sigma_task (D1-D7) and train any encoder with matched PMH penalties"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"

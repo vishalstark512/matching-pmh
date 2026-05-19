@@ -11,7 +11,7 @@ It is the public, installable companion to the Grand Unification research line (
 
 | I want to… | Read |
 |------------|------|
-| Understand what this is for | [README](../README.md) on GitHub / PyPI |
+| Understand the principle and use it on **my** model | [THEORY.md](THEORY.md) then [README](../README.md) |
 | Pick D1 vs D4 vs D7 for my task | [Nuisance cookbook](nuisance_types.md) |
 | Run a job from JSON | [CLI](cli.md) |
 | Wire PyTorch training | [Training](training.md) |

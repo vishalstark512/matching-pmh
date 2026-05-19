@@ -8,7 +8,7 @@ authors:
 repository-code: "https://github.com/vishalstark512/matching-pmh"
 url: "https://github.com/vishalstark512/matching-pmh"
 license: MIT
-version: 0.6.1
+version: 0.6.2
 keywords:
   - robustness
   - domain-adaptation

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.2
+
+- README and [docs/THEORY.md](docs/THEORY.md): matching principle for **any task / any architecture**; five-step recipe; falsification controls; explicit scope limits.
+
 ## 0.6.1
 
 - **README / PyPI description:** plain-language problem statement, workflow, D1–D7 decision table, and per-domain use cases (vision, D5, D6, D7/LLM, CLI, falsification arms).

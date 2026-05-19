@@ -8,6 +8,7 @@ theme:
       primary: indigo
 nav:
   - Home: index.md
+  - Theory and five-step recipe: THEORY.md
   - Getting started: getting-started.md
   - Nuisance cookbook (D1-D7): nuisance_types.md
   - CLI (pmh-train): cli.md
