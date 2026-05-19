@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.0
+
+- **`PMHMatcher`**: sklearn-style `fit` / `transform` / `get_params` on NumPy features (D1, D2, D4, D5).
+- **`nuisance=` registry**: `domain_shift`, `subspace`, `isotropic`, … → D1–D7.
+- Docs: [ROADMAP.md](docs/ROADMAP.md), updated [sklearn.md](docs/sklearn.md).
+
 ## 0.7.2
 
 - **Pipeline-first docs:** [ADAPT_YOUR_PIPELINE.md](docs/ADAPT_YOUR_PIPELINE.md), walkthrough 17 (compare arms on your model).

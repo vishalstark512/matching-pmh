@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "matching-pmh"
-version = "0.7.2"
+version = "0.8.0"
 description = "Architecture-agnostic matching principle: estimate Sigma_task (D1-D7) and train any encoder with matched PMH penalties"
 readme = "README.md"
 license = "MIT"

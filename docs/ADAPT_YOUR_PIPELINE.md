@@ -29,6 +29,17 @@ YOUR dataloader(s)  →  YOUR encoder  →  h  →  YOUR task loss
 
 ### Phase A — estimate once (or when deployment shifts)
 
+**Frozen NumPy features (sklearn path):**
+
+```python
+from pmh import PMHMatcher
+
+artifact = PMHMatcher(nuisance="domain_shift", rank=32).fit(h_source, h_target).artifact_
+artifact.save("checkpoints/sigma_task")
+```
+
+**PyTorch hook `h`:**
+
 ```python
 from pmh import SigmaTaskConfig, collect_features, estimate_from_config
 

@@ -8,18 +8,28 @@ python examples/06_office31_sklearn.py
 ```
 
 ```python
-from pmh.numpy_api import estimate_sigma_task_numpy
-from pmh.sklearn_match import MatchedSubspaceProjector
+from pmh import PMHMatcher
+from sklearn.pipeline import Pipeline
+from sklearn.linear_model import LogisticRegression
 
-artifact = estimate_sigma_task_numpy(
-    x_src, y_src, x_tgt, y_tgt,
-    config=SigmaTaskConfig.for_subspace(rank=16),
-)
-proj = MatchedSubspaceProjector(rank=16).fit(x_src, y_src, x_tgt, y_tgt)
-x_proj = proj.transform(x_src)
+# Domain shift on frozen features (D4)
+matcher = PMHMatcher(nuisance="domain_shift", rank=16)
+matcher.fit(x_source, x_target)
+
+# Or class-aligned subspace (D1)
+matcher = PMHMatcher(nuisance="subspace", rank=16)
+matcher.fit(x_source, y_source, x_target, y_target)
+
+pipe = Pipeline([
+    ("pmh", matcher),
+    ("clf", LogisticRegression(max_iter=500)),
+])
+pipe.fit(x_train, y_train)
 ```
 
-Use with `LogisticRegression`, `SVC`, etc. on projected features.
+`matcher.artifact_` is a `SigmaTaskEstimate` for PyTorch training with `PMHLoss`.
+
+Legacy helper: `MatchedSubspaceProjector` (D1 only) remains in `pmh.sklearn_match`.
 
 ## CORAL baseline
 

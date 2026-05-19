@@ -9,8 +9,14 @@ from pmh.features import collect_features, paired_batches
 from pmh.penalty import cap_pmh_term, pmh_penalty, pmh_penalty_feature_diff, pmh_penalty_on_rep
 from pmh.preflight import PreflightStatus, preflight_eigengap
 from pmh.training import PMHLoss
+from pmh.matcher import PMHMatcher
+from pmh.nuisance import config_from_nuisance, list_nuisance_names, resolve_method
 
 __all__ = [
+    "PMHMatcher",
+    "config_from_nuisance",
+    "list_nuisance_names",
+    "resolve_method",
     "SigmaTaskConfig",
     "PMHConfig",
     "PreflightConfig",
@@ -31,7 +37,7 @@ __all__ = [
     "PreflightStatus",
 ]
 
-__version__ = "0.7.2"
+__version__ = "0.8.0"
 
 
 def __getattr__(name: str):
