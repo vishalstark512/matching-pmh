@@ -51,7 +51,8 @@ twine check dist\*
 
 $target = if ($TestPyPI) { "TestPyPI" } else { "PyPI (production)" }
 Write-Host ""
-Write-Host "Uploading matching-pmh 0.6.0 to $target ..." -ForegroundColor Cyan
+$ver = (python -c "import pathlib,re; t=pathlib.Path('pyproject.toml').read_text(); print(re.search(r'version\s*=\s*\"([^\"]+)\"', t).group(1))")
+Write-Host "Uploading matching-pmh $ver to $target ..." -ForegroundColor Cyan
 if ($TestPyPI) {
     twine upload --repository testpypi dist\*
 } else {
@@ -61,9 +62,9 @@ if ($TestPyPI) {
 Write-Host ""
 Write-Host "Published successfully." -ForegroundColor Green
 if ($TestPyPI) {
-    Write-Host '  pip install -i https://test.pypi.org/simple/ matching-pmh==0.6.0'
+    Write-Host "  pip install -i https://test.pypi.org/simple/ matching-pmh==$ver"
 } else {
-    Write-Host '  pip install matching-pmh==0.6.0'
+    Write-Host "  pip install matching-pmh==$ver"
     Write-Host '  pmh-train list-methods'
     Write-Host '  https://pypi.org/project/matching-pmh/'
 }
