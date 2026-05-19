@@ -17,6 +17,7 @@ pip install matching-pmh torch
 | [01_domain_shift_d4.py](01_domain_shift_d4.py) | D4 | Minimal backbone + domain shift |
 | [02_save_load_artifact.py](02_save_load_artifact.py) | — | Artifact I/O |
 | [04_falsification_controls.py](04_falsification_controls.py) | * | matched / wrong-W / isotropic |
+| [20_compare_training_arms.py](20_compare_training_arms.py) | * | Four-arm compare on your model (template) |
 | [minimal_loop.py](minimal_loop.py) | D4 | Shortest train snippet |
 
 ---

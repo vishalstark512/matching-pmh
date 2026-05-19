@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.2
+
+- **Pipeline-first docs:** [ADAPT_YOUR_PIPELINE.md](docs/ADAPT_YOUR_PIPELINE.md), walkthrough 17 (compare arms on your model).
+- **`pmh.benchmark`:** `run_benchmark_protocol`, `run_sklearn_benchmark`, `write_benchmark_report`; CLI `pmh-train benchmark`.
+- **Example:** `20_compare_training_arms.py` (B0 / matched / wrong-W / isotropic template).
+- **Fix:** cap wrong-W rank to representation dimension `d`.
+
 ## 0.7.1
 
 - README: PyPI-safe formatting (no LaTeX); clear intro and D1–D7 table with plain `P(y given x)` and full `SigmaTaskConfig` examples.

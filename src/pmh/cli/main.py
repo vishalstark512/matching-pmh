@@ -29,6 +29,7 @@ def _cmd_list_methods(_: argparse.Namespace) -> int:
         req = ", ".join(spec.required_data) or "(config only)"
         print(f"{spec.method:<6} {spec.name:<28} {spec.typical_tasks:<20} {req}")
     print("\nUse: pmh-train estimate --config job.json")
+    print("       pmh-train benchmark --config examples/configs/benchmark_sklearn.json")
     print("Samples: examples/configs/")
     return 0
 
@@ -67,7 +68,7 @@ def _estimate_from_job(job: dict[str, Any]) -> Any:
 
     elif method == "D3":
         aug = _resolve_features(data, "aug_deltas", "aug_npy")
-        artifact = estimate_from_config(cfg, aug)
+        artifact = estimate_from_config(cfg, aug_deltas=aug)
 
     elif method == "D4":
         src = _resolve_features(data, "source_features", "source_npy")
@@ -92,61 +93,28 @@ def _estimate_from_job(job: dict[str, Any]) -> Any:
 
     elif method == "D5":
         feats = _resolve_features(data, "features", "features_npy")
-        cfg.nuisance_indices = list(data["nuisance_indices"])
+        if cfg.nuisance_indices is None:
+            raise ValueError("D5 job needs estimator.nuisance_indices")
         artifact = estimate_from_config(cfg, feats)
 
     elif method == "D6":
-        if "sequences_npy" in data:
-            seq = torch.from_numpy(_load_npy(data["sequences_npy"]))
-        else:
-            seq = torch.as_tensor(data["sequences"])
-        artifact = estimate_from_config(cfg, seq)
+        raise ValueError("D6 benchmark via CLI not supported; use run_benchmark_protocol in Python")
 
     elif method == "D7":
-        if "deltas_npy" in data:
-            deltas = torch.from_numpy(_load_npy(data["deltas_npy"]))
-            artifact = estimate_from_config(cfg, deltas)
-        else:
-            from pmh.integrations.huggingface import estimate_style_sigma, load_style_pairs_jsonl
+        raise ValueError("D7 estimate via CLI needs style JSONL — see configs/d7_style_estimate.json")
 
-            path = Path(data["style_jsonl"])
-            pairs = load_style_pairs_jsonl(path, max_pairs=data.get("max_pairs"))
-            model_id = data.get("model_id", "Qwen/Qwen2.5-0.5B-Instruct")
-            import os
-
-            os.environ.setdefault("USE_TF", "0")
-            os.environ.setdefault("USE_FLAX", "0")
-            from transformers import AutoModelForCausalLM, AutoTokenizer
-
-            tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code=True)
-            dtype = torch.float16 if torch.cuda.is_available() else torch.float32
-            model = AutoModelForCausalLM.from_pretrained(
-                model_id,
-                torch_dtype=dtype,
-                trust_remote_code=True,
-                device_map="auto" if torch.cuda.is_available() else None,
-            )
-            artifact = estimate_style_sigma(
-                pairs,
-                model,
-                tokenizer,
-                rank=int(cfg.rank or 128),
-                batch_size=int(data.get("batch_size", 4)),
-                max_length=int(data.get("max_length", 512)),
-            )
     else:
         raise ValueError(method)
 
-    assert isinstance(artifact, SigmaTaskEstimate)
+    out = job.get("output", "artifacts/sigma_task")
+    if isinstance(out, str):
+        artifact.save(out)
+        print(f"saved {out}")
     return artifact
 
 
 def _cmd_estimate(args: argparse.Namespace) -> int:
-    job = _load_json(Path(args.config))
-    artifact = _estimate_from_job(job)
-    out = Path(job.get("output", "sigma_task"))
-    pt = artifact.save(out)
-    print(f"Saved {pt}")
+    artifact = _estimate_from_job(_load_json(Path(args.config)))
     print(f"  method={artifact.method}  dim={artifact.dim}  preflight={artifact.preflight}")
     if artifact.eigengap is not None:
         print(f"  eigengap={artifact.eigengap:.4f}")
@@ -169,8 +137,61 @@ def _cmd_preflight(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_benchmark(args: argparse.Namespace) -> int:
+    from pmh.benchmark import benchmark_to_markdown, load_benchmark_report, write_benchmark_report
+
+    if args.report:
+        data = load_benchmark_report(args.report)
+        print(benchmark_to_markdown(data))
+        return 0
+
+    if not args.config:
+        print("benchmark needs --config job.json or --report results/benchmark/benchmark.json", file=sys.stderr)
+        return 1
+
+    job = _load_json(Path(args.config))
+    protocol = job.get("protocol", "sklearn")
+    out = Path(job.get("output", "results/benchmark"))
+    arms = job.get("arms")
+
+    if protocol == "sklearn":
+        from pmh.benchmark.sklearn_protocol import run_sklearn_benchmark, synthetic_office31_features
+
+        data = job.get("data", {})
+        if data.get("mode") == "synthetic_office31":
+            n = int(data.get("n_per_domain", 400))
+            seed = int(data.get("seed", 0))
+            x_a, y, x_d, y2 = synthetic_office31_features(n, seed=seed)
+        else:
+            x_a = _load_npy(data["source_npy"])
+            y = np.load(data["source_labels"]) if isinstance(data["source_labels"], str) else np.asarray(
+                data["source_labels"]
+            )
+            x_d = _load_npy(data["target_npy"])
+            y2 = (
+                np.load(data["target_labels"])
+                if isinstance(data["target_labels"], str)
+                else np.asarray(data["target_labels"])
+            )
+        rank = int(job.get("estimator", {}).get("rank", 16))
+        want_coral = arms is None or "coral" in [str(a).lower() for a in arms]
+        result = run_sklearn_benchmark(x_a, y, x_d, y2, rank=rank, include_coral=want_coral)
+    else:
+        print(
+            "PyTorch multi-arm compare: python examples/20_compare_training_arms.py",
+            file=sys.stderr,
+        )
+        return 1
+
+    paths = write_benchmark_report(result, out)
+    print(f"Wrote {paths['json']}")
+    print(f"Wrote {paths['markdown']}")
+    for arm, row in result.arms.items():
+        print(f"  {arm:10s}  {row.val_metric:.4f}  ({row.metric_name})")
+    return 0
+
+
 def _cmd_run(args: argparse.Namespace) -> int:
-    """Validate a training job JSON and print the recipe (integrate in your trainer)."""
     job = _load_json(Path(args.config))
     pmh_block = job.get("pmh", {})
     artifact_path = job.get("artifact") or pmh_block.get("artifact")
@@ -186,13 +207,14 @@ def _cmd_run(args: argparse.Namespace) -> int:
     print(f"  artifact: {artifact_path}")
     print(f"  method:   {art.method}  dim={art.dim}  preflight={art.preflight}")
     print(f"  weight:   {pcfg.weight}  cap_ratio={pcfg.cap_ratio}  warmup_epochs={pcfg.warmup_epochs}")
+    print("  controls: train also with mode=wrong_w and mode=isotropic (see pmh.benchmark)")
     train = job.get("training", {})
     if train.get("backend") == "hf_trainer":
         print("  backend:  Hugging Face PMHTrainer (see examples/11_dpo_lora_style_pmh.py)")
     elif train.get("backend") == "lightning":
-        print("  backend:  Lightning + add_pmh_to_loss (see examples/09_lightning_module.py)")
+        print("  backend:  Lightning (see examples/09_lightning_module.py)")
     else:
-        print("  backend:  PMHLoss on backbone(h) — see examples/01_domain_shift_d4.py")
+        print("  backend:  PMHLoss — see examples/20_compare_training_arms.py")
     if args.dry_run:
         print("(dry-run: no training executed)")
     return 0
@@ -201,23 +223,37 @@ def _cmd_run(args: argparse.Namespace) -> int:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="pmh-train",
-        description="Estimate Sigma_task (D1--D7) and inspect matched-PMH training jobs.",
+        description="Estimate Sigma_task (D1--D7), benchmark arms, and inspect PMH jobs.",
     )
     sub = parser.add_subparsers(dest="command", required=True)
 
-    p_list = sub.add_parser("list-methods", help="List nuisance types D1--D7 and required inputs")
+    p_list = sub.add_parser("list-methods", help="List nuisance types D1--D7")
     p_list.set_defaults(func=_cmd_list_methods)
 
-    p_est = sub.add_parser("estimate", help="Estimate Sigma_task from a JSON job file")
-    p_est.add_argument("--config", "-c", required=True, type=Path, help="Job JSON path")
+    p_est = sub.add_parser("estimate", help="Estimate Sigma_task from JSON")
+    p_est.add_argument("--config", "-c", required=True, type=Path)
     p_est.set_defaults(func=_cmd_estimate)
 
-    p_pf = sub.add_parser("preflight", help="Show eigengap for a saved artifact")
-    p_pf.add_argument("artifact", type=Path, help=".pt artifact path")
+    p_pf = sub.add_parser("preflight", help="Eigengap for saved artifact")
+    p_pf.add_argument("artifact", type=Path)
     p_pf.add_argument("--rank", type=int, default=None)
     p_pf.set_defaults(func=_cmd_preflight)
 
-    p_run = sub.add_parser("run", help="Validate training job JSON and print recipe")
+    p_bench = sub.add_parser(
+        "benchmark",
+        help="Run B0/matched/wrong-W/isotropic comparison (sklearn) or print saved report",
+    )
+    p_bench.add_argument("--config", "-c", type=Path, default=None, help="benchmark job JSON")
+    p_bench.add_argument(
+        "--report",
+        "-r",
+        type=Path,
+        default=None,
+        help="Print markdown table from saved benchmark.json",
+    )
+    p_bench.set_defaults(func=_cmd_benchmark)
+
+    p_run = sub.add_parser("run", help="Validate training job JSON")
     p_run.add_argument("--config", "-c", required=True, type=Path)
     p_run.add_argument("--dry-run", action="store_true", default=True)
     p_run.set_defaults(func=_cmd_run)

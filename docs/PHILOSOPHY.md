@@ -37,7 +37,7 @@ Matched PMH without **wrong-W** and **isotropic** controls does not support a cl
 
 ### 7. Artifacts are first-class
 
-`artifact.save()` / `load()` makes HPC jobs, paper reproduction, and multi-stage pipelines (estimate on cluster → train on GPU farm) straightforward.
+`artifact.save()` / `load()` makes HPC jobs, team handoffs, and multi-stage pipelines (estimate on cluster → train on GPU farm) straightforward.
 
 ### 8. Examples are templates, not dependencies
 

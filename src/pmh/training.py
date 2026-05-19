@@ -59,8 +59,9 @@ class PMHLoss(nn.Module):
         if self.mode == "isotropic":
             tr = self.sigma.trace().item() / max(d, 1)
             return tr * torch.eye(d, device=h.device, dtype=h.dtype)
-        # wrong_w
-        U = wrong_W_projector(d, self.wrong_rank, device=h.device, dtype=h.dtype)
+        # wrong_w — rank cannot exceed representation dimension
+        rank = min(self.wrong_rank, d)
+        U = wrong_W_projector(d, rank, device=h.device, dtype=h.dtype)
         return U @ U.T
 
     def forward(self, h: torch.Tensor) -> torch.Tensor:

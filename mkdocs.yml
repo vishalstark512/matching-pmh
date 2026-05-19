@@ -23,6 +23,7 @@ nav:
   - Quickstart: QUICKSTART.md
   - Theory: THEORY.md
   - Integration:
+      - Adapt your pipeline: ADAPT_YOUR_PIPELINE.md
       - Architecture patterns: ARCHITECTURES.md
       - Design philosophy: PHILOSOPHY.md
   - Walkthroughs:
@@ -43,6 +44,7 @@ nav:
       - "14 QM9": walkthroughs/14-qm9-molecule-d5.md
       - "15 Code tokens": walkthroughs/15-codebert-tokens-d5.md
       - "16 Augmentations D3": walkthroughs/16-augmentation-d3.md
+      - "17 Compare arms": walkthroughs/17-compare-arms-your-pipeline.md
   - Reference:
       - Getting started: getting-started.md
       - Nuisance cookbook: nuisance_types.md

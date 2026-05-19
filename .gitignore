@@ -9,6 +9,7 @@ dist/
 .venv-pypi-verify/
 venv/
 artifacts/
+results/
 tmp_trainer/
 tmp_pmh_trainer/
 *.pt

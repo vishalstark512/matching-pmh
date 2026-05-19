@@ -31,7 +31,7 @@ __all__ = [
     "PreflightStatus",
 ]
 
-__version__ = "0.7.1"
+__version__ = "0.7.2"
 
 
 def __getattr__(name: str):
@@ -44,6 +44,17 @@ def __getattr__(name: str):
         from pmh.vision import MultiLayerPMHLoss, gram_sample_noise
 
         return {"MultiLayerPMHLoss": MultiLayerPMHLoss, "gram_sample_noise": gram_sample_noise}[name]
+    if name in (
+        "run_benchmark_protocol",
+        "train_one_arm",
+        "write_benchmark_report",
+        "benchmark_to_markdown",
+        "run_sklearn_benchmark",
+        "STANDARD_ARMS",
+    ):
+        from pmh import benchmark as _b
+
+        return getattr(_b, name)
     if name in ("estimate_sigma_task_numpy", "gram_from_diff_numpy"):
         from pmh import numpy_api
 

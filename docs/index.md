@@ -20,7 +20,7 @@ Reference implementation of the [**Matching Principle**](THEORY.md) for machine 
 2. **[Walkthrough 1](walkthroughs/01-pytorch-domain-d4.md)** — PyTorch + domain shift (D4)  
 3. **[Walkthrough 8](walkthroughs/08-falsification-controls.md)** — matched vs wrong-W vs isotropic  
 
-Pick your stack from **[16 walkthroughs](walkthroughs/index.md)** (ViT, ResNet, Whisper, QM9, CodeBERT, LLM D7, …).
+Start with **[Adapt your pipeline](ADAPT_YOUR_PIPELINE.md)**, then pick a template from **[17 walkthroughs](walkthroughs/index.md)** (ViT, ResNet, speech, molecules, LLM D7, …).
 
 ---
 
@@ -28,6 +28,7 @@ Pick your stack from **[16 walkthroughs](walkthroughs/index.md)** (ViT, ResNet, 
 
 | Goal | Document |
 |------|----------|
+| Plug into my data & trainer | [ADAPT_YOUR_PIPELINE.md](ADAPT_YOUR_PIPELINE.md) |
 | Wire PMH into my model | [ARCHITECTURES.md](ARCHITECTURES.md) |
 | Understand the math | [THEORY.md](THEORY.md) |
 | See why the API is shaped this way | [PHILOSOPHY.md](PHILOSOPHY.md) |

@@ -1,0 +1,11 @@
+{
+  "protocol": "sklearn",
+  "estimator": { "method": "D1", "rank": 16 },
+  "data": {
+    "mode": "synthetic_office31",
+    "n_per_domain": 400,
+    "seed": 0
+  },
+  "arms": ["b0", "matched", "wrong_w", "isotropic", "coral"],
+  "output": "results/benchmark_sklearn"
+}
