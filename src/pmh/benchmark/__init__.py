@@ -18,7 +18,15 @@ from pmh.benchmark.report import (
     load_benchmark_report,
     write_benchmark_report,
 )
-from pmh.benchmark.sklearn_protocol import run_sklearn_benchmark
+from pmh.benchmark.presets import BlockPreset, get_preset, list_presets
+from pmh.benchmark.protocol import (
+    collect_val_embeddings,
+    default_geometry_metric,
+)
+from pmh.benchmark.sklearn_protocol import (
+    run_sklearn_benchmark,
+    run_sklearn_benchmark_multi_seed,
+)
 
 __all__ = [
     "ARM_SPECS",
@@ -34,4 +42,10 @@ __all__ = [
     "load_benchmark_report",
     "write_benchmark_report",
     "run_sklearn_benchmark",
+    "run_sklearn_benchmark_multi_seed",
+    "get_preset",
+    "list_presets",
+    "BlockPreset",
+    "collect_val_embeddings",
+    "default_geometry_metric",
 ]

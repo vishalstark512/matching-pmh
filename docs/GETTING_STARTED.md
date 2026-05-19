@@ -2,7 +2,11 @@
 
 **Goal:** add matched PMH to **your** model and **your** data in one afternoon—without reading the research paper.
 
-**Full guides:** each [walkthrough](walkthroughs/index.md) includes runnable examples, `YOUR_*` copy-paste blocks, adaptation worksheets, and a controls checklist. Start with the [Adaptation workbook](ADAPTATION_WORKBOOK.md) if you want a fill-in template before choosing a stack.
+**Full guides:** each [walkthrough](walkthroughs/index.md) includes runnable examples, `YOUR_*` copy-paste blocks, adaptation worksheets, and a controls checklist.
+
+**Paper fidelity:** read **[Correct usage](CORRECT_USAGE.md)** before benchmarking—two PMH modes (train vs project), three meanings of “isotropic”, and per-block presets (`t1_office31_sklearn`, …).
+
+Start with the [Adaptation workbook](ADAPTATION_WORKBOOK.md) if you want a fill-in template before choosing a stack.
 
 ---
 

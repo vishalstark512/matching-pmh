@@ -7,6 +7,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
 
+import numpy as np
 import torch
 import torch.nn as nn
 
@@ -102,12 +103,70 @@ def default_accuracy_metric(
     return correct / max(total, 1)
 
 
+def collect_val_embeddings(
+    encoder: EncoderFn,
+    val_loader: Any,
+    *,
+    device: torch.device | None = None,
+    max_batches: int = 20,
+) -> tuple[torch.Tensor, torch.Tensor]:
+    """Stack validation embeddings and labels for geometry probes."""
+    parts: list[torch.Tensor] = []
+    labels: list[torch.Tensor] = []
+    n = 0
+    with torch.no_grad():
+        for batch in val_loader:
+            if max_batches is not None and n >= max_batches:
+                break
+            if isinstance(batch, (tuple, list)):
+                x, y = batch[0], batch[1]
+            else:
+                raise ValueError("val_loader must yield (x, y)")
+            if device is not None:
+                x = x.to(device)
+            parts.append(encoder(x).detach().float().cpu())
+            labels.append(y.detach().cpu() if isinstance(y, torch.Tensor) else torch.as_tensor(y))
+            n += 1
+    if not parts:
+        raise ValueError("val_loader empty")
+    return torch.cat(parts, dim=0), torch.cat(labels, dim=0)
+
+
+def default_geometry_metric(
+    artifact: SigmaTaskEstimate,
+    encoder: EncoderFn,
+    val_loader: Any,
+    *,
+    device: torch.device | None = None,
+    max_batches: int = 20,
+    seed: int = 0,
+) -> dict[str, float | None]:
+    """TDI_cls and D_N/D_S on validation embeddings (paper §6)."""
+    from pmh.tdi import geometry_report
+
+    emb, y = collect_val_embeddings(
+        encoder, val_loader, device=device, max_batches=max_batches
+    )
+    w = artifact.metadata.get("w")
+    w_np = None
+    if w is not None:
+        w_np = w.cpu().numpy() if isinstance(w, torch.Tensor) else np.asarray(w)
+    rep = geometry_report(
+        emb.numpy(),
+        y.numpy().reshape(-1),
+        w=w_np,
+        seed=seed,
+    )
+    return rep.to_dict()
+
+
 def _pmh_for_arm(
     artifact: SigmaTaskEstimate,
     arm: ArmName,
     pmh_config: PMHConfig,
     *,
     wrong_rank: int,
+    wrong_seed: int = 0,
 ) -> PMHLoss | None:
     if arm == "b0":
         return None
@@ -121,6 +180,7 @@ def _pmh_for_arm(
         pmh_config,
         mode=spec.pmh_mode,  # type: ignore[arg-type]
         wrong_rank=wrong_rank,
+        wrong_seed=wrong_seed,
     )
 
 
@@ -136,13 +196,14 @@ def train_one_arm(
     epochs: int,
     pmh_config: PMHConfig | None = None,
     wrong_rank: int = 32,
+    wrong_seed: int = 0,
     device: torch.device | str | None = None,
     task_loss_fn: TaskLossFn | None = None,
     max_steps_per_epoch: int | None = None,
 ) -> ArmRunResult:
     """Train a single arm; return epoch curves."""
     pmh_cfg = pmh_config or PMHConfig()
-    pmh_mod = _pmh_for_arm(artifact, arm, pmh_cfg, wrong_rank=wrong_rank)
+    pmh_mod = _pmh_for_arm(artifact, arm, pmh_cfg, wrong_rank=wrong_rank, wrong_seed=wrong_seed)
     result = ArmRunResult(arm=arm)
     task_fn = task_loss_fn or nn.functional.cross_entropy
 
@@ -228,8 +289,11 @@ def run_benchmark_protocol(
     epochs: int = 15,
     pmh_config: PMHConfig | None = None,
     wrong_rank: int = 32,
+    wrong_seed: int = 0,
     device: torch.device | str | None = None,
     metric_fn: MetricFn | None = None,
+    include_geometry: bool = False,
+    geometry_fn: Callable[..., dict[str, float | None]] | None = None,
     max_steps_per_epoch: int | None = None,
     shared_init: bool = True,
 ) -> BenchmarkResult:
@@ -275,11 +339,22 @@ def run_benchmark_protocol(
             epochs=epochs,
             pmh_config=pmh_config,
             wrong_rank=wrong_rank,
+            wrong_seed=wrong_seed,
             device=device,
             max_steps_per_epoch=max_steps_per_epoch,
         )
         run.val_metric = metric(model, encoder, head, val_loader)
         run.metric_name = "val_accuracy"
+        if include_geometry:
+            gfn = geometry_fn or (
+                lambda _m, enc, _hd, loader: default_geometry_metric(
+                    artifact, enc, loader, device=device, seed=wrong_seed
+                )
+            )
+            try:
+                run.geometry = gfn(model, encoder, head, val_loader)
+            except Exception as exc:  # noqa: BLE001
+                out.notes.append(f"geometry failed for {arm}: {exc}")
         out.arms[arm] = run
 
     return out

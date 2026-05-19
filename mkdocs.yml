@@ -29,6 +29,8 @@ nav:
       - Adapt your pipeline: ADAPT_YOUR_PIPELINE.md
       - Troubleshooting: TROUBLESHOOTING.md
       - vs CORAL: COMPARE_TO_CORAL.md
+      - Correct usage (read this): CORRECT_USAGE.md
+      - Paper alignment: PAPER_ALIGNMENT.md
       - Benchmarks & TDI: BENCHMARKS.md
       - Reference table (synthetic): benchmarks/office31_synthetic_reference.md
       - Reference table (Office-31 Amazon→DSLR): benchmarks/office31_amazon_to_dslr.md

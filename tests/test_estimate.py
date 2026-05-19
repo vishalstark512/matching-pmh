@@ -19,7 +19,8 @@ def test_d4_domain_rank():
 
 def test_d1_requires_rank():
     src, tgt = torch.randn(20, 4), torch.randn(20, 4)
-    s = estimate_sigma_task(src, tgt, method="D1", rank=2)
+    y = torch.randint(0, 3, (20,))
+    s = estimate_sigma_task(src, y, tgt, y, method="D1", rank=2)
     assert s.shape == (4, 4)
 
 

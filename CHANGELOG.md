@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.4.1 (unreleased)
+
+### Paper alignment (P0)
+
+- **D1:** `estimate_from_config` / `estimate_d1` now require **labeled** `(x_src, y_src, x_tgt, y_tgt)` with class-mean shifts (T1 protocol). Unlabeled Gram → `method="D4"` or `estimate_d1_gram_unlabeled`. Artifact stores `metadata["w"]`.
+- **`PMHLoss` wrong-W:** random subspace **orthogonal to matched** \(W\) (Lemma C); `wrong_seed` for reproducibility.
+- **Training isotropic arm:** documented as `trace_iso` (alias `isotropic`); not the same as D2 nuisance or sklearn D4 control.
+- **Docs:** [CORRECT_USAGE.md](docs/CORRECT_USAGE.md), [PAPER_ALIGNMENT.md](docs/PAPER_ALIGNMENT.md), updated [d1.md](docs/estimators/d1.md).
+
+### Paper alignment (P1)
+
+- **`pmh.benchmark.presets`:** block presets (`t1_office31_sklearn`, `t4_domain_d4`, …) for `compare_arms` / `compare_arms_sklearn`.
+- **Multi-seed sklearn:** `seeds=[...]` and `run_sklearn_benchmark_multi_seed`.
+- **PyTorch geometry:** `compare_arms(..., include_geometry=True)` with TDI / \(D_N/D_S\) on val embeddings.
+- **`pmh.calibrate`:** `subspace_artifact_from_deltas`, `style_gram_from_deltas`, `gradient_subspace_numpy`, `content_residual_subspace`.
+
 ## 1.4.0
 
 ### Fix: sklearn Office-31 benchmark protocol

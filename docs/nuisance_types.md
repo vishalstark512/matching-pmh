@@ -2,13 +2,15 @@
 
 Use `pmh-train list-methods` for a terminal summary. Each method estimates a deployment nuisance covariance $\Sigma_{\mathrm{task}}$; training uses `PMHLoss` on representations $h=\phi(x)$.
 
-## D1 — Subspace (cross-domain SVD)
+## D1 — Subspace (class-aligned cross-domain SVD)
 
-**Inputs:** source/target feature matrices (and labels for strict D1, or paired domains).
+**Inputs:** `h_src, y_src, h_tgt, y_tgt` (labels required). Unlabeled domain Gram → **D4**.
 
 ```python
 from pmh import SigmaTaskConfig, estimate_from_config
-artifact = estimate_from_config(SigmaTaskConfig.for_subspace(rank=32), h_src, h_tgt, y_src, y_tgt)
+artifact = estimate_from_config(
+    SigmaTaskConfig.for_subspace(rank=32), h_src, y_src, h_tgt, y_tgt,
+)
 ```
 
 **CLI:** `source_npy`, `target_npy`, optional `source_labels` / `target_labels`, `rank`.

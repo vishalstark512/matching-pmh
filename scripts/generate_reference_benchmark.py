@@ -36,19 +36,24 @@ def main() -> None:
     args = parser.parse_args()
 
     rank = args.rank
+    preset_name = "t1_office31_sklearn" if args.office31_root else "t1_synthetic_sklearn"
+    from pmh.benchmark.presets import get_preset
+
+    preset = get_preset(preset_name)
     bench_kw: dict = {
         "include_coral": True,
         "seed": args.seed,
+        **preset.sklearn_benchmark,
         "paper_protocol": not args.legacy_split,
     }
 
     if args.office31_root:
         from pmh.datasets.office31 import extract_office31_features
 
-        rank = rank if rank is not None else 32
+        rank = rank if rank is not None else preset.default_rank
         protocol = (
             f"Office-31 ResNet-18 features: {args.source} -> {args.target} "
-            f"(T1 protocol: pool={args.n_target_pool}, test={args.n_test}, rank={rank})"
+            f"(preset={preset_name}, pool={args.n_target_pool}, test={args.n_test}, rank={rank})"
         )
         x_src, y_src = extract_office31_features(
             args.office31_root,
@@ -66,7 +71,6 @@ def main() -> None:
             n_train_src=args.n_train_src,
             n_target_pool=args.n_target_pool,
             n_test=args.n_test,
-            n_pairs_per_class=40,
         )
     else:
         from pmh.benchmark.sklearn_protocol import synthetic_office31_features
@@ -84,8 +88,9 @@ def main() -> None:
         y_src,
         x_tgt,
         y_tgt,
+        preset=preset_name,
         rank=rank,
-        **bench_kw,
+        **{k: v for k, v in bench_kw.items() if k not in ("rank",)},
     )
 
     out_path = Path(args.output)

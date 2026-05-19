@@ -20,6 +20,8 @@ Before v1.3, the library only exposed **eigengap** preflight (`pmh.diagnostics`,
 | `target_accuracy` | Yes | No (higher better) | Standard DA benchmark |
 | `trajectory_tdi` | No | Yes | Input noise @ `sigma=0.01` on encoder hooks (paper T2A) |
 
+**Naming:** D2 nuisance `isotropic` ≠ training arm `trace_iso` (alias `isotropic`) ≠ sklearn arm `isotropic` (D4 domain Gram). See [PAPER_ALIGNMENT.md](PAPER_ALIGNMENT.md).
+
 **Trajectory TDI** (layer-averaged ratio of perturbed vs clean representation drift):
 
 ```python
@@ -34,6 +36,20 @@ tdi, per_layer = trajectory_tdi_layerwise(clean_layers, pert_layers)
 ```
 
 For frozen sklearn tables use `tdi_feature_isotropic` as a fast proxy.
+
+## Paper block presets
+
+```python
+from pmh.benchmark import list_presets, get_preset
+from pmh import compare_arms_sklearn
+
+print(list_presets())
+result = compare_arms_sklearn(x_s, y_s, x_t, y_t, preset="t1_office31_sklearn", seeds=[0, 42, 142])
+```
+
+Office-31 preset sets rank=32, pool=200, test=250, T1 D1 protocol. See [CORRECT_USAGE.md](CORRECT_USAGE.md).
+
+PyTorch: `compare_arms(..., preset="t4_domain_d4", include_geometry=True)`.
 
 ## Reference tables (metrics only, in git)
 

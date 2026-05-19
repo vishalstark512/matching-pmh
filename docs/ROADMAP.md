@@ -1,6 +1,8 @@
 # Roadmap
 
-**Current release: v1.3.0** — sklearn-class API, TDI benchmarks, GridSearchCV helpers.
+**Current release: v1.4.0** — trajectory TDI, API docs, fixed Office-31 sklearn protocol.
+
+See [PAPER_ALIGNMENT.md](PAPER_ALIGNMENT.md) for task-by-task fidelity vs `Paper2/T1`–`T7`.
 
 | Area | Status |
 |------|--------|
@@ -19,6 +21,16 @@
 | `GridSearchCV` (`make_pmh_pipeline`, `grid_search_pmh_pipeline`) | Shipped |
 | TDI + sklearn benchmark table (`pmh.tdi`, `examples/21_*`) | Shipped |
 | mkdocstrings API reference + Pages | Backlog |
+
+## Paper fidelity (priority)
+
+| Item | Priority |
+|------|----------|
+| Unify D1: labeled cross-domain SVD in `estimate_from_config` | **Done** (v1.4.1+) |
+| `PMHLoss` wrong-W orthogonal to matched \(W\) | **Done** (v1.4.1+) |
+| Disambiguate “isotropic” (D2 vs arms) in API/docs | **Done** (`trace_iso`, `PAPER_ALIGNMENT.md`) |
+| Benchmark presets per block (T2–T7 tuning + arms) | P1 |
+| Optional calibrators (PGD, style Gram, gradient-W) | P2 |
 
 ## Ideas (backlog)
 

@@ -194,3 +194,45 @@ def run_sklearn_benchmark(
         )
 
     return out
+
+
+def run_sklearn_benchmark_multi_seed(
+    x_src: np.ndarray,
+    y_src: np.ndarray,
+    x_tgt: np.ndarray,
+    y_tgt: np.ndarray,
+    *,
+    seeds: list[int] | tuple[int, ...],
+    **kwargs: Any,
+) -> BenchmarkResult:
+    """Run :func:`run_sklearn_benchmark` per seed; aggregate mean val_metric per arm."""
+    runs = [
+        run_sklearn_benchmark(x_src, y_src, x_tgt, y_tgt, seed=int(sd), **kwargs)
+        for sd in seeds
+    ]
+    base = runs[0]
+    out = BenchmarkResult(
+        artifact_method=base.artifact_method,
+        artifact_preflight=base.artifact_preflight,
+        artifact_eigengap=base.artifact_eigengap,
+    )
+    out.notes.extend(base.notes)
+    out.notes.append(f"Multi-seed: {list(seeds)} — val_metric is mean over seeds.")
+
+    arms = set()
+    for r in runs:
+        arms.update(r.arms.keys())
+    for arm in arms:
+        metrics = [r.arms[arm].val_metric for r in runs if arm in r.arms and r.arms[arm].val_metric is not None]
+        if not metrics:
+            continue
+        mean_m = float(np.mean(metrics))
+        std_m = float(np.std(metrics)) if len(metrics) > 1 else 0.0
+        geom = runs[0].arms[arm].geometry if arm in runs[0].arms else {}
+        out.arms[arm] = ArmRunResult(
+            arm=arm,
+            val_metric=mean_m,
+            metric_name=f"target_accuracy_mean (std={std_m:.4f}, n={len(metrics)})",
+            geometry=geom,
+        )
+    return out
