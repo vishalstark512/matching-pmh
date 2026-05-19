@@ -1,55 +1,46 @@
-# Walkthrough 15: Code / token embeddings + D5
+# Walkthrough 15: Code / token blocks (D5) — full guide
 
-**Paper block:** T5B (BigCloneBench / CodeBERT) — **identifier names** are nuisance; keywords/operators carry clone signal.
+**At a glance**
 
-**Goal:** D5 block on identifier dimensions; clone detection with PMH; falsify with signal-partition PMH.
+| | |
+|---|---|
+| **Estimator** | D5 on token-type blocks |
+| **Script** | `examples/17_code_tokens_d5.py` |
 
-**Script:** `examples/17_code_tokens_d5.py`
-
----
-
-## Partition
-
-```python
-# After projecting tokens to h in R^d:
-nuisance_idx = identifier_dims   # e.g. first k dims tied to renameable tokens
-signal_idx   = keyword_dims      # do NOT put in D5 for matched arm
-```
-
-Build `h` the same way CodeBERT mean-pools subword tokens to a fixed-size vector (or use `[CLS]`).
+[Walkthrough 5](05-compositional-d5.md)
 
 ---
 
-## Phase A — estimate on rename-augmented code
+## Who this is for
 
-Collect $h$ from code pairs that differ only in identifier renaming; covariance on `nuisance_idx`.
-
----
-
-## Phase B — train clone classifier
-
-```python
-task = cross_entropy(head(h), clone_label)
-total, _ = pmh.capped_total(task, h)
-```
+Code models where **token groups** (comments, imports, identifiers) partition nuisance vs task.
 
 ---
 
-## Required falsification (T5B)
+## Your nuisance sentence
 
-| Arm | Partition | Expected |
-|-----|-----------|----------|
-| Matched | identifiers | Best rename robustness |
-| **E1S wrong** | keywords (signal) | **Below baseline** |
-
-Re-run example with `nuisance_idx` on signal dims to see the negative.
+*“Style tokens / imports drift; bug class label unchanged.”*
 
 ---
 
-## Run
+## Step-by-step
 
 ```bash
 python examples/17_code_tokens_d5.py
 ```
 
-Production: use your tokenizer + CodeBERT `forward` hidden state; export $h$ to `.npy` for CLI jobs if needed.
+Map token-type indices → `nuisance_indices` in **your** tokenizer layout.
+
+---
+
+## Adaptation worksheet
+
+| Example | Your CodeBERT / LM |
+|---------|-------------------|
+| Block indices | Your AST feature groups |
+
+---
+
+## Next steps
+
+- [6 — LLM style D7](06-llm-style-d7.md) for format shift

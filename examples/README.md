@@ -4,7 +4,8 @@ Runnable templates for the [matching principle](https://github.com/vishalstark51
 
 **New users:** start with [docs/GETTING_STARTED.md](../docs/GETTING_STARTED.md), then copy the closest script below.
 
-Each example is **self-contained** (copy → adapt). Walkthrough prose: [docs/walkthroughs/](../docs/walkthroughs/index.md).
+Each example pairs with a **full walkthrough guide** (steps, worksheets, controls): [docs/walkthroughs/](../docs/walkthroughs/index.md).  
+Generic fill-in: [ADAPTATION_WORKBOOK.md](../docs/ADAPTATION_WORKBOOK.md).
 
 ```bash
 pip install matching-pmh torch

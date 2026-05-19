@@ -2,6 +2,8 @@
 
 **Goal:** add matched PMH to **your** model and **your** data in one afternoon—without reading the research paper.
 
+**Full guides:** each [walkthrough](walkthroughs/index.md) includes runnable examples, `YOUR_*` copy-paste blocks, adaptation worksheets, and a controls checklist. Start with the [Adaptation workbook](ADAPTATION_WORKBOOK.md) if you want a fill-in template before choosing a stack.
+
 ---
 
 ## Step 0 — One sentence (required)
@@ -157,7 +159,8 @@ from pmh.tune import tune_sklearn_matcher  # rank grid on frozen features
 | **Something broke** | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) |
 | **Math** | [THEORY.md](THEORY.md) |
 | **Already use CORAL?** | [COMPARE_TO_CORAL.md](COMPARE_TO_CORAL.md) |
-| **18 stack-specific tutorials** | [walkthroughs/index.md](walkthroughs/index.md) |
+| **18 full walkthrough guides** | [walkthroughs/index.md](walkthroughs/index.md) |
+| **Generic fill-in workbook** | [ADAPTATION_WORKBOOK.md](ADAPTATION_WORKBOOK.md) |
 
 ---
 

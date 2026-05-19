@@ -1,81 +1,83 @@
-# Walkthrough 11: Temporal sequences (D6)
+# Walkthrough 11: Temporal sequences (D6) — full guide
 
-**Goal:** Label constant along a **time axis**, but sensors / markets drift within the window (HAR, finance, physiological signals).
+**At a glance**
 
-**Estimator:** D6 (`SigmaTaskConfig.for_temporal()`).  
-**Script:** No dedicated example yet—API walkthrough below.
+| | |
+|---|---|
+| **Estimator** | D6 — temporal residual scatter |
+| **Input** | Sequences `[N, T, d]` per window |
+| **API** | `PMHTrainer(sequences_batches=...)` or `PMHMatcher.fit(X)` with 3D `X` |
 
----
-
-## Prerequisites
-
-```bash
-pip install matching-pmh torch
-```
+[Walkthrough 1](01-pytorch-domain-d4.md)
 
 ---
 
-## Step 1 — Name nuisance
+## Who this is for
 
-*“Within this window, the activity label is fixed, but sensor bias drifts over time.”* → **D6**.
+Label **constant within a window**, but sensor / market / physiology **drifts over time** (HAR, finance, ICU waveforms).
 
 ---
 
-## Step 2 — Build sequences of $h_t$
+## Your nuisance sentence
 
-Run your encoder on windows:
+*“Activity class fixed in this window; sensor bias drifts across timesteps.”*
+
+---
+
+## Step-by-step
+
+### 1. Build `[T, d]` per example
 
 ```python
-# sequences: list of [T_i, d] tensors, one per example
 sequences = []
-for window in dataset:
+for window in YOUR_DATASET:
     with torch.no_grad():
-        h_t = encoder(window)   # [T, d] per timestep or per segment
-    sequences.append(h_t)
+        h_t = YOUR_ENCODER(window)   # [T, d]
+    sequences.append(h_t.cpu())
 ```
 
----
-
-## Step 3 — Estimate
+### 2. Estimate
 
 ```python
-from pmh import SigmaTaskConfig, estimate_from_config
+from pmh import PMHTrainer, SigmaTaskConfig, estimate_from_config
 
-cfg = SigmaTaskConfig.for_temporal()
-artifact = estimate_from_config(cfg, sequences=sequences)
-print(artifact.preflight, artifact.method)
-artifact.save("artifacts/d6_temporal")
+# Option A — Trainer
+trainer = PMHTrainer(model, hook=..., nuisance="temporal")
+trainer.estimate(sequences_batches=YOUR_SEQ_LOADER)
+
+# Option B — numpy 3D array
+import numpy as np
+X = np.stack(sequences)   # [N, T, d]
+PMHMatcher(nuisance="temporal").fit(X)
 ```
 
-`estimate_from_config` routes `method=="D6"` to the temporal estimator (residual scatter along time).
+### 3. Train
 
----
-
-## Step 4 — Train
-
-Use the same `PMHLoss` on the **pooled** or **last** $h$ you used to define the sequence semantics—or on per-step $h_t$ if your training loop backprops through time:
+Same `h` semantics as estimate — pooled or per-step; document your choice.
 
 ```python
-h = encoder(sequence)          # [B, T, d] or [B, d]
-task_loss = criterion(h, y)
-total, _ = pmh.capped_total(task_loss, h.reshape(-1, d) if h.dim() == 3 else h)
+pmh.capped_total(task_loss, h.reshape(-1, d) if h.dim() == 3 else h)
 ```
-
-Keep representation definition **consistent** between Phase A and B.
 
 ---
 
-## Step 5 — CLI
+## Adaptation worksheet
 
-```bash
-pmh-train list-methods   # shows D6
-```
-
-For batch jobs, pass precomputed sequence arrays via the CLI data schema in [nuisance_types.md](../nuisance_types.md) (D6 section).
+| Template | Your setup |
+|----------|------------|
+| Window length T | |
+| Pooling rule | |
 
 ---
 
-## Related walkthroughs
+## Verify & controls
 
-- Global domain shift on pooled windows → often **D4** ([Walkthrough 1](01-pytorch-domain-d4.md))
-- Coordinate-specific sensor channels → **D5** ([Walkthrough 5](05-compositional-d5.md))
+- [ ] `artifact.method == "D6"`
+- [ ] [Walkthrough 8](08-falsification-controls.md)
+
+---
+
+## Next steps
+
+- Pooled windows only → often [D4 Walkthrough 1](01-pytorch-domain-d4.md)
+- Known coord channels → [5 — D5](05-compositional-d5.md)

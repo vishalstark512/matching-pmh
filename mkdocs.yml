@@ -22,6 +22,7 @@ nav:
   - Home: index.md
   - "Start here":
       - Getting started: GETTING_STARTED.md
+      - Adaptation workbook: ADAPTATION_WORKBOOK.md
       - Legacy redirect: getting-started.md
       - Quickstart (10 min): QUICKSTART.md
       - Choose your setup: CHOOSE_YOUR_SETUP.md

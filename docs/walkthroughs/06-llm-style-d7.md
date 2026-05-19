@@ -1,94 +1,87 @@
-# Walkthrough 6: LLM style Gram (D7)
+# Walkthrough 6: LLM style / format (D7) — full guide
 
-**Goal:** Penalize sensitivity to **style / format** while keeping **semantic content** fixed (alignment, formatting robustness).
+**At a glance**
 
-**Estimator:** D7 (`for_alignment`) from style-pair JSONL.  
-**Script:** `examples/08_hf_style_d7.py`
+| | |
+|---|---|
+| **Estimator** | D7 — style Gram from JSONL pairs |
+| **Script** | `examples/08_hf_style_d7.py` |
+| **Sample data** | `examples/data/style_pairs_sample.jsonl` (tiny, OK in git) |
 
----
-
-## Prerequisites
-
-```bash
-pip install "matching-pmh[hf]"   # real LM
-# CPU toy encoder works without GPU
-```
+[Walkthrough 7](07-hf-trainer-d7-dpo.md) · [gallery/nlp.md](../gallery/nlp.md)
 
 ---
 
-## Step 1 — Prepare JSONL
+## Who this is for
+
+LLM deployment shift is **formatting / tone / template**, not factual content — you can write **style variants of the same answer**.
+
+---
+
+## Your nuisance sentence
+
+*“Bullets vs paragraphs vs JSON wrapper; semantic answer unchanged.”*
+
+---
+
+## Step 1 — Prepare JSONL (your file, not in repo)
 
 Each line:
 
 ```json
 {
   "id": "ex1",
-  "prompt": "Summarize the paper.",
-  "content_fixed": "The method estimates Sigma_task and adds matched PMH.",
+  "prompt": "YOUR_PROMPT",
+  "content_fixed": "THE SAME FACTUAL ANSWER",
   "style_variants": {
-    "bulleted": "- Estimates Sigma_task\n- Adds PMH",
-    "verbose": "In detail, the method estimates deployment nuisance covariance..."
+    "bullets": "- point one\n- point two",
+    "verbose": "Longer phrasing of the same facts..."
   }
 }
 ```
 
-Bundled sample: `examples/data/style_pairs_sample.jsonl`.
-
-Optional `semantic_control` field for negative controls in research scripts.
+Copy structure from `examples/data/style_pairs_sample.jsonl`.
 
 ---
 
-## Step 2 — Choose representation $h$
-
-Standard choice: **mean-pooled last hidden state** `[B, d]` from your causal LM.
+## Step 2 — Same pooling for estimate and train
 
 ```python
-out = model(input_ids=..., attention_mask=..., output_hidden_states=True)
-h = out.hidden_states[-1].mean(dim=1)
+out = model(..., output_hidden_states=True)
+h = out.hidden_states[-1].mean(dim=1)   # YOUR: fixed rule
 ```
-
-Use the **same** pooling in estimation and training.
 
 ---
 
-## Step 3 — Estimate (Phase A)
+## Step 3 — Estimate
 
 ```bash
 python examples/08_hf_style_d7.py
-python examples/08_hf_style_d7.py --model-id Qwen/Qwen2.5-0.5B-Instruct --jsonl path/to/style_pairs.jsonl
+python examples/08_hf_style_d7.py --model-id YOUR_MODEL --jsonl YOUR_FILE.jsonl
 ```
 
-Or CLI:
-
-```bash
-pmh-train estimate --config examples/configs/d7_style_estimate.json
-```
-
-Edit the config to point at your JSONL and model id.
+Or `pmh-train estimate --config examples/configs/d7_style_estimate.json` (edit paths).
 
 ---
 
-## Step 4 — Phase B: add `PMHLoss` or `PMHTrainer`
-
-After `artifact.save(...)`:
+## Step 4 — Train with PMH
 
 ```python
+from pmh import PMHLoss, PMHConfig
 pmh = PMHLoss(artifact, PMHConfig(weight=0.2, cap_ratio=0.3, warmup_epochs=1))
-# inside training step on h from last hidden state
+# in step: total, _ = pmh.capped_total(task_loss, h)
 ```
 
-Full Trainer path: [Walkthrough 7](07-hf-trainer-d7-dpo.md).
+Full Trainer: [Walkthrough 7](07-hf-trainer-d7-dpo.md).
 
 ---
 
-## Step 5 — What D7 is / is not
+## What D7 is / is not
 
 | D7 is for | D7 is not for |
 |-----------|----------------|
-| Format, tone, bullet vs prose | Changing factual content |
-| Style pairs with fixed semantics | General preference-only data without style structure |
-
-Preference pairs (`chosen`/`rejected`) go with DPO training; style JSONL drives $\Sigma_{\mathrm{task}}$.
+| Format, tone, bullets | Changing facts in `content_fixed` |
+| Style pairs with fixed semantics | Raw preference-only data without style structure |
 
 ---
 
@@ -98,4 +91,27 @@ Preference pairs (`chosen`/`rejected`) go with DPO training; style JSONL drives 
 python examples/08_hf_style_d7.py
 ```
 
-Uses `HashEncoder` for CI-friendly output.
+Uses `HashEncoder` when no GPU — wiring check only.
+
+---
+
+## Adaptation worksheet
+
+| Example | Your project |
+|---------|--------------|
+| `style_pairs_sample.jsonl` | Your production JSONL export |
+| Mean pool last layer | Your chosen `h` |
+
+---
+
+## Verify & controls
+
+- [ ] Same tokenizer + pooling in Phase A/B
+- [ ] [Walkthrough 8](08-falsification-controls.md)
+
+---
+
+## Next steps
+
+- [7 — HF Trainer + DPO](07-hf-trainer-d7-dpo.md)
+- [hooks.md](../hooks.md) — `encoder_hf_hidden_states`

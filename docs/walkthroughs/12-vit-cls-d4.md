@@ -1,42 +1,39 @@
-# Walkthrough 12: ViT / CLS token + D4
+# Walkthrough 12: ViT / CLS token + D4 — full guide
 
-**Paper block:** T2 (ViT-B/16) — patch embedding is the input projection; deployment nuisance often acts on appearance while semantics stay.
+**At a glance**
 
-**Goal:** Hook PMH on the **CLS token** (or pooled patch tokens) with domain-shift estimation D4.
+| | |
+|---|---|
+| **Estimator** | D4 on CLS or pooled patch tokens |
+| **Script** | `examples/14_vit_cls_d4.py` |
+| **Hooks** | `encoder_timm`, `encoder_hf_hidden_states` |
 
-**Script:** `examples/14_vit_cls_d4.py`
+[hooks.md](../hooks.md) · [Walkthrough 2](02-resnet-vision-d4.md)
 
 ---
 
-## Hook point
+## Who this is for
+
+Vision Transformers (timm, HF ViT) with domain shift — hook at **CLS** or mean patch token.
+
+---
+
+## Your nuisance sentence
+
+*“New camera / site; class label unchanged.”*
+
+---
+
+## Step-by-step
 
 ```python
-h = model.encode(images)  # CLS vector [B, d]
+from pmh.hooks import encoder_timm
+from pmh import PMHTrainer, PMHConfig
+
+hook = encoder_timm(YOUR_VIT, layer="blocks", pool="cls")
+trainer = PMHTrainer(model, hook=hook, nuisance="domain_shift", pmh_config=PMHConfig.balanced())
+trainer.fit(train_loader, source_batches=src, target_batches=tgt, epochs=20)
 ```
-
-For `timm` ViT:
-
-```python
-import timm
-vit = timm.create_model("vit_base_patch16_224", pretrained=True, num_classes=0)
-h = vit.forward_features(x)  # often [B, d] CLS
-```
-
-Use the **same** function in Phase A and B.
-
----
-
-## Steps
-
-1. **Nuisance:** deployment lighting / site (D4).
-2. **Phase A:** `collect_features(encode, source_loader)` vs target loader.
-3. **Preflight:** check `artifact.preflight`.
-4. **Phase B:** `PMHLoss` on CLS during fine-tune.
-5. **Controls:** wrong-W, isotropic ([Walkthrough 8](08-falsification-controls.md)).
-
----
-
-## Run
 
 ```bash
 python examples/14_vit_cls_d4.py
@@ -44,12 +41,16 @@ python examples/14_vit_cls_d4.py
 
 ---
 
-## Adapt
+## Adaptation worksheet
 
-| Example | Production |
-|---------|------------|
-| `PatchViTEncoder` | `timm` / HF ViT |
-| Brightness synthetic shift | ImageNet-C / site B folder |
-| `rank=16` | Tune via eigengap |
+| Example | Your project |
+|---------|--------------|
+| timm ViT-S | Your HF ViT checkpoint |
+| `pool="cls"` | `mean` patch pool |
 
-**Related:** [Multi-layer CNN](04-multilayer-convnet.md) if nuisance is mid-level texture.
+---
+
+## Next steps
+
+- [2 — ResNet](02-resnet-vision-d4.md)
+- [16 — D3 aug](16-augmentation-d3.md)

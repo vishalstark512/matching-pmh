@@ -1,94 +1,51 @@
-# Walkthrough 9: CLI and JSON jobs
+# Walkthrough 9: CLI JSON jobs — full guide
 
-**Goal:** Run estimation (and some train flows) **without** writing a custom estimate script—useful for HPC / reproducible logs.
+**At a glance**
 
-**Configs:** `examples/configs/`  
-**CLI:** `pmh-train`
+| | |
+|---|---|
+| **Stack** | `pmh-train` CLI, HPC / reproducible configs |
+| **Scripts** | `examples/05_yaml_config.py`, `examples/configs/*.json` |
+
+[cli.md](../cli.md)
 
 ---
 
-## Prerequisites
+## Who this is for
+
+You want **reproducible estimate/train jobs** without importing Python in every shell script — clusters, Makefiles, CI.
+
+---
+
+## Step-by-step
+
+1. List methods: `pmh-train list-methods`
+2. Copy `examples/configs/d4_estimate.json` → edit paths to **your** data (outside repo).
+3. Run: `pmh-train estimate --config YOUR_JOB.json`
+4. Benchmark: `pmh-train benchmark --config examples/configs/benchmark_sklearn.json`
 
 ```bash
-pip install matching-pmh
-pmh-train list-methods
+python examples/05_yaml_config.py
 ```
 
 ---
 
-## Step 1 — D4 from saved feature matrices
+## Adaptation worksheet
 
-1. Export features once from your encoder:
-
-```python
-import numpy as np
-np.save("features/source.npy", h_src.numpy())
-np.save("features/target.npy", h_tgt.numpy())
-```
-
-2. Edit `examples/configs/d4_estimate.json`:
-
-```json
-{
-  "estimator": { "method": "D4", "rank": 32, "shrinkage": 1e-6 },
-  "data": {
-    "source_npy": "features/source.npy",
-    "target_npy": "features/target.npy"
-  },
-  "output": "artifacts/d4_domain"
-}
-```
-
-3. Run:
-
-```bash
-pmh-train estimate --config examples/configs/d4_estimate.json
-pmh-train preflight artifacts/d4_domain.pt
-```
+| Config field | Your value |
+|--------------|------------|
+| `artifact` output path | |
+| Data paths | absolute, outside git |
 
 ---
 
-## Step 2 — D7 style estimate job
+## Verify
 
-```bash
-pmh-train estimate --config examples/configs/d7_style_estimate.json
-```
-
-Point `jsonl`, `model_id`, and `output` in that file to your paths.
+- [ ] JSON validates; artifact written
+- [ ] Paths not committed ([DATA_POLICY.md](../DATA_POLICY.md))
 
 ---
 
-## Step 3 — DPO + PMH run job
+## Next steps
 
-```bash
-pmh-train run --config examples/configs/dpo_train_job.json
-```
-
-Mirrors `examples/11_dpo_lora_style_pmh.py` flags in JSON (model, LoRA, artifact path).
-
----
-
-## Step 4 — Programmatic JSON (no CLI)
-
-`examples/05_yaml_config.py` shows loading estimator + training hyperparameters:
-
-```python
-job = {
-    "estimator": {"method": "D4", "rank": 32, "shrinkage": 1e-5},
-    "training": {"weight": 0.25, "cap_ratio": 0.3, "warmup_epochs": 2},
-}
-est_cfg = SigmaTaskConfig.from_dict(job["estimator"])
-pmh_cfg = PMHConfig.from_dict(job["training"])
-```
-
----
-
-## When CLI vs Python
-
-| CLI | Python loop |
-|-----|-------------|
-| Batch HPC, fixed configs | Research iteration |
-| Team reproducibility | Custom `representation_fn` |
-| Precompute `.npy` features | End-to-end fine-tuning |
-
-Full flag reference: [cli.md](../cli.md).
+- [1 — PyTorch D4](01-pytorch-domain-d4.md)

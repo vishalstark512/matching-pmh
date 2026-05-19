@@ -1,81 +1,67 @@
-# Walkthrough 5: Compositional nuisance (D5)
+# Walkthrough 5: Compositional coordinates (D5) — full guide
 
-**Goal:** Nuisance lives on **known coordinates** of your representation (atom indices, token positions, sensor channels)—not a full-domain rotation.
+**At a glance**
 
-**Estimator:** D5 (block covariance on `nuisance_indices`).  
-**Scripts:** `examples/03_compositional_d5.py` (estimate only), `examples/13_compositional_train_d5.py` (estimate + train)
+| | |
+|---|---|
+| **Estimator** | D5 — block coordinates in input or feature vector |
+| **Scripts** | `examples/03_compositional_d5.py`, `13_compositional_train_d5.py` |
+| **API** | `nuisance_indices=` on `PMHTrainer` / `PMHMatcher` |
 
----
-
-## Prerequisites
-
-```bash
-pip install matching-pmh torch
-```
+[nuisance_types.md](../nuisance_types.md#d5)
 
 ---
 
-## Step 1 — Name nuisance
+## Who this is for
 
-Examples:
-
-- *“Atom positions jitter but molecular label unchanged.”* → nuisance indices = atom coordinate slots in $h$.
-- *“Only whitespace / comment tokens may change formatting.”* → nuisance indices = those token embedding dims.
+Input has **known nuisance coordinates** (e.g. sensor axes, token groups, molecular descriptors) separate from task coordinates.
 
 ---
 
-## Step 2 — List `nuisance_indices`
+## Your nuisance sentence
+
+*“Channels 0–2 are site metadata; channels 3–end are biology — label depends only on biology.”*
+
+---
+
+## Step-by-step
+
+1. List indices: `nuisance_indices = [0, 1, 2]`.
+2. Phase A:
 
 ```python
-nuisance_idx = [0, 1, 2, 3, 4]  # length k; representation dim d >= k
-cfg = SigmaTaskConfig.for_compositional(nuisance_idx)
+trainer = PMHTrainer(model, hook=..., nuisance="compositional", nuisance_indices=[0,1,2])
+trainer.estimate(source_batches=...)
 ```
 
----
-
-## Step 3 — Phase A: estimate
-
-```python
-# h: [N, d] from your encoder on deployment-style data
-artifact = estimate_from_config(cfg, h)
-print(artifact.sigma[:k, :k].norm())   # active block
-print(artifact.sigma[k:, k:].norm())   # should be ~0 off-block
-```
+3. Phase B: `trainer.fit(...)`.
 
 ```bash
 python examples/03_compositional_d5.py
-```
-
----
-
-## Step 4 — Phase B: train
-
-```python
-h = gnn_readout(batch)   # [B, d]
-task_loss = your_loss(h, y)
-total, _ = pmh.capped_total(task_loss, h)
-```
-
-Full loop:
-
-```bash
 python examples/13_compositional_train_d5.py
 ```
 
 ---
 
-## Step 5 — GNN-specific notes
+## Adaptation worksheet
 
-| Piece | Guidance |
-|-------|----------|
-| $h$ | Graph-level readout or pooled node states |
-| Indices | Align with the coordinate system used when building $h$ |
-| Estimation data | Graphs with label-preserving perturbations on nuisance coords |
-
-If nuisance is **global** (whole-graph style), prefer D4 or D7 instead.
+| Example | Your project |
+|---------|--------------|
+| Synthetic 8-d split | Your feature partition |
+| QM9 / CodeBERT | [14](14-qm9-molecule-d5.md), [15](15-codebert-tokens-d5.md) |
 
 ---
 
-## Controls
+## Common mistakes
 
-Matched D5 vs wrong-W on the same $h$; off-block $\Sigma$ should stay near zero for valid D5 specs.
+| Mistake | Fix |
+|---------|-----|
+| Wrong index split | Task coords must not include pure nuisance |
+| Using D4 when coords known | D5 is more precise |
+
+---
+
+## Next steps
+
+- [14 — QM9](14-qm9-molecule-d5.md)
+- [15 — Code tokens](15-codebert-tokens-d5.md)

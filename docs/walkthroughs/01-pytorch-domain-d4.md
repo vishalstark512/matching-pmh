@@ -1,9 +1,32 @@
-# Walkthrough 1: PyTorch domain shift (D4)
+# Walkthrough 1: PyTorch domain shift (D4) — full guide
 
-**Goal:** Add matched PMH to an existing PyTorch training loop when deployment shifts look like a **different site/camera/corpus** but labels are still meaningful ($P(y\mid x)$ roughly stable).
+**At a glance**
 
-**Estimator:** D4 (domain Gram on unlabeled source vs target features).  
-**Script:** `examples/01_domain_shift_d4.py`
+| | |
+|---|---|
+| **Estimator** | D4 — domain Gram (source vs target features, labels optional) |
+| **Stack** | Any PyTorch `nn.Module` |
+| **Script** | `examples/01_domain_shift_d4.py` |
+| **Time** | ~2 min CPU (quick), ~10 min default |
+| **API** | `PMHTrainer` (recommended) or manual `collect_features` + `PMHLoss` |
+
+[Adaptation workbook](../ADAPTATION_WORKBOOK.md) · [Choose setup](../CHOOSE_YOUR_SETUP.md)
+
+---
+
+## Who this is for
+
+Use this walkthrough when:
+
+- You train in **PyTorch** (custom model, Lightning, etc.).
+- Deployment looks like a **different site, device, corpus, or sensor**, but **class labels still mean the same thing**.
+- You can sample batches from a **source** distribution (train) and a **target** distribution (deploy or unlabeled target pool).
+
+Pick another guide if:
+
+- You only have **frozen `.npy` features** → [Walkthrough 3](03-office31-sklearn-d1.md).
+- Shift is **known augmentations** → [Walkthrough 16](16-augmentation-d3.md).
+- Shift is **LLM style/format** → [Walkthrough 6](06-llm-style-d7.md).
 
 ---
 
@@ -15,107 +38,197 @@ pip install matching-pmh torch
 
 You need:
 
-- `backbone(x) -> h` with shape `[B, d]`
-- Batches from a **source** domain and a **target** domain (labels optional for D4 estimation)
+| Requirement | Example |
+|-------------|---------|
+| `model` | `nn.Module` with encoder + head |
+| `hook` | Submodule where `h` has shape `[batch, d]` |
+| `source_batches` | Loader for domain A |
+| `target_batches` | Loader for domain B (labels not required for D4 estimate) |
+| `train_loader` | Your usual supervised training data |
 
 ---
 
-## Step 1 — Name the nuisance
+## Your nuisance sentence (write this first)
 
-Example: *“At deployment, inputs are brighter / from another camera, but the class label is unchanged.”*
+Examples that fit **D4**:
 
-That is a **domain shift** story → **D4**.
+- *“Images come from a new hospital scanner; the disease label definition is unchanged.”*
+- *“Audio is recorded on a different microphone; the word transcript is still correct.”*
+- *“Documents are from a new customer segment; the intent class is the same.”*
 
----
+Counter-examples (do **not** use D4 without reframing):
 
-## Step 2 — Choose the hook layer
-
-Pick one representation $h=\phi(x)$:
-
-- Penultimate layer before the classifier (most common)
-- Same layer you would use for linear probing
-
-Record `d = h.shape[-1]`.
+- *“New classes appear at test time.”* → label shift, not PMH nuisance geometry.
+- *“I want robustness to any perturbation.”* → name the perturbation (D2/D3) or use controls to test claims.
 
 ---
 
-## Step 3 — Phase A: estimate $\hat\Sigma_{\mathrm{task}}$
+## What the example script does
 
-Use a **frozen or warm** backbone (no PMH yet):
+File: `examples/01_domain_shift_d4.py`
+
+| Code block | Purpose |
+|------------|---------|
+| `Backbone` + `head` | Tiny MLP so the script runs without your data |
+| `_loader(n, shift)` | Synthetic source (`shift=0`) vs target (`shift=0.8`) domains |
+| `PMHTrainer(..., nuisance="domain_shift")` | Selects **D4** |
+| `trainer.fit(..., source_batches=, target_batches=)` | Phase A estimate + Phase B train |
+| `artifact_path="artifacts/demo_d4.pt"` | Saves `Sigma_task` for reuse |
+
+**Important:** the script uses **one** `train_loader` and separate source/target loaders only for estimation. Your project may use the same loaders or different splits — both are fine if the **target loader matches deployment**.
+
+---
+
+## Step-by-step: adapt to your project
+
+### Step 1 — Point `hook` at your representation
+
+```python
+# YOUR code — pick one:
+hook = your_model.backbone          # nn.Module
+hook = "layer4"                     # string path on model
+hook = lambda x: your_model.encode(x)
+```
+
+Rule: `h = hook(x)` must be `[B, d]` with fixed `d` for all batches.
+
+### Step 2 — Build `PMHTrainer`
+
+```python
+from pmh import PMHTrainer, PMHConfig
+
+trainer = PMHTrainer(
+    YOUR_MODEL,
+    hook=YOUR_HOOK,
+    head=YOUR_CLASSIFIER,              # optional if head inside model
+    nuisance="domain_shift",           # D4
+    rank=32,                           # start 16–32
+    pmh_config=PMHConfig.balanced(),
+    artifact_path="artifacts/YOUR_EXPERIMENT/sigma.pt",
+)
+```
+
+### Step 3 — Fit (estimate + train)
+
+```python
+stats = trainer.fit(
+    YOUR_TRAIN_LOADER,
+    source_batches=YOUR_SOURCE_LOADER,
+    target_batches=YOUR_TARGET_LOADER,
+    epochs=YOUR_EPOCHS,
+    max_steps_per_epoch=None,          # optional cap for smoke tests
+)
+print(stats)
+print("preflight:", trainer.artifact_.preflight)
+```
+
+### Step 4 — Manual path (if you cannot use `PMHTrainer`)
+
+Phase A:
 
 ```python
 from pmh import SigmaTaskConfig, collect_features, estimate_from_config
 
-backbone.eval()
-h_src = collect_features(backbone, source_batches, max_batches=50)
-h_tgt = collect_features(backbone, target_batches, max_batches=50)
-
-artifact = estimate_from_config(
-    SigmaTaskConfig.for_domain(rank=32),  # tune rank from eigengap
-    h_src,
-    h_tgt,
-)
-print(artifact.preflight, artifact.eigengap)
-artifact.save("artifacts/d4_sigma")
+YOUR_BACKBONE.eval()
+h_src = collect_features(YOUR_ENCODE_FN, YOUR_SOURCE_LOADER, max_batches=50)
+h_tgt = collect_features(YOUR_ENCODE_FN, YOUR_TARGET_LOADER, max_batches=50)
+artifact = estimate_from_config(SigmaTaskConfig.for_domain(rank=32), h_src, h_tgt)
+artifact.save("artifacts/YOUR_EXPERIMENT/sigma.pt")
 ```
 
-**Preflight:** prefer `pass`. `marginal` means weak identification (see Office-31 walkthrough).
-
----
-
-## Step 4 — Phase B: train with `PMHLoss`
+Phase B:
 
 ```python
 from pmh import PMHLoss, PMHConfig
 
 pmh = PMHLoss(artifact, PMHConfig(weight=0.3, cap_ratio=0.3, warmup_epochs=2))
-
-backbone.train()
-for epoch in range(num_epochs):
+YOUR_BACKBONE.train()
+for epoch in range(YOUR_EPOCHS):
     pmh.set_epoch(epoch)
-    for x, y in train_loader:
+    for x, y in YOUR_TRAIN_LOADER:
         opt.zero_grad()
-        h = backbone(x)
-        task_loss = criterion(head(h), y)
+        h = YOUR_ENCODE_FN(x)
+        task_loss = YOUR_CRITERION(YOUR_HEAD(h), y)
         total, pmh_term = pmh.capped_total(task_loss, h)
         total.backward()
         opt.step()
 ```
-
-`cap_ratio=0.3` keeps PMH from overpowering the task loss.
-
----
-
-## Step 5 — Controls
-
-Train three runs (or swap `mode=`):
-
-| Run | Code |
-|-----|------|
-| Matched | `PMHLoss(artifact, cfg)` |
-| Wrong-W | `PMHLoss(artifact, cfg, mode="wrong_w")` |
-| Isotropic | `PMHLoss(artifact, cfg, mode="isotropic")` |
-
-See [Walkthrough 8](08-falsification-controls.md).
 
 ---
 
 ## Run the example
 
 ```bash
+# Quick smoke (~30 s)
+set PMH_QUICK=1
+python examples/01_domain_shift_d4.py
+
+# Default
 python examples/01_domain_shift_d4.py
 ```
 
-Expected: prints `preflight`, then epoch logs with `task` and `pmh` decreasing or stabilizing.
+**Expected output (similar to):**
+
+```
+done  task=0.xxxx  pmh=0.xxxx
+preflight=pass  method=D4
+```
+
+(`pass` or `marginal` is OK; `fail` → see [Troubleshooting](../TROUBLESHOOTING.md).)
 
 ---
 
-## Adapt to your project
+## Adaptation worksheet
 
-| Paper toy | Your project |
-|-----------|----------------|
-| `Backbone` MLP | Your `nn.Module` / ResNet / ViT |
-| `make_loader` synthetic | `DataLoader` for source vs target |
-| `rank=6` | Increase until eigengap is acceptable |
+| In the example | In your project |
+|----------------|-----------------|
+| `Backbone` MLP | Your encoder module |
+| `shift=0.8` target loader | Target hospital / site / corpus loader |
+| `rank=6` | 16–32; increase if `marginal` |
+| `TensorDataset` synthetic | `ImageFolder`, `Dataset`, HF collator, … |
+| `hook=backbone` | Same tensor you would use for linear probe |
 
-**Next:** [Walkthrough 2 — ResNet hook](02-resnet-vision-d4.md) for torchvision models.
+---
+
+## Verify success
+
+- [ ] `trainer.artifact_` exists and `method == "D4"`.
+- [ ] `preflight` is `pass` or `marginal` (not `fail`).
+- [ ] Training logs show **both** task and PMH losses changing.
+- [ ] Target-domain metric improves vs B0 (after controls).
+
+---
+
+## Controls (required for claims)
+
+Train **matched**, **wrong_w**, and **isotropic** (same rank):
+
+→ [Walkthrough 8 — Falsification controls](08-falsification-controls.md)
+
+```python
+from pmh import compare_arms
+compare_arms(trainer.artifact_, model_factory, setup_model, train_loader, val_loader, ...)
+```
+
+---
+
+## Common mistakes
+
+| Mistake | Fix |
+|---------|-----|
+| Different hook in estimate vs train | Use identical `hook` / layer |
+| Target loader is only augmented train data | Target loader should reflect **deployment** |
+| `preflight=fail` | More target batches, higher `rank`, try D1 if labels on both domains |
+| PMH always zero | `warmup_epochs`, `weight`, ensure `h.requires_grad` |
+| Claiming win without wrong-W arm | Run [Walkthrough 8](08-falsification-controls.md) |
+
+---
+
+## Next steps
+
+| Goal | Walkthrough |
+|------|-------------|
+| torchvision ResNet | [2 — ResNet D4](02-resnet-vision-d4.md) |
+| sklearn features | [3 — Office-31 / D1](03-office31-sklearn-d1.md) |
+| One-object API recap | [18 — PMHTrainer quickstart](18-pmh-trainer-quickstart.md) |
+| Compare training arms | [17 — Compare arms](17-compare-arms-your-pipeline.md) |

@@ -1,55 +1,78 @@
-# Walkthrough 16: Augmentation modes + D3
+# Walkthrough 16: Known augmentations (D3) — full guide
 
-**Paper block:** T2 photometric / finite augmentation family — nuisance is a **span of known modes**, not a full domain shift.
+**At a glance**
 
-**Goal:** Estimate $\Sigma_{\mathrm{task}}$ from feature-space augmentation deltas; train with matched PMH.
+| | |
+|---|---|
+| **Estimator** | D3 — augmentation delta Gram |
+| **Script** | `examples/18_augmentation_d3.py` |
+| **When** | You **define** the deployment shift as aug modes |
 
-**Script:** `examples/18_augmentation_d3.py`
+[Walkthrough 4](04-multilayer-convnet.md)
 
 ---
 
-## Phase A — stack mode deltas
+## Who this is for
 
-For each augmentation mode $k$ (color jitter, blur, …):
+You know deployment shift equals **specific transforms** (blur, JPEG, color jitter) — not an unlabeled second domain.
+
+---
+
+## Your nuisance sentence
+
+*“Deploy sees stronger blur and compression; label unchanged.”*
+
+---
+
+## Step-by-step
+
+### 1. Implement augmentations
 
 ```python
-with torch.no_grad():
-    h0 = encoder(x)
-    delta_k = encoder(aug_k(x)) - h0   # per sample or batch mean
+def YOUR_AUG(batch_x):
+    # return list of augmented tensors per mode
+    ...
 ```
 
-Stack to `[K, d]` or `[K, N, d]`:
+### 2. Collect deltas
 
 ```python
-artifact = estimate_from_config(
-    SigmaTaskConfig.for_augmentation(),
-    aug_deltas=stack,
-)
+from pmh import collect_augmentation_deltas
+deltas = collect_augmentation_deltas(encoder, batch, YOUR_AUG)
 ```
 
----
+### 3. Train
 
-## Phase B
-
-Standard `PMHLoss` on $h = encoder(x)$ during training (augmentations may still be in the task pipeline).
-
----
-
-## D3 vs D4
-
-| Use D3 | Use D4 |
-|--------|--------|
-| Finite known aug set | Unlabeled target domain / site |
-| $\Sigma$ from mode Gram | $\Sigma$ from source–target feature Gram |
-
-Hybrid: estimate both and **add two PMH terms** (paper §5).
-
----
-
-## Run
+```python
+trainer = PMHTrainer(model, hook=..., nuisance="augmentation")
+trainer.estimate(train_loader, augmentations=YOUR_AUG)
+trainer.fit(train_loader, epochs=20)
+```
 
 ```bash
 python examples/18_augmentation_d3.py
 ```
 
-Vision: see also [Multi-layer CNN](04-multilayer-convnet.md) for spatial feature maps.
+---
+
+## Adaptation worksheet
+
+| Example augs | Your deploy shift |
+|--------------|-------------------|
+| blur/jpeg | Your pipeline |
+
+---
+
+## Common mistakes
+
+| Mistake | Fix |
+|---------|-----|
+| Train-time random aug only | D3 modes must **name** deploy shift |
+| Unlabeled second domain available | Consider D4 instead |
+
+---
+
+## Next steps
+
+- [4 — Multi-layer](04-multilayer-convnet.md)
+- [1 — D4 domain](01-pytorch-domain-d4.md)

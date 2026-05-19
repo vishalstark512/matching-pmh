@@ -1,35 +1,34 @@
-# Walkthrough 13: Speech encoder + D4 (Whisper template)
+# Walkthrough 13: Speech encoder + D4 — full guide
 
-**Paper block:** T6A (Whisper ASR) — accent / channel variation with fixed transcript semantics.
+**At a glance**
 
-**Goal:** Estimate domain Gram on **encoder embeddings** from source vs target acoustic conditions; train with PMH on the same hidden states.
+| | |
+|---|---|
+| **Estimator** | D4 on encoder hidden states |
+| **Script** | `examples/15_speech_encoder_d4.py` |
+| **Metrics** | WER + geometry (TDI when implemented on your hook) |
 
-**Script:** `examples/15_speech_encoder_d4.py`
-
----
-
-## Hook point
-
-```python
-# mel: [B, 1, n_mels, T] or Whisper feature extractor output
-h = encoder(mel)  # [B, d] pooled hidden state
-```
-
-For Whisper: use encoder output after conv stem + Transformer block (mean pool or last frame)—**not** logits.
+[Walkthrough 11](11-temporal-d6.md) for temporal drift within utterances
 
 ---
 
-## Nuisance story
+## Who this is for
 
-| Valid D4 | Prefer D6 / custom |
-|----------|-------------------|
-| Studio vs accented speech (same text) | Adjacent-frame deltas in full attention (contain phoneme signal) |
-
-Paper T6A uses a **content-residual** estimator for geometry; this walkthrough uses **D4** as the simplest integration path when you have clear source/target corpora.
+Speech models (Whisper-style encoders) with **accent / channel / mic** shift; transcript label unchanged.
 
 ---
 
-## Run
+## Your nuisance sentence
+
+*“New microphone or accent distribution; word labels still correct.”*
+
+---
+
+## Step-by-step
+
+1. Hook: last encoder hidden state or your pooling rule `[B, d]`.
+2. Source vs target audio loaders (different corpora).
+3. `PMHTrainer` + `compare_arms` with **WER** on target.
 
 ```bash
 python examples/15_speech_encoder_d4.py
@@ -37,16 +36,16 @@ python examples/15_speech_encoder_d4.py
 
 ---
 
-## Production checklist
+## Adaptation worksheet
 
-1. Source corpus (studio) vs target (deployment mic / accent).
-2. Freeze or warm Whisper encoder for Phase A.
-3. `estimate_from_config(SigmaTaskConfig.for_domain(rank=…), h_studio, h_deploy)`.
-4. Fine-tune with PMH on `h`; report WER **and** geometry metrics (TDI / drift).
-5. Note: WER alone may not separate matched from wrong-W (paper §6A dissociation).
+| Example | Your project |
+|---------|--------------|
+| Mel + toy encoder | Whisper / Wav2Vec2 |
+| Val metric | WER / CER |
 
 ---
 
-## Adapt
+## Next steps
 
-Replace `MelEncoder` with `whisper.load_model(...).encoder` forward pass on your mel batches.
+- [11 — D6 temporal](11-temporal-d6.md)
+- [8 — Controls](08-falsification-controls.md)

@@ -1,56 +1,49 @@
-# Walkthrough 14: QM9 / molecular GNN + D5
+# Walkthrough 14: QM9 / molecules (D5) — full guide
 
-**Paper block:** T5A (QM9) — atom **positions** are label-preserving nuisance at deployment noise levels; geometry can still be signal.
+**At a glance**
 
-**Goal:** Apply D5 on **coordinate channels** of your molecular readout; train regression with PMH.
+| | |
+|---|---|
+| **Estimator** | D5 compositional on molecular coordinates |
+| **Script** | `examples/16_qm9_molecule_d5.py` |
 
-**Script:** `examples/16_qm9_molecule_d5.py`
-
----
-
-## Hook & indices
-
-```python
-nuisance_idx = [0, 1, 2]  # dims corresponding to x,y,z coordinate block in h
-h = gnn.encode_graph(node_features, adj)  # [B, d]
-```
-
-Map indices to the partition used when you built $h$ (per-atom pooling, invariant readout, etc.).
+[Walkthrough 5](05-compositional-d5.md)
 
 ---
 
-## Phase A
+## Who this is for
 
-```python
-artifact = estimate_from_config(
-    SigmaTaskConfig.for_compositional(nuisance_idx),
-    h_collection,  # graphs with position noise in deployment regime
-)
-```
+Molecular property prediction where **nuisance coordinates** (e.g. conformer / environment block) are known separate from task atoms.
 
 ---
 
-## Phase B
+## Your nuisance sentence
 
-```python
-task = mse_loss(head(h), property_target)
-total, _ = pmh.capped_total(task, h)
-```
+*“Solvent / conformer block shifts; property label from solute unchanged.”*
 
 ---
 
-## Paper lessons (integrate honestly)
+## Step-by-step
 
-- Position-noise PMH can **help** robustness at $\sigma > 0$.
-- **Signal-aligned** PMH on coordinates at large $\sigma$ **hurts** MAE (Corollary E) — run wrong partition as negative control.
-- Full per-atom gradient $W_c$ spec in paper; library D5 is the coordinate-block estimator.
-
----
-
-## Run
+1. Define `nuisance_indices` on your feature vector.
+2. Run `examples/16_qm9_molecule_d5.py` for wiring.
+3. `PMHTrainer(..., nuisance_indices=...)`.
 
 ```bash
 python examples/16_qm9_molecule_d5.py
 ```
 
-Also: [Compositional D5](05-compositional-d5.md), `examples/13_compositional_train_d5.py`.
+---
+
+## Adaptation worksheet
+
+| Example | Your GNN / fingerprint |
+|---------|------------------------|
+| Index split | Your chemistry semantics |
+
+---
+
+## Next steps
+
+- [5 — D5](05-compositional-d5.md)
+- [hooks.md](../hooks.md) — `encoder_gnn_mean_pool`

@@ -1,56 +1,157 @@
-# Walkthrough 17: Compare training arms on **your** pipeline
+# Walkthrough 17: Compare arms on **your** pipeline — full guide
 
-**Goal:** Run **B0**, **matched**, **wrong-W**, and **isotropic** on the **same model and data** you already use—then read a comparison table. This is for **your** experiment, not a paper task ID.
+**At a glance**
 
-**Template:** `examples/20_compare_training_arms.py`
+| | |
+|---|---|
+| **Purpose** | B0 / matched / wrong-W / isotropic on **your** model + data |
+| **Output** | `benchmark.md` + `benchmark.json` |
+| **Script** | `examples/20_compare_training_arms.py` |
+| **Required** | After PMH integrates; before publication claims |
+
+[Walkthrough 8](08-falsification-controls.md) · [BENCHMARKS.md](../BENCHMARKS.md)
 
 ---
 
-## When to use this
+## Who this is for
 
-- You integrated `PMHLoss` and want evidence the gain is from **matched** Σ, not generic regularization.
-- You need a markdown/JSON table for a report or ablation section.
-- You want the same weight initialization across arms (fair comparison).
+You already train with `PMHTrainer` or `PMHLoss` and need a **fair ablation table** without rewriting training loops four times by hand.
+
+Also use when:
+
+- Writing a report section “matched vs controls”.
+- Debugging “PMH helped” vs “any penalty helped”.
 
 ---
 
-## Steps
+## What you implement (two callbacks)
 
-1. Implement `model_factory()` and `setup(model)` like in your real trainer.
-2. Use **your** `train_loader` and a `val_loader` that reflects **deployment** (target domain, stressed sensors, held-out style, …).
-3. Run:
+The example script expects **your** training code behind these hooks:
 
-```bash
-python examples/20_compare_training_arms.py --out results/my_experiment
+```python
+def model_factory():
+    """Return a fresh nn.Module (same architecture each arm)."""
+    return YOUR_BUILD_MODEL()
+
+def setup_model(model):
+  """Return dict with encoder, head, optimizer, etc."""
+    return {
+        "encoder": model.backbone,
+        "head": model.head,
+        "optimizer": torch.optim.Adam(model.parameters(), lr=YOUR_LR),
+        # ... whatever your loop needs
+    }
 ```
 
-4. Open `results/my_experiment/benchmark.md`.
+Open `examples/20_compare_training_arms.py` and replace the toy `ToyModel` with imports from **your** codebase.
 
 ---
 
-## Interpretation
+## Step-by-step
+
+### 1. Fix artifact (Phase A done once)
+
+```python
+from pmh import PMHTrainer
+
+trainer = PMHTrainer(...)
+trainer.estimate(source_batches=..., target_batches=...)
+artifact = trainer.artifact_
+```
+
+Or load: `SigmaTaskEstimate.load("artifacts/sigma.pt")`.
+
+### 2. Point val loader at deployment
+
+```python
+val_loader = YOUR_TARGET_DOMAIN_LOADER   # not train-source only
+```
+
+### 3. Run comparison
+
+```bash
+python examples/20_compare_training_arms.py --out results/YOUR_EXPERIMENT
+```
+
+Or API:
+
+```python
+from pmh import compare_arms
+
+compare_arms(
+    artifact,
+    model_factory=YOUR_MODEL_FACTORY,
+    setup_model=YOUR_SETUP,
+    train_loader=YOUR_TRAIN_LOADER,
+    val_loader=YOUR_VAL_LOADER,
+    epochs=YOUR_EPOCHS,
+    report_dir="results/YOUR_EXPERIMENT",
+)
+```
+
+### 4. Read report
+
+Open `results/YOUR_EXPERIMENT/benchmark.md`.
+
+---
+
+## sklearn-only path
+
+No end-to-end training — frozen features:
+
+```bash
+python examples/21_benchmark_sklearn_table.py --report results/sklearn_arms
+```
+
+```python
+from pmh import compare_arms_sklearn
+compare_arms_sklearn(x_src, y_src, x_tgt, y_tgt, report_dir="results/run1")
+```
+
+---
+
+## Interpretation table
 
 | Pattern | Meaning |
 |---------|---------|
-| matched > b0, wrong_w ≈ isotropic | Strong support for matching principle |
-| matched > b0, wrong_w also > b0 | May be generic regularization—tune down `weight` or check hook |
-| matched ≈ b0 | Weak Σ ID (`preflight` marginal?) or wrong Dk |
-| All arms similar | Val metric may not reflect nuisance; change eval |
+| matched > b0, wrong_w ≈ isotropic | Strong matched-geometry story |
+| matched > b0, wrong_w also > b0 | Generic regularization — lower `weight`, check hook |
+| matched ≈ b0 | Weak ID — check `preflight`, nuisance, Dk |
+| All similar | Val metric may not reflect nuisance |
 
 ---
 
-## sklearn / feature-only pipelines
+## Adaptation worksheet
 
-If you only have frozen features (no end-to-end training):
-
-```bash
-pmh-train benchmark --config examples/configs/benchmark_features.json
-```
-
-Edit the JSON to point at your `.npy` source/target features and labels.
+| Template | Your value |
+|----------|------------|
+| `model_factory` | |
+| `setup_model` | |
+| `val_loader` | |
+| `epochs` per arm | |
+| `report_dir` | |
 
 ---
 
-## API reference
+## Verify success
 
-`pmh.benchmark.run_benchmark_protocol` · `write_benchmark_report` · see [ADAPT_YOUR_PIPELINE.md](../ADAPT_YOUR_PIPELINE.md).
+- [ ] Four arms in `benchmark.md`
+- [ ] Same `rank` for matched / wrong_w / isotropic
+- [ ] Metric name documents target vs source
+
+---
+
+## Common mistakes
+
+| Mistake | Fix |
+|---------|-----|
+| Shared weights across arms | New model per arm |
+| Source validation | Target validation |
+| Skipping isotropic | Required control |
+
+---
+
+## Next steps
+
+- [8 — Controls theory](08-falsification-controls.md)
+- [1 — Training setup](01-pytorch-domain-d4.md)
