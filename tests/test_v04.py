@@ -1,5 +1,4 @@
 import json
-import tempfile
 from pathlib import Path
 
 import pytest
@@ -78,6 +77,16 @@ def test_estimate_style_sigma_toy(style_jsonl: Path):
     assert art.sigma.shape == (16, 16)
 
 
+def _lightning_usable() -> bool:
+    try:
+        from pmh.integrations.lightning import lightning_available
+
+        return lightning_available()
+    except Exception:
+        return False
+
+
+@pytest.mark.skipif(not _lightning_usable(), reason="lightning not installed or broken")
 def test_add_pmh_to_loss():
     import torch.nn as nn
     from pmh import PMHLoss, SigmaTaskConfig, estimate_from_config
@@ -92,11 +101,7 @@ def test_add_pmh_to_loss():
     assert total.ndim == 0
 
 
-@pytest.mark.skipif(
-    __import__("importlib").util.find_spec("lightning") is None
-    and __import__("importlib").util.find_spec("pytorch_lightning") is None,
-    reason="lightning not installed",
-)
+@pytest.mark.skipif(not _lightning_usable(), reason="lightning not installed or broken")
 def test_lightning_callback_instantiate():
     from pmh import estimate_from_config, SigmaTaskConfig
     from pmh.integrations.lightning import PMHLightningCallback

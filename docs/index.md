@@ -1,32 +1,68 @@
-# matching-pmh documentation
+# matching-pmh
 
-This package implements the **matching principle** for machine learning:
+<p align="center"><em>Estimate deployment nuisance geometry. Train any encoder with matched PMH.</em></p>
 
-1. **Estimate** \(\Sigma_{\mathrm{task}}\) — covariance of label-preserving deployment nuisance.
-2. **Train** with a matched PMH penalty on representations \(h = \phi(x)\).
+Reference implementation of the [**Matching Principle**](THEORY.md) for machine learning research and production fine-tuning.
 
-It is the public, installable companion to the Grand Unification research line (theory + thirteen empirical blocks). The paper proves *when* range matching is necessary; this library shows *how* to estimate and train in practice.
+| | |
+|---|---|
+| Install | `pip install matching-pmh` |
+| Import | `import pmh` |
+| CLI | `pmh-train list-methods` |
+| PyPI | https://pypi.org/project/matching-pmh/ |
+| Source | https://github.com/vishalstark512/matching-pmh |
 
-## Start here
+---
 
-| I want to… | Read |
-|------------|------|
-| Understand the principle and use it on **my** model | [THEORY.md](THEORY.md) then [README](../README.md) |
-| Pick D1 vs D4 vs D7 for my task | [Nuisance cookbook](nuisance_types.md) |
-| Run a job from JSON | [CLI](cli.md) |
-| Wire PyTorch training | [Training](training.md) |
-| Use Hugging Face / DPO | [HF integration](integrations-hf.md), example `11_dpo_lora_style_pmh.py` |
-| See symptom → method | [Getting started](getting-started.md) |
+## New here?
 
-## Install
+1. **[Quickstart](QUICKSTART.md)** — running example in 10 minutes  
+2. **[Walkthrough 1](walkthroughs/01-pytorch-domain-d4.md)** — PyTorch + domain shift (D4)  
+3. **[Walkthrough 8](walkthroughs/08-falsification-controls.md)** — matched vs wrong-W vs isotropic  
 
-```bash
-pip install matching-pmh
-pip install "matching-pmh[hf]"      # language-model style (D7)
-pip install "matching-pmh[hf-lora]" # DPO + LoRA example
+Pick your stack from **[16 walkthroughs](walkthroughs/index.md)** (ViT, ResNet, Whisper, QM9, CodeBERT, LLM D7, …).
+
+---
+
+## I want to…
+
+| Goal | Document |
+|------|----------|
+| Wire PMH into my model | [ARCHITECTURES.md](ARCHITECTURES.md) |
+| Understand the math | [THEORY.md](THEORY.md) |
+| See why the API is shaped this way | [PHILOSOPHY.md](PHILOSOPHY.md) |
+| Choose D1 vs D4 vs D7 | [Nuisance cookbook](nuisance_types.md) |
+| Run JSON / HPC jobs | [CLI](cli.md) |
+| Browse runnable scripts | [examples/README.md](../examples/README.md) |
+| Hugging Face / DPO | [HF integration](integrations-hf.md) |
+
+---
+
+## Two-phase recipe
+
+```mermaid
+flowchart LR
+  A[Phase A: estimate Sigma_task] --> B[Phase B: L_task + PMHLoss]
 ```
 
-## Links
+1. Name label-preserving deployment nuisance  
+2. Estimate with **D1–D7**  
+3. Preflight (`pass` / `marginal` / `fail`)  
+4. Train on representations $h=\phi(x)$  
+5. Report **controls** (wrong-W, isotropic)  
 
-- PyPI: https://pypi.org/project/matching-pmh/
-- Source: https://github.com/vishalstark512/matching-pmh
+---
+
+## Install extras
+
+```bash
+pip install "matching-pmh[vision]"    # ResNet / ViT examples
+pip install "matching-pmh[hf-lora]"   # Qwen DPO walkthrough
+pip install "matching-pmh[all]"       # dev + docs
+```
+
+---
+
+## Citation
+
+See [`CITATION.cff`](../CITATION.cff) and the Grand Unification / Matching Principle manuscript.

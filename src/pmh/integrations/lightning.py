@@ -19,6 +19,30 @@ except ImportError:
         _pl = None  # type: ignore[assignment]
 
 
+def lightning_available() -> bool:
+    """True if Lightning can be imported (package present and loadable)."""
+    try:
+        if _pl is not None:
+            _ = _pl.LightningModule
+            return True
+    except Exception:
+        pass
+    try:
+        import lightning.pytorch as pl  # noqa: PLC0415
+
+        _ = pl.LightningModule
+        return True
+    except Exception:
+        pass
+    try:
+        import pytorch_lightning as pl  # noqa: PLC0415
+
+        _ = pl.LightningModule
+        return True
+    except Exception:
+        return False
+
+
 def _require_lightning() -> Any:
     if _pl is None:
         raise ImportError(

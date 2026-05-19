@@ -47,7 +47,6 @@ def _resolve_features(data: dict[str, Any], key: str, alt: str) -> torch.Tensor:
 def _estimate_from_job(job: dict[str, Any]) -> Any:
     from pmh.artifact import SigmaTaskEstimate
     from pmh.catalog import config_from_job, validate_job_data
-    from pmh.config import SigmaTaskConfig
     from pmh.estimate import estimate_from_config
     from pmh.numpy_api import estimate_sigma_task_numpy
 

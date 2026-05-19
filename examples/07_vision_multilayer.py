@@ -7,7 +7,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from pmh import PMHConfig, SigmaTaskConfig, estimate_from_config
+from pmh import PMHConfig
 from pmh.vision import MultiLayerPMHLoss, gram_sample_noise
 
 

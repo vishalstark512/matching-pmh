@@ -4,7 +4,7 @@ import numpy as np
 
 from pmh.integrations import PMHCallback, train_epoch_with_pmh
 from pmh import SigmaTaskConfig, PMHConfig, estimate_from_config
-from pmh.numpy_api import estimate_sigma_task_numpy, gram_from_diff_numpy
+from pmh.numpy_api import gram_from_diff_numpy
 from pmh.sklearn_match import MatchedSubspaceProjector
 from pmh.vision import MultiLayerPMHLoss
 

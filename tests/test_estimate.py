@@ -1,6 +1,6 @@
 import torch
 
-from pmh import eigengap_ratio, estimate_sigma_task
+from pmh import SigmaTaskConfig, eigengap_ratio, estimate_from_config, estimate_sigma_task
 
 
 def test_d2_isotropic():
@@ -27,6 +27,16 @@ def test_d3_aug_modes():
     modes = torch.randn(5, 12)
     s = estimate_sigma_task(modes, method="D3")
     assert s.shape == (12, 12)
+
+
+def test_d3_estimate_from_config_kwarg_only():
+    modes = torch.randn(3, 8)
+    artifact = estimate_from_config(
+        SigmaTaskConfig.for_augmentation(),
+        aug_deltas=modes,
+    )
+    assert artifact.method == "D3"
+    assert artifact.sigma.shape == (8, 8)
 
 
 def test_d7_embedding_deltas():

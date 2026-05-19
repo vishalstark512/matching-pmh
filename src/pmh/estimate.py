@@ -37,7 +37,6 @@ def estimate_from_config(
         if config.method == "D7" and isinstance(args[0], torch.Tensor):
             cov = sigma
         if config.method in ("D1", "D4"):
-            from pmh.preflight import PreflightStatus
 
             status, eigengap = preflight_eigengap(cov, rank)
             preflight = status.value
@@ -113,7 +112,9 @@ def _dispatch(config: SigmaTaskConfig, *args: Any, **kwargs: Any) -> torch.Tenso
         )
 
     if m == "D3":
-        aug = kwargs.get("aug_deltas") or (args[0] if args else None)
+        aug = kwargs.get("aug_deltas")
+        if aug is None and args:
+            aug = args[0]
         if aug is None:
             raise ValueError("D3: pass aug_deltas")
         return estimate_d3(aug, shrinkage=shrinkage)

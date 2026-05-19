@@ -94,7 +94,6 @@ def list_methods() -> list[MethodSpec]:
 
 def config_from_job(estimator: dict[str, Any]) -> SigmaTaskConfig:
     """Build :class:`SigmaTaskConfig` from a JSON job ``estimator`` block."""
-    method = estimator.get("method", "D4")
     return SigmaTaskConfig.from_dict(estimator)
 
 

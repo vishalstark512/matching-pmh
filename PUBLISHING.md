@@ -47,7 +47,7 @@ cd C:\Users\Eigenaar\Desktop\matching-pmh
 gh auth login
 gh repo create matching-pmh --public --source=. --remote=origin
 git add .
-git commit -m "Release matching-pmh 0.6.0: D1-D7 estimators, PMH, pmh-train CLI"
+git commit -m "Release matching-pmh 0.7.0: walkthroughs, lab docs, example CI"
 git branch -M main
 git push -u origin main
 ```
@@ -77,7 +77,7 @@ Create an API token on your [account settings](https://pypi.org/manage/account/)
 Verify:
 
 ```powershell
-pip install matching-pmh==0.6.0
+pip install matching-pmh==0.7.0
 pmh-train list-methods
 python -c "import pmh; print(pmh.__version__)"
 ```
@@ -87,8 +87,8 @@ python -c "import pmh; print(pmh.__version__)"
 ## Path B — Publish via GitHub tag (after trusted publishing is configured)
 
 ```powershell
-git tag v0.6.0
-git push origin v0.6.0
+git tag v0.7.0
+git push origin v0.7.0
 ```
 
 Workflow `.github/workflows/ci.yml` runs tests, builds, and publishes to **pypi.org** on tags `v*`.

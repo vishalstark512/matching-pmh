@@ -1,0 +1,25 @@
+name: Bug report
+description: Something broke in matching-pmh
+title: "[bug]: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      placeholder: pip version, minimal script, estimator D1-D7
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: matching-pmh version
+      placeholder: pip show matching-pmh
+    validations:
+      required: true

@@ -46,7 +46,7 @@ def main() -> None:
 
     from transformers import TrainingArguments
 
-    from pmh.integrations.hf_trainer import default_representation_fn, get_pmh_trainer
+    from pmh.integrations.hf_trainer import get_pmh_trainer
 
     PMHTrainer = get_pmh_trainer()
     d = 32

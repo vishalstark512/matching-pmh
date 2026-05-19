@@ -8,23 +8,23 @@ This page summarizes the **matching principle** as in the Grand Unification manu
 
 **Deployment nuisance** = ways the input can change at test time **without changing the label**.
 
-Stack that variation into a random vector \(n\) with law \(Q_n\). The population matrix is
+Stack that variation into a random vector $n$ with law $Q_n$. The population matrix is
 
-\[
+$$
 \Sigma_{\mathrm{task}} = \mathrm{Cov}_{Q_n}(n).
-\]
+$$
 
-**Deployment drift** of an encoder \(\phi\) is how much representations move under that nuisance. In the local-linear regime,
+**Deployment drift** of an encoder $\phi$ is how much representations move under that nuisance. In the local-linear regime,
 
-\[
+$$
 \tilde D_Q(\phi) = \mathbb{E}_x\left[\mathrm{Tr}\left(J_\phi(x)^\top J_\phi(x)\,\Sigma_{\mathrm{task}}\right)\right].
-\]
+$$
 
-**Matched PMH** adds a penalty that discourages Jacobian energy along a matrix \(\Sigma'\) whose **column space covers** \(\mathrm{range}(\Sigma_{\mathrm{task}})\):
+**Matched PMH** adds a penalty that discourages Jacobian energy along a matrix $\Sigma'$ whose **column space covers** $\mathrm{range}(\Sigma_{\mathrm{task}})$:
 
-\[
+$$
 \mathcal{L} = \mathcal{L}_{\mathrm{task}} + \lambda\,\mathbb{E}_x\left[\mathrm{Tr}\left(J_\phi^\top J_\phi\,\Sigma'\right)\right].
-\]
+$$
 
 **Architecture-agnostic:** \(\phi\) can be any differentiable map you train (CNN, ViT, GNN, Transformer, MLP, speech encoder, causal LM with LoRA). The library only needs representations \(h=\phi(x)\) (or hidden states) and a way to estimate \(\Sigma_{\mathrm{task}}\) for your nuisance story.
 
@@ -114,6 +114,7 @@ The paper uses Hutchinson / paired-view / multi-scale surrogates for the trace; 
 
 ## Further reading
 
+- [Architectures — where to hook PMH in your code](ARCHITECTURES.md)
 - [Getting started](getting-started.md) — symptom → method
 - [Nuisance cookbook](nuisance_types.md) — CLI and data formats
 - Grand Unification manuscript (theory, thirteen blocks, proofs)

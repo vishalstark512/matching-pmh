@@ -1,0 +1,47 @@
+name: Integration help
+description: Wiring PMH into your model or stack
+title: "[integration]: "
+labels: ["question"]
+body:
+  - type: dropdown
+    id: stack
+    attributes:
+      label: Stack
+      options:
+        - PyTorch (custom loop)
+        - torchvision / ViT
+        - Hugging Face Trainer
+        - Lightning
+        - sklearn / frozen features
+        - GNN
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    id: estimator
+    attributes:
+      label: Estimator (if known)
+      options:
+        - D1
+        - D2
+        - D3
+        - D4
+        - D5
+        - D6
+        - D7
+        - Not sure
+    validations:
+      required: true
+  - type: textarea
+    id: nuisance
+    attributes:
+      label: Deployment nuisance (one sentence)
+      description: What changes at deployment without changing the label?
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Hook tensor h (shape, layer) and what you tried
+    validations:
+      required: true

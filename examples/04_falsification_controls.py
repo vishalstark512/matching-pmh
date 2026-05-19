@@ -1,7 +1,6 @@
 """Matched vs wrong-W vs isotropic PMH on the same batch."""
 
 import torch
-import torch.nn as nn
 
 from pmh import PMHConfig, PMHLoss, SigmaTaskConfig, estimate_from_config
 
@@ -20,7 +19,7 @@ def main() -> None:
     print(f"matched PMH:  {matched.item():.6f}")
     print(f"wrong-W PMH:  {wrong.item():.6f}")
     print(f"isotropic PMH: {iso.item():.6f}")
-    print("(Expect wrong-W ≈ isotropic in expectation over many seeds; single seed may differ.)")
+    print("(Expect wrong-W ~= isotropic in expectation over many seeds; single seed may differ.)")
 
 
 if __name__ == "__main__":

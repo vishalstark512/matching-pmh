@@ -1,17 +1,53 @@
 site_name: matching-pmh
-site_description: Reference library for the matching principle (Sigma_task + PMH)
+site_description: Matched PMH from estimated deployment nuisance geometry (Sigma_task, D1-D7)
+site_url: https://github.com/vishalstark512/matching-pmh
 repo_url: https://github.com/vishalstark512/matching-pmh
+repo_name: vishalstark512/matching-pmh
+edit_uri: edit/main/docs/
+
 theme:
   name: material
   palette:
     - scheme: default
       primary: indigo
+      accent: indigo
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - content.code.copy
+    - search.suggest
+
 nav:
   - Home: index.md
-  - Theory and five-step recipe: THEORY.md
-  - Getting started: getting-started.md
-  - Nuisance cookbook (D1-D7): nuisance_types.md
-  - CLI (pmh-train): cli.md
+  - Quickstart: QUICKSTART.md
+  - Theory: THEORY.md
+  - Integration:
+      - Architecture patterns: ARCHITECTURES.md
+      - Design philosophy: PHILOSOPHY.md
+  - Walkthroughs:
+      - Overview: walkthroughs/index.md
+      - "1 PyTorch D4": walkthroughs/01-pytorch-domain-d4.md
+      - "2 ResNet D4": walkthroughs/02-resnet-vision-d4.md
+      - "3 Office-31": walkthroughs/03-office31-sklearn-d1.md
+      - "4 Multi-layer CNN": walkthroughs/04-multilayer-convnet.md
+      - "5 Compositional D5": walkthroughs/05-compositional-d5.md
+      - "6 LLM style D7": walkthroughs/06-llm-style-d7.md
+      - "7 HF Trainer DPO": walkthroughs/07-hf-trainer-d7-dpo.md
+      - "8 Controls": walkthroughs/08-falsification-controls.md
+      - "9 CLI jobs": walkthroughs/09-cli-json-jobs.md
+      - "10 Lightning": walkthroughs/10-lightning.md
+      - "11 Temporal D6": walkthroughs/11-temporal-d6.md
+      - "12 ViT CLS": walkthroughs/12-vit-cls-d4.md
+      - "13 Speech": walkthroughs/13-speech-whisper-d4.md
+      - "14 QM9": walkthroughs/14-qm9-molecule-d5.md
+      - "15 Code tokens": walkthroughs/15-codebert-tokens-d5.md
+      - "16 Augmentations D3": walkthroughs/16-augmentation-d3.md
+  - Reference:
+      - Getting started: getting-started.md
+      - Nuisance cookbook: nuisance_types.md
+      - CLI: cli.md
+      - Training API: training.md
   - Estimators:
       - Overview: estimators/index.md
       - D1 Subspace: estimators/d1.md
@@ -21,20 +57,30 @@ nav:
       - D5 Compositional: estimators/d5.md
       - D6 Temporal: estimators/d6.md
       - D7 Alignment: estimators/d7.md
-  - Training: training.md
   - Integrations:
-      - PyTorch loops: integrations.md
-      - Hugging Face (D7): integrations-hf.md
+      - PyTorch: integrations.md
+      - Hugging Face: integrations-hf.md
       - HF Trainer: integrations-hf-trainer.md
       - Lightning: integrations-lightning.md
-  - Classical ML (NumPy/sklearn): sklearn.md
-  - Datasets (Office-31): datasets.md
+  - Classical ML: sklearn.md
+  - Datasets: datasets.md
 
 plugins:
   - search
 
 markdown_extensions:
   - admonition
-  - codehilite
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.arithmatex:
+      generic: true
   - toc:
       permalink: true
+
+extra_javascript:
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js

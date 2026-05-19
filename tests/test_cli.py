@@ -50,7 +50,6 @@ def test_estimate_d4_npy(tmp_path: Path):
 
 
 def test_run_dry_run(tmp_path: Path):
-    from pmh import SigmaTaskConfig, estimate_from_config
     from pmh.cli.main import main
 
     a = torch_rand_artifact(tmp_path)
