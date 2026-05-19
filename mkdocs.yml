@@ -1,0 +1,39 @@
+site_name: matching-pmh
+site_description: Reference library for the matching principle (Sigma_task + PMH)
+repo_url: https://github.com/matching-pmh/matching-pmh
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+nav:
+  - Home: index.md
+  - Getting started: getting-started.md
+  - Nuisance cookbook (D1-D7): nuisance_types.md
+  - CLI (pmh-train): cli.md
+  - Estimators:
+      - Overview: estimators/index.md
+      - D1 Subspace: estimators/d1.md
+      - D2 Isotropic: estimators/d2.md
+      - D3 Augmentation: estimators/d3.md
+      - D4 Domain: estimators/d4.md
+      - D5 Compositional: estimators/d5.md
+      - D6 Temporal: estimators/d6.md
+      - D7 Alignment: estimators/d7.md
+  - Training: training.md
+  - Integrations:
+      - PyTorch loops: integrations.md
+      - Hugging Face (D7): integrations-hf.md
+      - HF Trainer: integrations-hf-trainer.md
+      - Lightning: integrations-lightning.md
+  - Classical ML (NumPy/sklearn): sklearn.md
+  - Datasets (Office-31): datasets.md
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - codehilite
+  - toc:
+      permalink: true

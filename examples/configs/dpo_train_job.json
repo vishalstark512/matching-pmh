@@ -1,0 +1,18 @@
+{
+  "artifact": "artifacts/d7_style.pt",
+  "pmh": {
+    "weight": 0.2,
+    "cap_ratio": 0.3,
+    "warmup_epochs": 0,
+    "warmup_ramp_epochs": 2
+  },
+  "training": {
+    "backend": "hf_trainer",
+    "style_jsonl": "examples/data/style_pairs_sample.jsonl",
+    "preference_jsonl": "examples/data/preference_pairs_sample.jsonl",
+    "model_id": "Qwen/Qwen2.5-0.5B-Instruct",
+    "lora_r": 8,
+    "max_steps": 20,
+    "max_pairs": 32
+  }
+}

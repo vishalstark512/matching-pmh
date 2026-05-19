@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+dist/
+*.egg-info/
+.venv/
+.venv-pypi-test/
+.venv-pypi-verify/
+venv/
+artifacts/
+tmp_trainer/
+tmp_pmh_trainer/
+*.pt
+.DS_Store

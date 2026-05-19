@@ -1,0 +1,11 @@
+{
+  "estimator": { "method": "D7", "rank": 32, "shrinkage": 1e-6 },
+  "data": {
+    "style_jsonl": "examples/data/style_pairs_sample.jsonl",
+    "model_id": "Qwen/Qwen2.5-0.5B-Instruct",
+    "max_pairs": 50,
+    "batch_size": 2,
+    "max_length": 256
+  },
+  "output": "artifacts/d7_style"
+}

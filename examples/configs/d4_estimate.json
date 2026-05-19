@@ -1,0 +1,8 @@
+{
+  "estimator": { "method": "D4", "rank": 8, "shrinkage": 1e-6 },
+  "data": {
+    "source_npy": "REPLACE_WITH_source.npy",
+    "target_npy": "REPLACE_WITH_target.npy"
+  },
+  "output": "artifacts/d4_domain"
+}

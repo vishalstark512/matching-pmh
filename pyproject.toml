@@ -1,0 +1,66 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "matching-pmh"
+version = "0.6.0"
+description = "Reference library for the matching principle: estimate Sigma_task (D1-D7) and matched PMH penalties"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [{ name = "Vishal Rajput" }]
+keywords = ["robustness", "domain-adaptation", "representation-learning", "jacobian", "pmh"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+  "numpy>=1.24",
+  "torch>=2.1",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "ruff>=0.4"]
+sklearn = ["scikit-learn>=1.3"]
+hf = ["transformers>=4.36", "accelerate>=0.25"]
+hf-lora = ["matching-pmh[hf]", "peft>=0.7", "datasets>=2.14"]
+lightning = ["lightning>=2.1"]
+vision = ["torchvision>=0.16"]
+docs = ["mkdocs>=1.5", "mkdocs-material>=9.0"]
+all = ["matching-pmh[dev,sklearn,hf,hf-lora,lightning,vision,docs]"]
+
+[project.scripts]
+pmh-train = "pmh.cli.main:main"
+
+[project.urls]
+Homepage = "https://github.com/matching-pmh/matching-pmh"
+Documentation = "https://github.com/matching-pmh/matching-pmh#readme"
+Repository = "https://github.com/matching-pmh/matching-pmh"
+Issues = "https://github.com/matching-pmh/matching-pmh/issues"
+Changelog = "https://github.com/matching-pmh/matching-pmh/blob/main/CHANGELOG.md"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pmh"]
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+  "/.github",
+  "/artifacts",
+  "/tmp_trainer",
+  "/tmp_pmh_trainer",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"

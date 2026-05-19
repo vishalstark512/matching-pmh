@@ -1,0 +1,40 @@
+"""Lemma D4: cross-domain Gram from source/target features."""
+
+from __future__ import annotations
+
+import torch
+
+from pmh._tensor import ensure_psd, flatten_features
+
+
+def gram_from_diff(feats_s: torch.Tensor, feats_t: torch.Tensor) -> torch.Tensor:
+    """Sigma = (1/N) D^T D for D = centre(phi_s) - centre(phi_t)."""
+    s = flatten_features(feats_s)
+    t = flatten_features(feats_t)
+    s = s - s.mean(0, keepdim=True)
+    t = t - t.mean(0, keepdim=True)
+    diff = s - t
+    n = diff.shape[0]
+    return (diff.T @ diff) / max(n, 1)
+
+
+def estimate_d4(
+    source: torch.Tensor,
+    target: torch.Tensor,
+    *,
+    rank: int | None = None,
+    shrinkage: float = 1e-6,
+) -> torch.Tensor:
+    sigma = gram_from_diff(source, target)
+    if rank is not None:
+        sigma = _truncate_rank(sigma, rank)
+    return ensure_psd(sigma, shrinkage=shrinkage)
+
+
+def _truncate_rank(cov: torch.Tensor, rank: int) -> torch.Tensor:
+    evals, evecs = torch.linalg.eigh(cov.float())
+    evals = evals.clamp(min=0.0)
+    r = min(rank, cov.shape[0])
+    top = evecs[:, -r:]
+    lam = evals[-r:]
+    return top @ torch.diag(lam) @ top.T

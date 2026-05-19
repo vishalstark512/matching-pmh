@@ -1,0 +1,35 @@
+name: Publish TestPyPI
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_tag:
+        description: "Git tag to publish (e.g. v0.6.0); leave empty to build HEAD"
+        required: false
+        default: ""
+
+jobs:
+  publish-testpypi:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.version_tag != '' && inputs.version_tag || github.ref }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install build tools
+        run: pip install build twine
+
+      - name: Build sdist/wheel
+        run: python -m build
+
+      - name: Publish to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          # Configure TestPyPI trusted publishing for this repo, or set TESTPYPI_API_TOKEN.
