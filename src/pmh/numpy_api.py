@@ -33,8 +33,13 @@ def estimate_cross_domain_subspace_numpy(
     rank: int = 16,
     seed: int = 0,
     n_pairs_per_class: int = 100,
+    include_mean_shift: bool = True,
 ) -> np.ndarray:
-    """Lemma D1: top-`rank` directions from class-aligned cross-domain deltas."""
+    """Lemma D1: top-`rank` directions from class-aligned cross-domain deltas.
+
+    Stacks class-mean shifts :math:`\\mu_T^c - \\mu_S^c` (when ``include_mean_shift``)
+  and centered same-class pair deltas, then takes top right singular vectors (T1 protocol).
+    """
     rng = np.random.default_rng(seed)
     classes = np.intersect1d(np.unique(y_src), np.unique(y_tgt))
     deltas: list[np.ndarray] = []
@@ -43,6 +48,8 @@ def estimate_cross_domain_subspace_numpy(
         idx_t = np.where(y_tgt == c)[0]
         if len(idx_s) == 0 or len(idx_t) == 0:
             continue
+        if include_mean_shift:
+            deltas.append((x_tgt[idx_t].mean(0) - x_src[idx_s].mean(0))[None, :].astype(np.float32))
         n_pairs = min(n_pairs_per_class, len(idx_s), len(idx_t))
         ps = rng.choice(idx_s, n_pairs, replace=len(idx_s) < n_pairs)
         pt = rng.choice(idx_t, n_pairs, replace=len(idx_t) < n_pairs)

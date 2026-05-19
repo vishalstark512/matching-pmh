@@ -7,8 +7,40 @@ from dataclasses import dataclass
 import numpy as np
 
 from pmh.artifact import SigmaTaskEstimate
-from pmh.numpy_api import estimate_cross_domain_subspace_numpy, estimate_sigma_task_numpy
+from pmh.numpy_api import (
+    estimate_cross_domain_subspace_numpy,
+    estimate_sigma_task_numpy,
+    gram_from_diff_numpy,
+)
 from pmh.config import SigmaTaskConfig
+
+
+def wrong_w_subspace_numpy(
+    w_matched: np.ndarray,
+    rank: int,
+    *,
+    seed: int = 0,
+) -> np.ndarray:
+    """Random rank-`rank` subspace orthogonalized against matched ``W`` (T1 / Lemma C)."""
+    d = int(w_matched.shape[0])
+    rng = np.random.default_rng(seed)
+    m = rng.standard_normal((d, rank)).astype(np.float32)
+    residual = m - w_matched @ (w_matched.T @ m)
+    q, _ = np.linalg.qr(residual)
+    r = min(rank, q.shape[1])
+    return q[:, :r].astype(np.float32)
+
+
+def domain_d4_subspace_numpy(
+    x_src: np.ndarray,
+    x_tgt: np.ndarray,
+    rank: int,
+) -> np.ndarray:
+    """Top-`rank` directions of D4 domain Gram (unmatched nuisance control)."""
+    sigma = gram_from_diff_numpy(x_src, x_tgt)
+    evals, evecs = np.linalg.eigh(sigma)
+    r = min(rank, sigma.shape[0])
+    return evecs[:, -r:].astype(np.float32)
 
 
 def project_onto_complement(x: np.ndarray, w: np.ndarray) -> np.ndarray:
@@ -57,6 +89,7 @@ class MatchedSubspaceProjector:
             rank=self.rank,
             seed=self.seed,
             n_pairs_per_class=self.n_pairs_per_class,
+            include_mean_shift=True,
         )
         self.artifact_ = estimate_sigma_task_numpy(
             x_src, y_src, x_tgt, y_tgt,

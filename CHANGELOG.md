@@ -2,6 +2,14 @@
 
 ## 1.4.0
 
+### Fix: sklearn Office-31 benchmark protocol
+
+- **`run_sklearn_benchmark`**: default **T1 paper protocol** (target pool for W, held-out test, no leakage).
+- **D1**: class-mean shifts included in cross-domain SVD (was missing).
+- **wrong-W**: orthogonalized against matched W (Lemma C).
+- **isotropic arm**: D4 domain Gram directions (was target PCA, which destroyed features).
+- Regenerate `docs/benchmarks/office31_amazon_to_dslr.md` after pull.
+
 ### Trajectory TDI (paper T2A)
 
 - **`trajectory_tdi_layerwise`**, **`trajectory_tdi_encoder`**: isotropic input noise @ `sigma=0.01` (default).

@@ -3,25 +3,26 @@
 
 ```json
 {
-  "generated_utc": "2026-05-19T19:18:32.944241+00:00",
-  "protocol": "Office-31 ResNet-18 features: amazon -> dslr",
-  "rank": 16,
+  "generated_utc": "2026-05-19T19:49:59.116734+00:00",
+  "protocol": "Office-31 ResNet-18 features: amazon -> dslr (T1 protocol: pool=200, test=250, rank=32)",
+  "rank": 32,
   "seed": 0,
+  "paper_protocol": true,
   "note": "Metrics only. No features or images stored in git."
 }
 ```
 
-# Reference benchmark (Office-31 ResNet-18 features: amazon -> dslr)
+# Reference benchmark (Office-31 ResNet-18 features: amazon -> dslr (T1 protocol: pool=200, test=250, rank=32))
 
-Estimator: **D1** · preflight: `pass` · eigengap: 4036782.1440
+Estimator: **D1** · preflight: `pass` · eigengap: 3254977.8551
 
 | Arm | Label | val metric | TDI_cls (low) | D_N/D_S | task loss | PMH loss |
 |-----|-------|------------|-----------|---------|-----------|----------|
-| `b0` | B0 (ERM) | 0.7067 | 0.8206 | 0.1766 | — | — |
-| `matched` | Matched PMH | 0.6333 | 0.9547 | 0.1766 | — | — |
-| `wrong_w` | Wrong-W | 0.7133 | 0.8206 | 0.1769 | — | — |
-| `isotropic` | Isotropic PMH | 0.1933 | 1.4809 | 0.1766 | — | — |
-| `coral` | CORAL | 0.6800 | 0.8206 | 0.1766 | — | — |
+| `b0` | B0 (ERM) | 0.2240 | 0.9629 | 0.2563 | — | — |
+| `matched` | Matched PMH | 0.2160 | 1.1364 | 0.2563 | — | — |
+| `wrong_w` | Wrong-W | 0.2240 | 0.9564 | 0.2563 | — | — |
+| `isotropic` | Isotropic PMH | 0.1840 | 1.1404 | 0.2564 | — | — |
+| `coral` | CORAL | 0.2680 | 0.9629 | 0.2563 | — | — |
 
 ## How to read
 
@@ -32,4 +33,5 @@ Estimator: **D1** · preflight: `pass` · eigengap: 4036782.1440
 
 ## Notes
 
-- Geometry: tdi_cls = class-layout TDI (lower better); tdi_feature_iso = isotropic feature perturbation proxy; D_N/D_S = directional drift along nuisance basis W.
+- Protocol: T1 Office-31 style — train n=1500, target pool n=200 (W only), test n=250.
+- Geometry: tdi_cls = class-layout TDI (lower better); D_N/D_S = directional drift along nuisance basis W.

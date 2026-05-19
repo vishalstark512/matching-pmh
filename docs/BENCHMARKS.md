@@ -40,9 +40,11 @@ For frozen sklearn tables use `tdi_feature_isotropic` as a fast proxy.
 | File | Protocol |
 |------|----------|
 | [office31_synthetic_reference.md](benchmarks/office31_synthetic_reference.md) | Synthetic Office-31-style shift, rank=16 |
-| [office31_amazon_to_dslr.md](benchmarks/office31_amazon_to_dslr.md) | **Real** Office-31: ResNet-18 penultimate features, Amazon → DSLR, rank=16, seed=0, ≤2000 samples/domain |
+| [office31_amazon_to_dslr.md](benchmarks/office31_amazon_to_dslr.md) | **Real** Office-31: ResNet-18, Amazon → DSLR, **T1 protocol** (pool=200, test=250, rank=32) |
 
-**Real Office-31 snapshot (2026-05-19):** target accuracy — B0 **0.71**, matched **0.63**, wrong-W **0.71**, CORAL **0.68**. Matched does **not** beat B0 on accuracy here; use this table as a **protocol reference**, not a headline win. Re-run with your encoder, rank, and full data before claiming gains. Geometry (`TDI_cls`, `D_N/D_S`) is reported alongside accuracy for falsification (see table notes).
+**Real Office-31 snapshot (T1 protocol, rank=32):** B0 **0.224**, matched **0.216**, wrong-W **0.224**, CORAL **0.268** — same scale as `Paper2/T1/classical_pmh` (~22–27% on logistic). Earlier tables near **70%** used a **broken protocol** (random 70/30 split, test leakage into W, wrong isotropic arm = target PCA, D1 without class-mean shifts, wrong-W not orthogonalized). Do not cite pre-fix numbers.
+
+Matched is slightly below B0 on this snapshot; CORAL leads. Use the table to reproduce the **arm comparison machinery**, not as a guaranteed PMH win on Office-31 with a frozen linear head.
 
 Regenerate locally (no datasets committed):
 

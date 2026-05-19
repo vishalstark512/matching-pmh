@@ -21,9 +21,13 @@ def main() -> None:
     parser.add_argument("--office31-root", type=str, default=None)
     parser.add_argument("--source", type=str, default="amazon")
     parser.add_argument("--target", type=str, default="dslr")
-    parser.add_argument("--rank", type=int, default=16)
+    parser.add_argument("--rank", type=int, default=None, help="Default 32 for Office-31, 16 synthetic")
     parser.add_argument("--seed", type=int, default=0)
-    parser.add_argument("--max-samples", type=int, default=2000)
+    parser.add_argument("--max-samples", type=int, default=None, help="Cap per domain (Office-31: all images if unset)")
+    parser.add_argument("--n-target-pool", type=int, default=200)
+    parser.add_argument("--n-test", type=int, default=250)
+    parser.add_argument("--n-train-src", type=int, default=1500)
+    parser.add_argument("--legacy-split", action="store_true", help="Use random 70/30 split (buggy; not for Office-31)")
     parser.add_argument(
         "--output",
         type=str,
@@ -31,10 +35,21 @@ def main() -> None:
     )
     args = parser.parse_args()
 
+    rank = args.rank
+    bench_kw: dict = {
+        "include_coral": True,
+        "seed": args.seed,
+        "paper_protocol": not args.legacy_split,
+    }
+
     if args.office31_root:
         from pmh.datasets.office31 import extract_office31_features
 
-        protocol = f"Office-31 ResNet-18 features: {args.source} -> {args.target}"
+        rank = rank if rank is not None else 32
+        protocol = (
+            f"Office-31 ResNet-18 features: {args.source} -> {args.target} "
+            f"(T1 protocol: pool={args.n_target_pool}, test={args.n_test}, rank={rank})"
+        )
         x_src, y_src = extract_office31_features(
             args.office31_root,
             args.source,
@@ -47,15 +62,19 @@ def main() -> None:
             max_samples=args.max_samples,
             seed=args.seed + 1,
         )
+        bench_kw.update(
+            n_train_src=args.n_train_src,
+            n_target_pool=args.n_target_pool,
+            n_test=args.n_test,
+            n_pairs_per_class=40,
+        )
     else:
         from pmh.benchmark.sklearn_protocol import synthetic_office31_features
 
+        rank = rank if rank is not None else 16
         protocol = "Synthetic Office-31-style shift (bundled protocol; not raw images)"
-        x_src, y_src, x_tgt, y_tgt = synthetic_office31_features(
-            n=min(args.max_samples, 600),
-            seed=args.seed,
-            d=128,
-        )
+        n = 600 if args.max_samples is None else min(args.max_samples, 600)
+        x_src, y_src, x_tgt, y_tgt = synthetic_office31_features(n=n, seed=args.seed, d=128)
 
     from pmh import compare_arms_sklearn
     from pmh.benchmark.report import benchmark_to_markdown
@@ -65,9 +84,8 @@ def main() -> None:
         y_src,
         x_tgt,
         y_tgt,
-        rank=args.rank,
-        include_coral=True,
-        seed=args.seed,
+        rank=rank,
+        **bench_kw,
     )
 
     out_path = Path(args.output)
@@ -76,8 +94,9 @@ def main() -> None:
     meta = {
         "generated_utc": datetime.now(timezone.utc).isoformat(),
         "protocol": protocol,
-        "rank": args.rank,
+        "rank": rank,
         "seed": args.seed,
+        "paper_protocol": not args.legacy_split,
         "note": "Metrics only. No features or images stored in git.",
     }
     body = benchmark_to_markdown(

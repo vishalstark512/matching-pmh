@@ -3,25 +3,26 @@
 
 ```json
 {
-  "generated_utc": "2026-05-19T18:58:30.289527+00:00",
+  "generated_utc": "2026-05-19T19:51:45.131274+00:00",
   "protocol": "Synthetic Office-31-style shift (bundled protocol; not raw images)",
   "rank": 16,
   "seed": 0,
+  "paper_protocol": true,
   "note": "Metrics only. No features or images stored in git."
 }
 ```
 
 # Reference benchmark (Synthetic Office-31-style shift (bundled protocol; not raw images))
 
-Estimator: **D1** · preflight: `pass` · eigengap: 5276407.1920
+Estimator: **D1** · preflight: `pass` · eigengap: 6349157.4272
 
 | Arm | Label | val metric | TDI_cls (low) | D_N/D_S | task loss | PMH loss |
 |-----|-------|------------|-----------|---------|-----------|----------|
-| `b0` | B0 (ERM) | 0.0833 | 4.1717 | 0.3723 | — | — |
-| `matched` | Matched PMH | 0.1278 | 4.0676 | 0.3723 | — | — |
-| `wrong_w` | Wrong-W | 0.1167 | 4.1646 | 0.3720 | — | — |
-| `isotropic` | Isotropic PMH | 0.0889 | 4.1612 | 0.3723 | — | — |
-| `coral` | CORAL | 0.0889 | 4.1717 | 0.3723 | — | — |
+| `b0` | B0 (ERM) | 0.5120 | 4.8750 | 0.3731 | — | — |
+| `matched` | Matched PMH | 0.5000 | 4.8469 | 0.3731 | — | — |
+| `wrong_w` | Wrong-W | 0.4800 | 4.9225 | 0.3730 | — | — |
+| `isotropic` | Isotropic PMH | 0.6240 | 4.8759 | 0.3729 | — | — |
+| `coral` | CORAL | 0.5920 | 4.8750 | 0.3731 | — | — |
 
 ## How to read
 
@@ -32,4 +33,5 @@ Estimator: **D1** · preflight: `pass` · eigengap: 5276407.1920
 
 ## Notes
 
-- Geometry: tdi_cls = class-layout TDI (lower better); tdi_feature_iso = isotropic feature perturbation proxy; D_N/D_S = directional drift along nuisance basis W.
+- Protocol: T1 Office-31 style — train n=600, target pool n=200 (W only), test n=250.
+- Geometry: tdi_cls = class-layout TDI (lower better); D_N/D_S = directional drift along nuisance basis W.

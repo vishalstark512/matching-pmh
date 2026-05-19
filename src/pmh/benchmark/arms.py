@@ -58,7 +58,7 @@ ARM_SPECS: dict[ArmName, ArmSpec] = {
     "isotropic": ArmSpec(
         "isotropic",
         "Isotropic PMH",
-        "Uniform Sigma' proportional to I (generic VAT-like).",
+        "Training: uniform Sigma'; sklearn frozen path: D4 domain Gram (unmatched nuisance).",
         uses_pmh=True,
         pmh_mode="isotropic",
     ),
