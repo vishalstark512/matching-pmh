@@ -1,6 +1,6 @@
 # Roadmap
 
-**Current release: v1.5.1** — [When PMH helps](WHEN_PMH_HELPS.md), `evaluate_robust_fit`, block recipe cards, API reference pages, notebook CI, Office-31 download walkthrough.
+**Current release: v1.5.2** (ready to tag) — subtype guide, golden paths G1–G4 + G1b/G3b, custom geometry, `pmh-train doctor` / `validate` / folder estimate, deployment export.
 
 **v1.5.0** — developer API (`robust_fit`, `check_applicability`), golden paths G1–G3, wizard, Colab notebooks.
 
@@ -26,7 +26,11 @@ See [PAPER_ALIGNMENT.md](PAPER_ALIGNMENT.md) for task-by-task fidelity vs `Paper
 | `Pipeline.fit` via `X_target` in `__init__` or metadata routing | Shipped |
 | `GridSearchCV` (`make_pmh_pipeline`, `grid_search_pmh_pipeline`) | Shipped |
 | TDI + sklearn benchmark table (`pmh.tdi`, `examples/21_*`) | Shipped |
-| mkdocstrings API reference + Pages | **Partial** — [developer](api/developer.md), [PMHTrainer](api/pmh-trainer.md) |
+| mkdocstrings API reference + Pages | **Partial** — developer, PMHTrainer, subtypes, custom, deployment |
+| `export_deployment` bundle | **Shipped** (v1.5.2) |
+| `pmh-train doctor` | **Shipped** (v1.5.2) |
+| Folder / CLI estimate | **Shipped** (v1.5.2) |
+| PyTorch `validate` smoke | **Shipped** (v1.5.2) |
 
 ## Paper fidelity (priority)
 

@@ -1,6 +1,8 @@
-# Adaptation workbook (use this on **your** task)
+# Adaptation workbook (optional)
 
-Copy this page when integrating PMH. Every [walkthrough](walkthroughs/index.md) follows the same structure; this workbook is the **generic** version.
+**Most users:** follow [index](index.md) → [Golden paths](GOLDEN_PATHS.md) → [Integrate your project](GETTING_STARTED.md).
+
+Use this workbook when filling in a [walkthrough](walkthroughs/index.md) with `YOUR_*` placeholders — not required for the default path.
 
 ---
 
@@ -17,7 +19,7 @@ Finish this sentence for **your** deployment:
 | “Hospital B’s CT scanner contrast shifts; diagnosis unchanged.” | “I want better accuracy.” |
 | “Customer emails use bullet lists instead of paragraphs; intent unchanged.” | “Add robustness to noise.” (too vague — use D2/D3 only if you name the noise) |
 
-Pick estimator: [nuisance_types.md](nuisance_types.md) or:
+Pick subtype: [NUISANCE_SUBTYPES.md](NUISANCE_SUBTYPES.md) or:
 
 ```python
 from pmh import suggest_nuisance

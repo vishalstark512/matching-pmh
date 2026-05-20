@@ -190,6 +190,7 @@ def check_applicability(
         has_target_domain=has_target_domain,
         has_style_pairs=has_style_pairs,
     )
+    reasons.append(f"Suggested subtype {sug.method} ({sug.nuisance}): {sug.reason}")
     rank = 16
     if feature_dim is not None:
         rank = max(4, min(32, feature_dim // 2))

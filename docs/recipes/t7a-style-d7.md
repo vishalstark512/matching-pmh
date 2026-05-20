@@ -1,4 +1,4 @@
-# Recipe: T7A — LLM style / format (D7, Jacobian)
+# Recipe: D7 — Style / alignment (exemplar T7A, LLM)
 
 **Preset:** `t7a_style_d7` · **Lemma:** D7 · **Mode:** A (Jacobian on hidden states)
 

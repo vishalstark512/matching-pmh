@@ -240,6 +240,31 @@ PRESETS: dict[str, BlockPreset] = {
 }
 
 
+# Default paper-backed preset per nuisance subtype (developer-facing names).
+SUBTYPE_TO_BLOCK_PRESET: dict[str, str] = {
+    "D1": "t1_office31_sklearn",
+    "D2": "t2a_vit_isotropic",
+    "D3": "t3b_depth_d3",
+    "D4": "t4_domain_d4",
+    "D5": "t5_compositional_d5",
+    "D6": "t6_temporal_d6",
+    "D7": "t7a_style_d7",
+}
+
+
+def get_subtype_preset(subtype: str) -> BlockPreset:
+    """Map ``D1``–``D7`` (or ``d4``) to the recommended block preset."""
+    key = subtype.strip().upper()
+    if not key.startswith("D"):
+        key = f"D{key}"
+    pid = SUBTYPE_TO_BLOCK_PRESET.get(key)
+    if pid is None:
+        raise KeyError(
+            f"no subtype preset for {subtype!r}; choose from {list(SUBTYPE_TO_BLOCK_PRESET)}"
+        )
+    return get_preset(pid)
+
+
 def get_preset(block_id: str) -> BlockPreset:
     key = block_id.strip().lower().replace("-", "_")
     if key not in PRESETS:

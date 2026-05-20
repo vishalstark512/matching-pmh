@@ -30,11 +30,13 @@ class SetupRecommendation:
 
     stack: Stack
     nuisance: str
+    lemma: str
     title: str
     summary: str
     install_extra: str
     example_script: str
     doc_link: str
+    subtype_doc: str
     snippet: str
 
 
@@ -45,17 +47,41 @@ def recommend_setup(
     has_target_labels: bool = False,
     has_frozen_features: bool = False,
     has_style_pairs: bool = False,
+    has_augmentation_modes: bool = False,
+    has_temporal_sequences: bool = False,
+    has_nuisance_indices: bool = False,
+    noise_level_known: bool = False,
+    lemma: str | None = None,
 ) -> SetupRecommendation:
     """Return the default integration path for common developer situations."""
+    from pmh.suggest import suggest_nuisance
+
+    sug = suggest_nuisance(
+        has_source_labels=True,
+        has_target_labels=has_target_labels,
+        has_target_domain=has_target_domain,
+        has_augmentation_modes=has_augmentation_modes,
+        has_style_pairs=has_style_pairs,
+        has_temporal_sequences=has_temporal_sequences,
+        has_nuisance_indices=has_nuisance_indices,
+        noise_level_known=noise_level_known,
+    )
+    from pmh.subtypes import get_subtype
+
+    method = lemma or sug.method
+    subtype_doc = f"docs/{get_subtype(method).doc_anchor}"
+
     if has_style_pairs or stack == "hf":
         return SetupRecommendation(
             stack="hf",
             nuisance="style",
+            lemma="D7",
             title="LLM style / format shift",
             summary="Same factual content, different formatting — style-pair JSONL + HF hidden states.",
             install_extra='pip install "matching-pmh[hf]"',
             example_script="examples/08_hf_style_d7.py",
-            doc_link="docs/walkthroughs/06-llm-style-d7.md",
+            doc_link="docs/GOLDEN_PATHS.md#g3--llm--two-text-corpora-hfpmhtrainer",
+            subtype_doc=subtype_doc,
             snippet=(
                 "from pmh import PMHTrainer, PMHConfig\n"
                 "trainer = PMHTrainer(model, hook=hook, nuisance='style', pmh_config=PMHConfig.balanced())\n"
@@ -65,43 +91,44 @@ def recommend_setup(
         )
 
     if has_frozen_features or stack == "sklearn":
+        nui = "subspace" if has_target_labels else "domain_shift"
+        lem = "D1" if has_target_labels else "D4"
         return SetupRecommendation(
             stack="sklearn",
-            nuisance="domain_shift",
+            nuisance=nui,
+            lemma=lem,
             title="Frozen features + sklearn",
             summary="You already have embeddings; adapt source features using target domain geometry.",
             install_extra='pip install "matching-pmh[sklearn]"',
             example_script="examples/06_office31_sklearn.py",
-            doc_link="docs/COLAB.md (sklearn notebook) / docs/walkthroughs/03-office31-sklearn-d1.md",
+            doc_link="docs/NUISANCE_SUBTYPES.md",
+            subtype_doc=f"docs/{get_subtype(lem).doc_anchor}",
             snippet=(
                 "from pmh import PMHMatcher\n"
                 "from sklearn.pipeline import Pipeline\n"
                 "from sklearn.linear_model import LogisticRegression\n"
                 "pipe = Pipeline([\n"
-                "    ('adapt', PMHMatcher(nuisance='domain_shift').fit(x_source, x_target)),\n"
+                f"    ('adapt', PMHMatcher(nuisance='{nui}').fit(x_source, x_target)),\n"
                 "    ('clf', LogisticRegression(max_iter=500)),\n"
                 "])\n"
                 "pipe.fit(x_source, y_source)"
             ),
         )
 
-    if has_target_labels and has_target_domain:
-        nuisance = "subspace"
-        title = "Labeled source and target"
-        summary = "Class labels on both domains — stronger subspace estimate than domain-only.",
-    else:
-        nuisance = "domain_shift"
-        title = "Domain shift (default)"
-        summary = "Source vs target batches; target labels not required."
+    nuisance = sug.nuisance
+    title = f"Subtype {sug.method}: {nuisance}"
+    summary = sug.reason
 
     return SetupRecommendation(
         stack="pytorch",
         nuisance=nuisance,
+        lemma=sug.method,
         title=title,
         summary=summary,
         install_extra="pip install matching-pmh torch",
         example_script="examples/00_first_run_domain_shift.py",
-        doc_link="docs/COLAB.md (or docs/FIRST_HOUR.md)",
+        doc_link="docs/NUISANCE_SUBTYPES.md",
+        subtype_doc=subtype_doc,
         snippet=(
             "from pmh import PMHTrainer, PMHConfig\n"
             "trainer = PMHTrainer(\n"
@@ -119,7 +146,8 @@ def format_setup_guide(rec: SetupRecommendation) -> str:
     lines = [
         f"Recommended: {rec.title}",
         f"  {rec.summary}",
-        f"  nuisance={rec.nuisance!r}  stack={rec.stack}",
+        f"  subtype={rec.lemma}  nuisance={rec.nuisance!r}  stack={rec.stack}",
+        f"  Subtype guide: {rec.subtype_doc}",
         f"  Install: {rec.install_extra}",
         f"  Example: {rec.example_script}",
         f"  Doc: {rec.doc_link}",
@@ -235,12 +263,36 @@ def run_wizard(
         if has_target_labels is None:
             has_target_labels = False
 
+    subtype_flags: dict[str, bool] = {}
+    if interactive and stack == "pytorch" and has_target_domain:
+        print()
+        st = _ask_choice(
+            "What best describes the deployment shift? (nuisance subtype)",
+            {
+                "1": "D1 — different site/sensor, labels on BOTH train and deploy",
+                "2": "D4 — different site/sensor, deploy labels unknown",
+                "3": "D3 — known augmentations / sensitivities you can enumerate",
+                "4": "D6 — temporal or sequence drift (same label over time)",
+                "5": "D5 — nuisance in specific coordinates (positions, tokens, …)",
+                "6": "D7 — format/style only (same facts, different surface)",
+                "7": "D2 — generic isotropic noise (no domain pair)",
+            },
+            input_fn,
+        )
+        from pmh.subtypes import apply_wizard_subtype_choice
+
+        subtype_flags = apply_wizard_subtype_choice(st)
+
     rec = recommend_setup(
         stack=stack,
-        has_target_domain=has_target_domain,
-        has_target_labels=has_target_labels,
+        has_target_domain=subtype_flags.get("has_target_domain", has_target_domain),
+        has_target_labels=subtype_flags.get("has_target_labels", has_target_labels),
         has_frozen_features=bool(has_frozen_features),
-        has_style_pairs=bool(has_style_pairs),
+        has_style_pairs=subtype_flags.get("has_style_pairs", bool(has_style_pairs)),
+        has_augmentation_modes=subtype_flags.get("has_augmentation_modes", False),
+        has_temporal_sequences=subtype_flags.get("has_temporal_sequences", False),
+        has_nuisance_indices=subtype_flags.get("has_nuisance_indices", False),
+        noise_level_known=subtype_flags.get("noise_level_known", False),
     )
 
     print()

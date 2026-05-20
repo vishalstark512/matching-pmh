@@ -8,11 +8,13 @@ pip install "matching-pmh[sklearn]"   # for sklearn_minimal.py
 pip install "matching-pmh[hf]"        # for hf_minimal.py
 ```
 
-| Script | When |
-|--------|------|
-| `pytorch_minimal.py` | Train PyTorch model, source + target loaders |
-| `sklearn_minimal.py` | Frozen embeddings + sklearn |
-| `hf_minimal.py` | Two text lists + toy HF model |
+| Script | Golden path |
+|--------|-------------|
+| `pytorch_minimal.py` | **G1** — PyTorch, source + target loaders |
+| `lightning_g1b_minimal.py` | **G1b** — Lightning `training_step` |
+| `sklearn_minimal.py` | **G2** — frozen embeddings + sklearn |
+| `hf_minimal.py` | **G3** — `robust_fit_text_domains` |
+| `hf_trainer_g3b_minimal.py` | **G3b** — `transformers.Trainer` + `get_pmh_trainer()` |
 
 ```bash
 pmh-train wizard

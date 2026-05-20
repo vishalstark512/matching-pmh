@@ -2,10 +2,9 @@
 
 Each walkthrough is a **complete guide** to adapt PMH to **your** task: prerequisites, nuisance examples, step-by-step code with `YOUR_*` placeholders, runnable scripts, worksheets, and controls.
 
-**New here?** Read [Getting started](../GETTING_STARTED.md), then pick **one** row below.
+**New here?** Follow [docs home](../index.md) → [First hour](../FIRST_HOUR.md) → [Golden paths](../GOLDEN_PATHS.md), then pick **one** row below.
 
-**Stack-agnostic fill-in:** [Adaptation workbook](../ADAPTATION_WORKBOOK.md)  
-**Guide format (for contributors):** [GUIDE_FORMAT.md](GUIDE_FORMAT.md)
+**Optional worksheets:** [Adaptation workbook](../ADAPTATION_WORKBOOK.md) · **Contributors:** [GUIDE_FORMAT.md](GUIDE_FORMAT.md)
 
 ---
 
@@ -74,8 +73,9 @@ flowchart TD
 
 | Doc | Role |
 |-----|------|
-| [ADAPTATION_WORKBOOK.md](../ADAPTATION_WORKBOOK.md) | Generic worksheets |
-| [ADAPT_YOUR_PIPELINE.md](../ADAPT_YOUR_PIPELINE.md) | D1–D7 checklist |
+| [GETTING_STARTED.md](../GETTING_STARTED.md) | Integration checklist |
+| [NUISANCE_SUBTYPES.md](../NUISANCE_SUBTYPES.md) | Pick D1–D7 |
+| [ADAPTATION_WORKBOOK.md](../ADAPTATION_WORKBOOK.md) | Optional worksheets |
 | [hooks.md](../hooks.md) | ResNet, ViT, HF |
 | [BENCHMARKS.md](../BENCHMARKS.md) | Accuracy + TDI tables |
 | [Paper presets by block](paper-presets-by-block.md) | `t1_office31_sklearn`, `t4_domain_d4`, `t7a_style_d7`, … |

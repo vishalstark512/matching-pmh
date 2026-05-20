@@ -1,4 +1,4 @@
-# Recipe: T4 — Domain shift (D4, PyTorch Jacobian)
+# Recipe: D4 — Domain Gram (exemplar T4, PyTorch Jacobian)
 
 **Preset:** `t4_domain_d4` · **Lemma:** D4 · **Mode:** A (Jacobian penalty on hook `h`)
 

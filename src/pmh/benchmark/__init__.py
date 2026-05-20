@@ -18,7 +18,14 @@ from pmh.benchmark.report import (
     load_benchmark_report,
     write_benchmark_report,
 )
-from pmh.benchmark.presets import BlockPreset, get_preset, list_presets
+from pmh.benchmark.presets import (
+    BlockPreset,
+    SUBTYPE_TO_BLOCK_PRESET,
+    get_preset,
+    get_subtype_preset,
+    list_presets,
+)
+from pmh.benchmark.validate import ValidationReport, validate_falsification
 from pmh.benchmark.protocol import (
     collect_val_embeddings,
     default_geometry_metric,
@@ -44,8 +51,12 @@ __all__ = [
     "run_sklearn_benchmark",
     "run_sklearn_benchmark_multi_seed",
     "get_preset",
+    "get_subtype_preset",
     "list_presets",
+    "SUBTYPE_TO_BLOCK_PRESET",
     "BlockPreset",
+    "validate_falsification",
+    "ValidationReport",
     "collect_val_embeddings",
     "default_geometry_metric",
 ]

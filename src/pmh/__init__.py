@@ -61,6 +61,31 @@ from pmh.onboarding import (
     run_wizard,
 )
 from pmh.suggest import NuisanceSuggestion, suggest_nuisance
+from pmh.subtypes import (
+    SubtypeRecommendation,
+    format_subtype_line,
+    get_subtype,
+    list_subtypes,
+    print_subtype_guide,
+    suggest_subtype,
+)
+from pmh.custom import (
+    artifact_from_deltas,
+    artifact_from_w,
+    estimate_custom,
+    load_w_numpy,
+)
+from pmh.benchmark.validate import ValidationReport, validate_falsification
+from pmh.benchmark.presets import get_subtype_preset
+from pmh.data_adapters import (
+    batch_iterators,
+    batch_iterators_labeled,
+    load_domain_arrays,
+    load_domain_dirs,
+    resolve_feature_npy,
+)
+from pmh.deployment import DeploymentBundle, export_deployment, load_deployment_bundle
+from pmh.doctor import DoctorReport, run_doctor
 from pmh.data_context import DataContext
 from pmh.multi import MultiPMHLoss
 from pmh.trainer import PMHTrainer, build_hybrid_trainer
@@ -114,6 +139,29 @@ __all__ = [
     "resolve_method",
     "suggest_nuisance",
     "NuisanceSuggestion",
+    "suggest_subtype",
+    "SubtypeRecommendation",
+    "list_subtypes",
+    "get_subtype",
+    "format_subtype_line",
+    "print_subtype_guide",
+    "estimate_custom",
+    "artifact_from_deltas",
+    "artifact_from_w",
+    "load_w_numpy",
+    "load_domain_arrays",
+    "load_domain_dirs",
+    "resolve_feature_npy",
+    "batch_iterators",
+    "batch_iterators_labeled",
+    "validate_falsification",
+    "ValidationReport",
+    "get_subtype_preset",
+    "export_deployment",
+    "load_deployment_bundle",
+    "DeploymentBundle",
+    "run_doctor",
+    "DoctorReport",
     "recommend_setup",
     "print_setup_guide",
     "format_setup_guide",
@@ -152,7 +200,7 @@ __all__ = [
     "tune_result_from_grid_search",
 ]
 
-__version__ = "1.5.1"
+__version__ = "1.5.2"
 
 
 def __getattr__(name: str):
@@ -161,6 +209,14 @@ def __getattr__(name: str):
         from pmh.hf_trainer import HFPMHTrainer
 
         return HFPMHTrainer
+    if name == "get_pmh_trainer":
+        from pmh.integrations.hf_trainer import get_pmh_trainer
+
+        return get_pmh_trainer
+    if name == "lightning_available":
+        from pmh.integrations.lightning import lightning_available
+
+        return lightning_available
     if name in ("PMHCallback", "train_epoch_with_pmh", "PMHStepResult"):
         from pmh.integrations import PMHCallback, PMHStepResult, train_epoch_with_pmh
 

@@ -96,7 +96,7 @@ Same layer `h` in both steps.
 | Step | Doc |
 |------|-----|
 | Run a 2-minute demo (Colab or local) | [First hour](FIRST_HOUR.md) · [Colab](COLAB.md) |
-| Copy into your project | [Getting started](GETTING_STARTED.md) |
+| Copy into your project | [First hour](FIRST_HOUR.md) → [Integrate](GETTING_STARTED.md) |
 | Pick vision / tabular / NLP template | [Gallery](gallery/README.md) |
 | Before trusting a production claim | [Falsification controls](walkthroughs/08-falsification-controls.md) |
 | Paper / benchmark fidelity | [Research → Paper alignment](PAPER_ALIGNMENT.md) |

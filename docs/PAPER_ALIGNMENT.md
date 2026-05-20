@@ -1,5 +1,32 @@
 # Paper replication ↔ library alignment
 
+## Product model: blocks are exemplars of subtypes
+
+**Integrators:** pick nuisance subtype **D1–D7** first ([NUISANCE_SUBTYPES.md](NUISANCE_SUBTYPES.md), `suggest_subtype`, `pmh-train wizard`).  
+**Researchers:** use paper blocks T1–T7 as **worked examples** of identification + protocol within a subtype.
+
+| Block | **Primary subtype** | Identification refinement (when default ≠ paper script) | Application mode |
+|-------|---------------------|-----------------------------------------------------------|------------------|
+| **T1** Office-31 / classical | **D1** | None for sklearn `paper_protocol=True` | **B** projection |
+| **T1** synthetic ridge | **D1** | Oracle \(W\) optional | **B** |
+| **T2A** ViT | **D2** | σ from paper `FINAL.md` | **A** Jacobian |
+| **T2B** CheXpert | **D2** | Embedding noise path | **A** |
+| **T3A** pose | **D3** | **Gradient-SVD** (`pmh.calibrate.gradient_subspace_numpy`), not default aug-Gram | **A** |
+| **T3B** depth | **D3** | Default finite aug modes | **A** |
+| **T4A/B** vision DA | **D4** | **Multilayer** hooks for T4B | **A** |
+| **T5A** QM9 | **D5** | User `nuisance_indices` (positions) | **A** |
+| **T5B** clone | **D5** | Token-block indices | **A** |
+| **T6A** Whisper | **D6** | **Content-residual** (`content_residual_subspace`) | **A** |
+| **T6B** HAR | **D6** | Default temporal / aug-delta PCA | **A** |
+| **T7A** LLM | **D7** | Style-pair Gram (`style_gram_from_deltas`) | **A** |
+| **T7B** CIFAR PGD | **D7** | **PGD δ stack** (`subspace_artifact_from_deltas`) | **A** |
+
+**Fidelity detail (default vs calibrator):** [FIDELITY_BY_SUBTYPE.md](FIDELITY_BY_SUBTYPE.md) · **CI goldens:** `tests/test_subtype_fidelity.py`
+
+---
+
+## Paper blocks (protocol detail)
+
 The Grand Unification paper runs **thirteen task-specific pipelines** under `Paper2/T1`–`T7`. Each block fixes:
 
 1. **Which lemma (D1–D7)** defines deployment nuisance \(\Sigma_{\mathrm{task}}\)

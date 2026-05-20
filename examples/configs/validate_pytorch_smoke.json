@@ -1,0 +1,5 @@
+{
+  "protocol": "pytorch_smoke",
+  "output": "results/validate_pytorch",
+  "estimator": { "rank": 8, "epochs": 8 }
+}

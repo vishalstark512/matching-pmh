@@ -46,6 +46,14 @@ Quick CI mode: `PMH_QUICK=1 python examples/00_first_run_domain_shift.py`
 
 ## 3. Which API is yours? (1 min)
 
+| Stack | Golden path |
+|-------|-------------|
+| PyTorch loop | **G1** |
+| PyTorch Lightning | **G1b** |
+| sklearn / `.npy` | **G2** |
+| HF two corpora | **G3** |
+| HF `Trainer` (DPO, LoRA, …) | **G3b** |
+
 **Interactive:**
 
 ```bash
@@ -134,12 +142,12 @@ Researchers benchmarking against the paper: [CORRECT_USAGE.md](CORRECT_USAGE.md)
 | Hook shape errors | [hooks.md](hooks.md) |
 | `preflight` warnings | [Troubleshooting glossary](TROUBLESHOOTING.md#plain-language-glossary) |
 | CORAL vs PMH | [COMPARE_TO_CORAL.md](COMPARE_TO_CORAL.md) |
-| Pick nuisance type (advanced) | [nuisance_types.md](nuisance_types.md) |
+| Pick shift type D1–D7 | [NUISANCE_SUBTYPES.md](NUISANCE_SUBTYPES.md) |
 
 ---
 
 ## After the first hour
 
-- [Getting started](GETTING_STARTED.md) — deeper checklist for your project  
-- [Choose your setup](CHOOSE_YOUR_SETUP.md) — table by stack and data  
-- [Gallery](gallery/README.md) — ResNet, ViT, LLM style, …
+- [Integrate your project](GETTING_STARTED.md) — afternoon checklist  
+- [Golden paths](GOLDEN_PATHS.md) — G1 / G1b / G2 / G3 / G3b / G4  
+- [Gallery](gallery/README.md) — examples by domain

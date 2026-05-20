@@ -1,5 +1,7 @@
 # Estimators overview
 
+**Pick subtype first:** [NUISANCE_SUBTYPES.md](../NUISANCE_SUBTYPES.md) (user guide) · [FIDELITY_BY_SUBTYPE.md](../FIDELITY_BY_SUBTYPE.md) (paper vs default).
+
 Each Lemma **D*k*** maps a structural assumption **A*k*** to an estimator $\hat\Sigma_{\mathrm{task}}$.
 
 ```python

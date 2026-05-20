@@ -26,7 +26,7 @@ class ToyLM(nn.Module):
 
     def forward(self, input_ids=None, labels=None, output_hidden_states=False, **kw):
         h = self.body(input_ids)
-        return type("O", (), {"logits": self.lm_head(h), "hidden_states": (h,)})( )
+        return type("O", (), {"logits": self.lm_head(h), "hidden_states": (h,)})
 
 
 class DS(Dataset):

@@ -43,7 +43,7 @@ See [docs/DATA_POLICY.md](docs/DATA_POLICY.md). Benchmark docs may include **met
 - [ ] `pytest -q` passes locally
 - [ ] New behavior has a test or a smoke-runnable example
 - [ ] `CHANGELOG.md` updated under “Unreleased” or new version
-- [ ] User-facing changes reflected in walkthroughs or `docs/QUICKSTART.md`
+- [ ] User-facing changes reflected in walkthroughs, `docs/GOLDEN_PATHS.md`, or `docs/index.md` (see `docs/DOCS_GUIDE.md`)
 - [ ] No secrets or API tokens in the diff
 
 ---

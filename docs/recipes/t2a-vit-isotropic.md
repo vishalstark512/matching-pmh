@@ -1,4 +1,4 @@
-# Recipe: T2A — ViT / CLS isotropic (D2, Jacobian)
+# Recipe: D2 — Isotropic sensitivity (exemplar T2A, ViT CLS)
 
 **Preset:** `t2a_vit_isotropic` · **Lemma:** D2 · **Mode:** A (Jacobian on CLS / pooled tokens)
 

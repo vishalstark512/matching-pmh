@@ -1,9 +1,9 @@
 # Getting started (redirect)
 
-This page moved to the **[adoption guide](GETTING_STARTED.md)**.
+Use the **[docs home](index.md)** reading order:
 
-Quick links:
+1. [What is PMH?](WHAT_IS_PMH.md)
+2. [Your first hour](FIRST_HOUR.md)
+3. [Integrate your project](GETTING_STARTED.md)
 
-- [GETTING_STARTED.md](GETTING_STARTED.md) — main path for your pipeline  
-- [CHOOSE_YOUR_SETUP.md](CHOOSE_YOUR_SETUP.md) — pick API by stack  
-- [TROUBLESHOOTING.md](TROUBLESHOOTING.md) — errors and fixes  
+Quick links: [Golden paths](GOLDEN_PATHS.md) · [Troubleshooting](TROUBLESHOOTING.md) · [Colab](COLAB.md)

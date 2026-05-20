@@ -21,94 +21,65 @@ theme:
 nav:
   - Home: index.md
   - "Start here":
-      - Golden paths (G1–G3): GOLDEN_PATHS.md
       - What is PMH?: WHAT_IS_PMH.md
-      - When PMH helps: WHEN_PMH_HELPS.md
+      - Will it help?: WHEN_PMH_HELPS.md
       - Your first hour: FIRST_HOUR.md
-      - CLI wizard: cli.md
-      - Colab (no install): COLAB.md
-      - Demo output preview: DEMO_OUTPUT.md
-      - Getting started: GETTING_STARTED.md
-      - Choose your setup: CHOOSE_YOUR_SETUP.md
-      - Quickstart (10 min): QUICKSTART.md
+      - Shift types (D1–D7): NUISANCE_SUBTYPES.md
+      - Golden paths (G1–G4, G1b/G3b): GOLDEN_PATHS.md
+      - Custom geometry: CUSTOM_GEOMETRY.md
+      - Data layout (.npy / folders): DATA_LAYOUT.md
+      - Deployment bundle: DEPLOYMENT.md
+      - Integrate your project: GETTING_STARTED.md
       - Troubleshooting: TROUBLESHOOTING.md
+  - Integrate:
+      - CLI & wizard: cli.md
+      - Colab: COLAB.md
+      - Developer API: api/developer.md
+      - PMHTrainer: api/pmh-trainer.md
+      - Subtypes API: api/subtypes.md
+      - Custom geometry API: api/custom.md
+      - Deployment API: api/deployment.md
+      - Hooks: hooks.md
+      - sklearn: sklearn.md
+      - "HF Trainer (G3b)": integrations-hf-trainer.md
+      - "Lightning (G1b)": integrations-lightning.md
       - vs CORAL: COMPARE_TO_CORAL.md
-      - Adaptation workbook: ADAPTATION_WORKBOOK.md
-      - Adapt your pipeline: ADAPT_YOUR_PIPELINE.md
-      - Onboarding plan (contributors): DEVELOPER_ONBOARDING_PLAN.md
-      - Legacy redirect: getting-started.md
-  - Research:
-      - Theory: THEORY.md
-      - Correct usage: CORRECT_USAGE.md
-      - Paper alignment: PAPER_ALIGNMENT.md
-      - Block recipe cards: recipes/README.md
-      - "Recipe T1 Office-31": recipes/t1-office31-d1.md
-      - "Recipe T2A ViT D2": recipes/t2a-vit-isotropic.md
-      - "Recipe T4 domain D4": recipes/t4-domain-d4.md
-      - "Recipe T7A LLM D7": recipes/t7a-style-d7.md
-      - Benchmarks & TDI: BENCHMARKS.md
-      - Paper presets (T1–T7): walkthroughs/paper-presets-by-block.md
-      - Reference table (synthetic): benchmarks/office31_synthetic_reference.md
-      - Reference table (Office-31): benchmarks/office31_amazon_to_dslr.md
-      - Data policy: DATA_POLICY.md
-  - Theory: THEORY.md
-  - Integration:
-      - Hook cookbook: hooks.md
-      - Hybrid nuisances: HYBRID_NUISANCE.md
-      - Architecture patterns: ARCHITECTURES.md
-      - Design philosophy: PHILOSOPHY.md
-      - Roadmap: ROADMAP.md
+      - Demo output: DEMO_OUTPUT.md
   - Gallery:
       - Overview: gallery/README.md
       - Vision: gallery/vision.md
       - Tabular: gallery/tabular.md
       - NLP: gallery/nlp.md
-  - Walkthroughs:
-      - Overview: walkthroughs/index.md
-      - Paper presets (T1–T7): walkthroughs/paper-presets-by-block.md
-      - "1 PyTorch D4": walkthroughs/01-pytorch-domain-d4.md
-      - "2 ResNet D4": walkthroughs/02-resnet-vision-d4.md
-      - "3 Office-31": walkthroughs/03-office31-sklearn-d1.md
-      - "4 Multi-layer CNN": walkthroughs/04-multilayer-convnet.md
-      - "5 Compositional D5": walkthroughs/05-compositional-d5.md
-      - "6 LLM style D7": walkthroughs/06-llm-style-d7.md
-      - "7 HF Trainer DPO": walkthroughs/07-hf-trainer-d7-dpo.md
-      - "8 Controls": walkthroughs/08-falsification-controls.md
-      - "9 CLI jobs": walkthroughs/09-cli-json-jobs.md
-      - "10 Lightning": walkthroughs/10-lightning.md
-      - "11 Temporal D6": walkthroughs/11-temporal-d6.md
-      - "12 ViT CLS": walkthroughs/12-vit-cls-d4.md
-      - "13 Speech": walkthroughs/13-speech-whisper-d4.md
-      - "14 QM9": walkthroughs/14-qm9-molecule-d5.md
-      - "15 Code tokens": walkthroughs/15-codebert-tokens-d5.md
-      - "16 Augmentations D3": walkthroughs/16-augmentation-d3.md
-      - "17 Compare arms": walkthroughs/17-compare-arms-your-pipeline.md
-      - "18 PMHTrainer": walkthroughs/18-pmh-trainer-quickstart.md
-      - "19 Office-31 real data": walkthroughs/19-office31-real-data.md
+  - Research:
+      - Paper alignment: PAPER_ALIGNMENT.md
+      - Fidelity by subtype: FIDELITY_BY_SUBTYPE.md
+      - Recipe cards: recipes/README.md
+      - "Recipe D1 (T1)": recipes/t1-office31-d1.md
+      - "Recipe D2 (T2A)": recipes/t2a-vit-isotropic.md
+      - "Recipe D4 (T4)": recipes/t4-domain-d4.md
+      - "Recipe D7 (T7A)": recipes/t7a-style-d7.md
+      - Walkthroughs (all): walkthroughs/index.md
+      - Controls & falsification: walkthroughs/08-falsification-controls.md
+      - Office-31 real data: walkthroughs/19-office31-real-data.md
+      - Paper presets: walkthroughs/paper-presets-by-block.md
+      - Benchmarks: BENCHMARKS.md
+      - Correct usage: CORRECT_USAGE.md
+      - Adaptation workbook: ADAPTATION_WORKBOOK.md
   - Reference:
-      - Nuisance cookbook: nuisance_types.md
-      - CLI: cli.md
+      - Estimators (D1–D7): estimators/index.md
       - Training API: training.md
-  - Estimators:
-      - Overview: estimators/index.md
-      - D1 Subspace: estimators/d1.md
-      - D2 Isotropic: estimators/d2.md
-      - D3 Augmentation: estimators/d3.md
-      - D4 Domain: estimators/d4.md
-      - D5 Compositional: estimators/d5.md
-      - D6 Temporal: estimators/d6.md
-      - D7 Alignment: estimators/d7.md
-  - Integrations:
-      - PyTorch: integrations.md
-      - Hugging Face: integrations-hf.md
-      - HF Trainer: integrations-hf-trainer.md
-      - Lightning: integrations-lightning.md
-  - Classical ML: sklearn.md
-  - Datasets: datasets.md
-  - API:
-      - Overview: api/index.md
-      - Developer API: api/developer.md
-      - PMHTrainer: api/pmh-trainer.md
+      - Theory: THEORY.md
+      - Datasets: datasets.md
+      - PyTorch integration: integrations.md
+      - HF (low-level): integrations-hf.md
+  - Contributors:
+      - Doc maintenance: DOCS_GUIDE.md
+      - Subtype rollout plan: NUISANCE_SUBTYPE_PLAN.md
+      - Developer onboarding plan: DEVELOPER_ONBOARDING_PLAN.md
+      - Roadmap: ROADMAP.md
+      - Philosophy: PHILOSOPHY.md
+      - Architecture patterns: ARCHITECTURES.md
+      - Hybrid nuisances: HYBRID_NUISANCE.md
 
 plugins:
   - search

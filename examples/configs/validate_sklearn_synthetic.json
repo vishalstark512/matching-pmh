@@ -1,0 +1,14 @@
+{
+  "protocol": "sklearn",
+  "output": "results/validate_synthetic",
+  "data": {
+    "mode": "synthetic_office31",
+    "n_per_domain": 400,
+    "seed": 0
+  },
+  "estimator": {
+    "method": "D1",
+    "rank": 16,
+    "preset": "D1"
+  }
+}

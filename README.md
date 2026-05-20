@@ -128,7 +128,7 @@ flowchart LR
   H --> L[Task loss + robustness penalty]
 ```
 
-Same hook layer for estimate and train. [First hour](docs/FIRST_HOUR.md) · [Getting started](docs/GETTING_STARTED.md) · [Troubleshooting glossary](docs/TROUBLESHOOTING.md#plain-language-glossary)
+Same hook layer for estimate and train. [Docs home](docs/index.md) · [First hour](docs/FIRST_HOUR.md) · [Troubleshooting glossary](docs/TROUBLESHOOTING.md#plain-language-glossary)
 
 ---
 
@@ -140,18 +140,15 @@ Under the hood: estimate deployment geometry once, train with an extra matched p
 
 ---
 
-## Documentation map
+## Documentation
+
+**Start:** [docs/index.md](docs/index.md) (reading order) → [D1–D7 subtypes](docs/NUISANCE_SUBTYPES.md) → [Golden paths](docs/GOLDEN_PATHS.md)
 
 | I want to… | Read |
 |------------|------|
-| Understand in plain language | [WHAT_IS_PMH.md](docs/WHAT_IS_PMH.md) |
-| Run + copy code in one hour | [FIRST_HOUR.md](docs/FIRST_HOUR.md) |
-| Integrate on my repo | [GETTING_STARTED.md](docs/GETTING_STARTED.md) |
-| ResNet / ViT / HF hooks | [hooks.md](docs/hooks.md) · [Gallery](docs/gallery/README.md) |
-| Prove claims before production | [Controls walkthrough](docs/walkthroughs/08-falsification-controls.md) |
-| Replicate paper benchmarks | [CORRECT_USAGE](docs/CORRECT_USAGE.md) · [Paper alignment](docs/PAPER_ALIGNMENT.md) |
-
-[18 walkthroughs](docs/walkthroughs/index.md) · [Developer onboarding plan](docs/DEVELOPER_ONBOARDING_PLAN.md)
+| Will it help? | [WHEN_PMH_HELPS.md](docs/WHEN_PMH_HELPS.md) |
+| Integrate my repo | [GETTING_STARTED.md](docs/GETTING_STARTED.md) |
+| Paper / benchmarks | [PAPER_ALIGNMENT.md](docs/PAPER_ALIGNMENT.md) · [walkthroughs](docs/walkthroughs/index.md) |
 
 ---
 

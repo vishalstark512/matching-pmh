@@ -13,8 +13,8 @@ def gram_from_diff(feats_s: torch.Tensor, feats_t: torch.Tensor) -> torch.Tensor
     t = flatten_features(feats_t)
     s = s - s.mean(0, keepdim=True)
     t = t - t.mean(0, keepdim=True)
-    diff = s - t
-    n = diff.shape[0]
+    n = min(s.shape[0], t.shape[0])
+    diff = s[:n] - t[:n]
     return (diff.T @ diff) / max(n, 1)
 
 

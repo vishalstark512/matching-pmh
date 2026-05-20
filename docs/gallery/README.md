@@ -8,6 +8,6 @@
 | Precomputed embeddings (`.npy`), sklearn classifier | `PMHMatcher` in a `Pipeline` | [Tabular](tabular.md) |
 | LLM answers with same facts, different formatting | Style pairs JSONL + HF hook | [NLP](nlp.md) |
 
-**Before you start:** [What is PMH?](../WHAT_IS_PMH.md) · [First hour](../FIRST_HOUR.md) · [Colab demo](../COLAB.md)
+**Before you start:** [Docs home](../index.md) · [D1–D7 subtypes](../NUISANCE_SUBTYPES.md) · [First hour](../FIRST_HOUR.md)
 
 After it runs → [Controls walkthrough](../walkthroughs/08-falsification-controls.md) · [Troubleshooting glossary](../TROUBLESHOOTING.md#plain-language-glossary)

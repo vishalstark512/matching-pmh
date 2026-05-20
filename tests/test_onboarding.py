@@ -8,7 +8,9 @@ from pmh.onboarding import format_setup_guide, preflight_plain_english, recommen
 def test_recommend_pytorch_domain_shift():
     rec = recommend_setup(stack="pytorch", has_target_domain=True, has_target_labels=False)
     assert rec.stack == "pytorch"
+    assert rec.lemma == "D4"
     assert rec.nuisance == "domain_shift"
+    assert "subtype=" in format_setup_guide(rec)
     assert "PMHTrainer" in rec.snippet
 
 

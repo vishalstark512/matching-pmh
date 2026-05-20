@@ -22,12 +22,14 @@ def _load_npy(path: str | Path) -> np.ndarray:
 
 def _cmd_list_methods(_: argparse.Namespace) -> int:
     from pmh.catalog import list_methods
+    from pmh.subtypes import format_subtype_line
 
     print(f"{'Method':<6} {'Name':<28} {'Typical blocks':<20} Required inputs")
     print("-" * 90)
     for spec in list_methods():
         req = ", ".join(spec.required_data) or "(config only)"
         print(f"{spec.method:<6} {spec.name:<28} {spec.typical_tasks:<20} {req}")
+        print(f"         {format_subtype_line(spec.method)}")
     print("\nNew here: pmh-train wizard")
     print("Paper block presets: pmh-train list-presets")
     print("Use: pmh-train estimate --config job.json")
@@ -66,9 +68,15 @@ def _cmd_list_presets(_: argparse.Namespace) -> int:
             f"{pid:<22} {p.paper_type:<6} {p.lemma:<5} {p.application_mode:<10} "
             f"{p.default_rank:<4}  {w:.2f}/{c:.2f}"
         )
-    print("\nSklearn: compare_arms_sklearn(..., preset='t1_office31_sklearn')")
+    from pmh.benchmark.presets import SUBTYPE_TO_BLOCK_PRESET
+
+    print("\nSubtype defaults:", ", ".join(f"{k}→{v}" for k, v in SUBTYPE_TO_BLOCK_PRESET.items()))
+    print("Sklearn: compare_arms_sklearn(..., preset='t1_office31_sklearn')")
+    print("         or preset from get_subtype_preset('D1').block_id")
     print("PyTorch: compare_arms(..., preset='t4_domain_d4', include_geometry=True)")
-    print("Docs: docs/CORRECT_USAGE.md, docs/walkthroughs/paper-presets-by-block.md")
+    print("Validate: pmh-train validate -c examples/configs/validate_sklearn_synthetic.json")
+    print("Estimate: pmh-train estimate --source-dir A/ --target-dir B/ -o artifacts/run")
+    print("Doctor: pmh-train doctor")
     return 0
 
 
@@ -151,12 +159,77 @@ def _estimate_from_job(job: dict[str, Any]) -> Any:
     return artifact
 
 
+def _estimate_from_dirs(
+    source_dir: Path,
+    target_dir: Path,
+    *,
+    method: str,
+    rank: int,
+    output: str,
+) -> Any:
+    from pmh.config import SigmaTaskConfig
+    from pmh.data_adapters import load_domain_dirs
+    from pmh.numpy_api import estimate_sigma_task_numpy
+
+    xs, ys, xt, yt = load_domain_dirs(source_dir, target_dir)
+    m = method.upper()
+    if m == "D1":
+        if ys is None or yt is None:
+            raise ValueError("D1 estimate needs labels.npy (or y.npy) in both domain folders")
+        art = estimate_sigma_task_numpy(
+            xs, ys, xt, yt, config=SigmaTaskConfig.for_subspace(rank=rank)
+        )
+    else:
+        art = estimate_sigma_task_numpy(xs, xt, config=SigmaTaskConfig.for_domain(rank=rank))
+    art.save(output)
+    print(f"saved {output}")
+    return art
+
+
 def _cmd_estimate(args: argparse.Namespace) -> int:
-    artifact = _estimate_from_job(_load_json(Path(args.config)))
+    if args.config:
+        artifact = _estimate_from_job(_load_json(Path(args.config)))
+    elif getattr(args, "source_dir", None) and getattr(args, "target_dir", None):
+        artifact = _estimate_from_dirs(
+            Path(args.source_dir),
+            Path(args.target_dir),
+            method=args.method,
+            rank=args.rank,
+            output=args.output,
+        )
+    elif getattr(args, "source_npy", None) and getattr(args, "target_npy", None):
+        job: dict[str, Any] = {
+            "estimator": {"method": args.method, "rank": args.rank, "shrinkage": 1e-6},
+            "data": {
+                "source_npy": str(args.source_npy),
+                "target_npy": str(args.target_npy),
+            },
+            "output": args.output,
+        }
+        if getattr(args, "source_labels", None):
+            job["data"]["source_labels"] = str(args.source_labels)
+        if getattr(args, "target_labels", None):
+            job["data"]["target_labels"] = str(args.target_labels)
+        artifact = _estimate_from_job(job)
+    else:
+        print(
+            "estimate needs --config, or --source-npy + --target-npy, "
+            "or --source-dir + --target-dir",
+            file=sys.stderr,
+        )
+        return 2
     print(f"  method={artifact.method}  dim={artifact.dim}  preflight={artifact.preflight}")
     if artifact.eigengap is not None:
         print(f"  eigengap={artifact.eigengap:.4f}")
     return 0
+
+
+def _cmd_doctor(args: argparse.Namespace) -> int:
+    from pmh.doctor import run_doctor
+
+    rep = run_doctor(stack=args.stack)
+    print(rep.summary())
+    return 0 if rep.ok else 1
 
 
 def _cmd_preflight(args: argparse.Namespace) -> int:
@@ -229,6 +302,75 @@ def _cmd_benchmark(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_validate(args: argparse.Namespace) -> int:
+    """Run sklearn falsification benchmark and exit 0 only if matched wins controls."""
+    from pmh.benchmark.validate import validate_falsification
+    from pmh.benchmark.report import write_benchmark_report
+    from pmh.benchmark.sklearn_protocol import run_sklearn_benchmark, synthetic_office31_features
+
+    if args.config:
+        job = _load_json(Path(args.config))
+        out = Path(job.get("output", "results/validate"))
+        protocol = job.get("protocol", "sklearn")
+        if protocol == "pytorch_smoke":
+            from pmh.benchmark.pytorch_smoke import run_pytorch_benchmark_smoke
+
+            est = job.get("estimator", {})
+            result = run_pytorch_benchmark_smoke(
+                rank=int(est.get("rank", 8)),
+                epochs=est.get("epochs"),
+            )
+        else:
+            data = job.get("data", {})
+            if data.get("mode") == "synthetic_office31":
+                n = int(data.get("n_per_domain", 400))
+                seed = int(data.get("seed", 0))
+                x_a, y, x_d, y2 = synthetic_office31_features(n, seed=seed)
+            else:
+                x_a = _load_npy(data["source_npy"])
+                y = (
+                    np.load(data["source_labels"])
+                    if isinstance(data["source_labels"], str)
+                    else np.asarray(data["source_labels"])
+                )
+                x_d = _load_npy(data["target_npy"])
+                y2 = (
+                    np.load(data["target_labels"])
+                    if isinstance(data["target_labels"], str)
+                    else np.asarray(data["target_labels"])
+                )
+            est = job.get("estimator", {})
+            rank = int(est.get("rank", 16))
+            preset = est.get("preset")
+            bench_kw: dict[str, Any] = {"rank": rank, "include_coral": False}
+            if preset:
+                from pmh.benchmark.presets import get_preset, get_subtype_preset
+
+                try:
+                    p = get_subtype_preset(str(preset))
+                except KeyError:
+                    p = get_preset(str(preset))
+                bench_kw.update(p.sklearn_benchmark)
+                bench_kw.setdefault("rank", p.default_rank)
+            result = run_sklearn_benchmark(x_a, y, x_d, y2, **bench_kw)
+    elif args.report:
+        from pmh.benchmark.report import load_benchmark_report
+
+        data = load_benchmark_report(args.report)
+        rep = validate_falsification(data, min_margin=args.min_margin)
+        print(rep.summary())
+        return 0 if rep.passed else 1
+    else:
+        print("validate needs --config or --report", file=sys.stderr)
+        return 1
+
+    paths = write_benchmark_report(result, out, stem="validate")
+    rep = validate_falsification(result, min_margin=args.min_margin)
+    print(rep.summary())
+    print(f"Report: {paths['json']}")
+    return 0 if rep.passed else 1
+
+
 def _cmd_run(args: argparse.Namespace) -> int:
     job = _load_json(Path(args.config))
     pmh_block = job.get("pmh", {})
@@ -296,9 +438,26 @@ def main(argv: list[str] | None = None) -> int:
     )
     p_wiz.set_defaults(func=_cmd_wizard, target_domain=True)
 
-    p_est = sub.add_parser("estimate", help="Estimate Sigma_task from JSON")
-    p_est.add_argument("--config", "-c", required=True, type=Path)
+    p_est = sub.add_parser("estimate", help="Estimate Sigma_task (JSON job or .npy / folders)")
+    p_est.add_argument("--config", "-c", type=Path, default=None)
+    p_est.add_argument("--source-npy", type=Path, default=None, help="Source features [N,d]")
+    p_est.add_argument("--target-npy", type=Path, default=None, help="Target features [M,d]")
+    p_est.add_argument("--source-labels", type=Path, default=None)
+    p_est.add_argument("--target-labels", type=Path, default=None)
+    p_est.add_argument("--source-dir", type=Path, default=None, help="Folder with features.npy")
+    p_est.add_argument("--target-dir", type=Path, default=None, help="Folder with features.npy")
+    p_est.add_argument("--method", default="D4", help="D1--D7 (default D4)")
+    p_est.add_argument("--rank", type=int, default=16)
+    p_est.add_argument("--output", "-o", default="artifacts/sigma_task", help="Save path stem")
     p_est.set_defaults(func=_cmd_estimate)
+
+    p_doc = sub.add_parser("doctor", help="Check install and optional extras (G1/G1b/G2/G3)")
+    p_doc.add_argument(
+        "--stack",
+        choices=("pytorch", "sklearn", "hf"),
+        default="pytorch",
+    )
+    p_doc.set_defaults(func=_cmd_doctor)
 
     p_pf = sub.add_parser("preflight", help="Eigengap for saved artifact")
     p_pf.add_argument("artifact", type=Path)
@@ -318,6 +477,26 @@ def main(argv: list[str] | None = None) -> int:
         help="Print markdown table from saved benchmark.json",
     )
     p_bench.set_defaults(func=_cmd_benchmark)
+
+    p_val = sub.add_parser(
+        "validate",
+        help="Falsification pass/fail (sklearn arms); exit 1 if matched loses to wrong-W/isotropic",
+    )
+    p_val.add_argument("--config", "-c", type=Path, default=None, help="benchmark-style JSON job")
+    p_val.add_argument(
+        "--report",
+        "-r",
+        type=Path,
+        default=None,
+        help="Validate existing benchmark/validate.json",
+    )
+    p_val.add_argument(
+        "--min-margin",
+        type=float,
+        default=0.0,
+        help="Required accuracy gap matched minus control",
+    )
+    p_val.set_defaults(func=_cmd_validate)
 
     p_run = sub.add_parser("run", help="Validate training job JSON")
     p_run.add_argument("--config", "-c", required=True, type=Path)

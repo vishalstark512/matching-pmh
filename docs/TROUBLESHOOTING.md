@@ -11,7 +11,7 @@ Common issues when adapting PMH to **your** pipeline. Symptom → cause → fix.
 | You see | Plain English | What to do |
 |---------|---------------|------------|
 | `preflight=pass` | Geometry estimate looks identifiable | Proceed; still run controls before big claims |
-| `preflight=marginal` | Weak signal — shift may be too small or too little data | More source/target batches in estimate; try lower `rank`; see [nuisance_types](nuisance_types.md) |
+| `preflight=marginal` | Weak signal — shift may be too small or too little data | More source/target batches in estimate; try lower `rank`; see [NUISANCE_SUBTYPES](NUISANCE_SUBTYPES.md) |
 | `preflight=fail` | Estimate not usable as-is | Do not trust matched PMH yet; fix data/hook/rank |
 | `eigengap` | How separated “nuisance” directions are from the rest | Low → treat like marginal; collect more data |
 | `nuisance="domain_shift"` | Default: two environments, same labels (Hospital A vs B) | Need `source_batches` + `target_batches` |
@@ -72,7 +72,7 @@ Common issues when adapting PMH to **your** pipeline. Symptom → cause → fix.
 1. More batches in Phase A (`max_batches=100+`)
 2. Lower `rank`
 3. If you have **labels on both sites**, try `nuisance="subspace"` (labeled cross-domain)
-4. See [glossary](#plain-language-glossary) and [nuisance_types.md](nuisance_types.md)
+4. See [glossary](#plain-language-glossary) and [NUISANCE_SUBTYPES.md](NUISANCE_SUBTYPES.md)
 
 ### `encoder must return [B, d], got shape ...`
 

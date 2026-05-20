@@ -34,6 +34,12 @@ def test_check_applicability_no_go():
     assert not r.can_proceed
 
 
+def test_check_applicability_suggests_subtype():
+    r = check_applicability(stack="pytorch", has_target_labels=False)
+    assert r.suggested_nuisance == "domain_shift"
+    assert any("D4" in x for x in r.reasons)
+
+
 def test_domain_pair_validate():
     xs = np.random.randn(20, 8).astype(np.float32)
     xt = np.random.randn(15, 8).astype(np.float32)

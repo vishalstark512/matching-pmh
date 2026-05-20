@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.5.2 (2026-05-19)
+
+### Developer adaptability
+
+- **Subtype product** — [NUISANCE_SUBTYPES.md](docs/NUISANCE_SUBTYPES.md), `suggest_subtype`, wizard subtype menu, [FIDELITY_BY_SUBTYPE.md](docs/FIDELITY_BY_SUBTYPE.md), `tests/test_subtype_fidelity.py`
+- **Golden paths** — G1–G4; **G1b** (Lightning), **G3b** (HF `Trainer`); templates `lightning_g1b_minimal.py`, `hf_trainer_g3b_minimal.py`
+- **Custom geometry** — `estimate_custom`, `artifact_from_deltas`, `PMHTrainer.from_artifact`, [CUSTOM_GEOMETRY.md](docs/CUSTOM_GEOMETRY.md)
+- **Data** — `load_domain_dirs`, `pmh-train estimate --source-dir/--target-npy`, [DATA_LAYOUT.md](docs/DATA_LAYOUT.md)
+- **CI / ops** — `pmh-train validate` (sklearn + `pytorch_smoke` protocol), `pmh-train doctor`, `export_deployment` / `load_deployment_bundle`
+- **Presets** — `get_subtype_preset("D4")` → block preset; [examples/by_subtype/](examples/by_subtype/README.md)
+- **Docs** — [index.md](docs/index.md) hub, slim mkdocs nav, redirect stubs, [DOCS_GUIDE.md](docs/DOCS_GUIDE.md), [PAPER_ALIGNMENT.md](docs/PAPER_ALIGNMENT.md) subtype table
+- **API docs** — [api/custom.md](docs/api/custom.md), [api/subtypes.md](docs/api/subtypes.md), [api/deployment.md](docs/api/deployment.md)
+
 ## 1.5.1 (2026-05-19)
 
 ### Documentation

@@ -104,6 +104,54 @@ class PMHTrainer:
             for a in artifacts:
                 self.add_artifact(a)
 
+    @classmethod
+    def from_artifact(
+        cls,
+        model: nn.Module,
+        artifact: SigmaTaskEstimate | str | Path,
+        *,
+        hook: str | nn.Module | Encoder | None = "backbone",
+        head: Head | nn.Module | None = None,
+        pmh_config: PMHConfig | None = None,
+        artifact_path: str | Path | None = None,
+        device: torch.device | str | None = None,
+        pool_spatial: bool = True,
+    ) -> PMHTrainer:
+        """Train with a pre-estimated Σ̂ (your deltas, calibrator, or saved ``.pt``)."""
+        if isinstance(artifact, (str, Path)):
+            loaded = SigmaTaskEstimate.load(artifact)
+            path = Path(artifact)
+        else:
+            loaded = artifact
+            path = artifact_path
+        _method_to_nuisance = {
+            "D1": "subspace",
+            "D2": "isotropic",
+            "D3": "augmentation",
+            "D4": "domain_shift",
+            "D5": "compositional",
+            "D6": "temporal",
+            "D7": "style",
+        }
+        nuisance = _method_to_nuisance.get(loaded.method, "domain_shift")
+        trainer = cls(
+            model,
+            hook=hook,
+            head=head,
+            nuisance=nuisance,
+            rank=loaded.config.rank,
+            shrinkage=loaded.config.shrinkage,
+            pmh_config=pmh_config,
+            artifact_path=path,
+            device=device,
+            pool_spatial=pool_spatial,
+            nuisance_indices=loaded.config.nuisance_indices,
+            noise_level=loaded.config.noise_level,
+        )
+        trainer.artifact_ = loaded
+        trainer._bind_pmh_loss()
+        return trainer
+
     @property
     def method(self) -> str:
         return resolve_method(self.nuisance)

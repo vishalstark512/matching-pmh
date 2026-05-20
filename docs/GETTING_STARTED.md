@@ -1,12 +1,10 @@
-# Getting started (adoption guide)
+# Integrate your project
 
-**New?** Read **[What is PMH?](WHAT_IS_PMH.md)** and **[Your first hour](FIRST_HOUR.md)** first (no paper). Run **`pmh-train wizard`** for a tailored snippet. Then come back here to wire your repo.
+**Before this page:** [What is PMH?](WHAT_IS_PMH.md) → [First hour](FIRST_HOUR.md) → [Shift types D1–D7](NUISANCE_SUBTYPES.md) → [Golden paths](GOLDEN_PATHS.md).
 
-**Goal:** add domain-robust training to **your** model in one afternoon.
+**Goal:** wire PMH into **your** repo in one afternoon.
 
-**Researchers / benchmarks:** [Correct usage](CORRECT_USAGE.md) and [Paper alignment](PAPER_ALIGNMENT.md) — skip until basic integration works.
-
-**Full guides:** [walkthroughs](walkthroughs/index.md) with `YOUR_*` placeholders and a controls checklist.
+**Paper / benchmarks:** [Research → Paper alignment](PAPER_ALIGNMENT.md) — only after a basic run works.
 
 ---
 
@@ -16,31 +14,18 @@ What changes at deployment **without changing the label**?
 
 > *Example:* “Images from a new hospital camera, but the disease label still means the same thing.”
 
-If that does not describe your problem, see [When PMH helps](WHEN_PMH_HELPS.md) (expectations and benchmarks) and [What is PMH — when not to use](WHAT_IS_PMH.md#when-not-to-use-it).  
-Advanced estimator choice (only if domain shift is not enough): [nuisance_types.md](nuisance_types.md).
+If that does not describe your problem, see [When PMH helps](WHEN_PMH_HELPS.md) and [What is PMH — when not to use](WHAT_IS_PMH.md#when-not-to-use-it).  
+Pick subtype D1–D7: [NUISANCE_SUBTYPES.md](NUISANCE_SUBTYPES.md) or `pmh-train wizard`.
 
 ---
 
-## Step 1 — Pick your path (30 seconds)
+## Step 1 — Pick subtype + stack (2 minutes)
 
-```mermaid
-flowchart TD
-  Start[What do you train with?] --> PyTorch[PyTorch model]
-  Start --> Sklearn[Frozen features + sklearn]
-  Start --> HF[Hugging Face LM]
-  PyTorch --> D4{Source + target data?}
-  D4 -->|yes, unlabeled target OK| T1[PMHTrainer + domain_shift]
-  D4 -->|yes, labels both sides| T2[PMHTrainer + subspace or PMHMatcher]
-  Sklearn --> M[PMHMatcher + compare_arms_sklearn]
-  HF --> H[HFPMHTrainer or walkthrough 6-7]
-```
-
-| You are… | Start here | Copy-paste template |
-|----------|------------|---------------------|
-| PyTorch, two domains (vision, audio, …) | [Gallery: vision](gallery/vision.md) | `examples/01_domain_shift_d4.py` |
-| sklearn / `.npy` features | [Gallery: tabular](gallery/tabular.md) | `examples/06_office31_sklearn.py` |
-| LLM style / format drift | [Gallery: NLP](gallery/nlp.md) | `examples/08_hf_style_d7.py` |
-| Not sure yet | [Choose your setup](CHOOSE_YOUR_SETUP.md) | — |
+| Step | Action |
+|------|--------|
+| Shift type | [NUISANCE_SUBTYPES.md](NUISANCE_SUBTYPES.md) decision tree or `suggest_subtype()` |
+| Code path | [GOLDEN_PATHS.md](GOLDEN_PATHS.md) G1 (PyTorch) / G2 (sklearn) / G3 (HF) |
+| Examples | [Gallery](gallery/README.md) by domain |
 
 ---
 
@@ -58,8 +43,11 @@ Verify:
 
 ```bash
 python -c "import pmh; print(pmh.__version__)"
+pmh-train doctor
 pmh-train list-methods
 ```
+
+Estimate from folders: [DATA_LAYOUT.md](DATA_LAYOUT.md) · `pmh-train estimate --source-dir ... --target-dir ...`
 
 ---
 
@@ -95,7 +83,7 @@ print("preflight:", trainer.artifact_.preflight)  # pass / marginal / fail
 2. **Save** `artifact_path` when you change data or hook.
 3. Use **`PMHConfig.balanced()`** first; tune later.
 
-→ Full detail: [Adapt your pipeline](ADAPT_YOUR_PIPELINE.md)
+→ Hooks: [hooks.md](hooks.md) · optional worksheets: [Adaptation workbook](ADAPTATION_WORKBOOK.md)
 
 ---
 
@@ -152,20 +140,16 @@ from pmh.tune import tune_sklearn_matcher  # rank grid on frozen features
 
 ---
 
-## Documentation map
+## More docs
 
 | I need… | Read |
 |---------|------|
-| **This guide** | GETTING_STARTED.md (you are here) |
-| **Which API for my stack?** | [CHOOSE_YOUR_SETUP.md](CHOOSE_YOUR_SETUP.md) |
-| **Full integration checklist** | [ADAPT_YOUR_PIPELINE.md](ADAPT_YOUR_PIPELINE.md) |
-| **Hook layer for ResNet / ViT / HF** | [hooks.md](hooks.md) |
-| **D1 vs D4 vs D7 decision** | [nuisance_types.md](nuisance_types.md) |
-| **Something broke** | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) |
-| **Math** | [THEORY.md](THEORY.md) |
-| **Already use CORAL?** | [COMPARE_TO_CORAL.md](COMPARE_TO_CORAL.md) |
-| **18 full walkthrough guides** | [walkthroughs/index.md](walkthroughs/index.md) |
-| **Generic fill-in workbook** | [ADAPTATION_WORKBOOK.md](ADAPTATION_WORKBOOK.md) |
+| Reading order / hub | [index.md](index.md) |
+| D1–D7 + wizard | [NUISANCE_SUBTYPES.md](NUISANCE_SUBTYPES.md) |
+| Copy-paste APIs | [GOLDEN_PATHS.md](GOLDEN_PATHS.md) |
+| Hooks (ResNet / ViT / HF) | [hooks.md](hooks.md) |
+| Errors | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) |
+| Paper blocks | [PAPER_ALIGNMENT.md](PAPER_ALIGNMENT.md) · [walkthroughs](walkthroughs/index.md) |
 
 ---
 

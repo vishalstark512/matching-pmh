@@ -58,7 +58,7 @@ trainer.estimate(source_batches, target_batches=...)
 
 ### D2, D3, D5, D6, D7
 
-See [nuisance_types.md](nuisance_types.md). Task-specific calibration:
+See [NUISANCE_SUBTYPES.md](NUISANCE_SUBTYPES.md) and [FIDELITY_BY_SUBTYPE.md](FIDELITY_BY_SUBTYPE.md). Task-specific calibration:
 
 | Paper block | Prefer | Module |
 |-------------|--------|--------|

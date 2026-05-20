@@ -1,52 +1,67 @@
 # CLI: `pmh-train`
 
-Installed with the package:
-
 ```bash
 pip install matching-pmh
-pmh-train wizard          # start here (interactive)
-pmh-train list-methods    # advanced: D1–D7 estimators
-pmh-train list-presets    # paper replication presets
+pmh-train wizard          # start here
+pmh-train doctor          # check install / extras
+pmh-train list-methods    # D1–D7 + subtype lines
+pmh-train list-presets    # paper + subtype presets
 ```
 
 ## Commands
 
 | Command | Purpose |
 |---------|---------|
-| **`wizard`** | **Interactive setup** — stack, data flags, install line, copy-paste snippet |
-| `list-methods` | Table of D1–D7 inputs (research / advanced) |
-| `list-presets` | Paper block presets (`t1_office31_sklearn`, …) |
-| `estimate --config job.json` | Run estimator, write `output.pt` + `.json` |
-| `preflight ARTIFACT.pt` | Geometry diagnostics on saved artifact |
-| `benchmark --config …` | Sklearn falsification table from JSON job |
-| `run --config job.json` | Validate training job (artifact + PMH weights) |
+| **`wizard`** | Interactive stack + subtype + snippet |
+| **`doctor`** | Environment check (`--stack pytorch\|sklearn\|hf`) |
+| **`estimate`** | Phase A — JSON, `.npy` paths, or **folders** |
+| **`validate`** | Falsification pass/fail (exit 1 if controls fail) |
+| `preflight` | Eigengap on saved artifact |
+| `benchmark` | Sklearn arm table → JSON + markdown |
+| `list-methods` / `list-presets` | Reference tables |
+
+### Estimate (data)
+
+```bash
+# Folders: features.npy (+ optional labels.npy) per site
+pmh-train estimate --source-dir data/site_a --target-dir data/site_b \
+  --method D4 --rank 32 -o artifacts/my_run
+
+# Explicit matrices
+pmh-train estimate --source-npy a.npy --target-npy b.npy -o artifacts/my_run
+
+# JSON job (HPC)
+pmh-train estimate --config examples/configs/d4_estimate.json
+```
+
+See [DATA_LAYOUT.md](DATA_LAYOUT.md).
+
+### Validate (CI)
+
+```bash
+pmh-train validate --config examples/configs/validate_sklearn_synthetic.json
+pmh-train validate --config examples/configs/validate_pytorch_smoke.json
+pmh-train validate --report results/validate/validate.json
+```
 
 ### Wizard
 
 ```bash
-# Interactive (recommended for new users)
 pmh-train wizard
-
-# Non-interactive (CI / scripts)
 pmh-train wizard --non-interactive --stack pytorch
-pmh-train wizard --non-interactive --stack sklearn
-pmh-train wizard --non-interactive --stack hf --style-pairs
 ```
-
-Same logic as `python -m pmh.onboarding --wizard`.
 
 ---
 
-## Example jobs (advanced)
+## Example configs
 
-- `examples/configs/d4_estimate.json` — domain Gram (numpy paths)
-- `examples/configs/d7_style_estimate.json` — HF style JSONL
-- `examples/configs/dpo_train_job.json` — training recipe after D7 estimate
+| File | Use |
+|------|-----|
+| `d4_estimate.json` | D4 from `.npy` paths |
+| `validate_sklearn_synthetic.json` | Sklearn falsification gate |
+| `validate_pytorch_smoke.json` | PyTorch toy arms gate |
+| `d7_style_estimate.json` | D7 style JSONL |
 
-```bash
-pmh-train estimate --config examples/configs/d7_style_estimate.json
-pmh-train preflight artifacts/d7_style.pt
-pmh-train run --config examples/configs/dpo_train_job.json
-```
+---
 
-Python equivalent: `python -m pmh.cli.main estimate --config ...`
+Python equivalents: `python -m pmh.onboarding --wizard` · [Golden paths](GOLDEN_PATHS.md)

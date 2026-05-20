@@ -1,4 +1,4 @@
-# Recipe: T1 — Office-31 (D1, sklearn projection)
+# Recipe: D1 — Cross-domain subspace (exemplar T1, Office-31)
 
 **Preset:** `t1_office31_sklearn` · **Lemma:** D1 · **Mode:** B (feature projection, not end-to-end Jacobian)
 
