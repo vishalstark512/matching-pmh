@@ -10,8 +10,10 @@ If **Deployments → github-pages** shows failed runs, the docs **build** usuall
 
 ## 2. Re-run the docs workflow
 
-1. **Actions** → **docs** → **Run workflow** (or push any commit to `main`).
-2. When deploy succeeds, the site is live at **https://vishalstark512.github.io/matching-pmh/**
+1. **Actions** → **docs** → open the latest run → **Re-run all jobs**  
+   Or: **Run workflow** (workflow_dispatch) on `main`.
+2. Wait until **build** and **deploy** are both green.
+3. Site URL: **https://vishalstark512.github.io/matching-pmh/** (can take 1–2 minutes after deploy).
 
 ## What the workflow does
 

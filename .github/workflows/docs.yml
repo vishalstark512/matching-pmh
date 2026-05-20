@@ -28,9 +28,6 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v5
-
       - name: Install mkdocs
         run: pip install -e ".[docs]"
 
