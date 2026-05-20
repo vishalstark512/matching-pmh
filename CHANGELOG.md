@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## 1.6.2 (2026-05-20)
+
+### Release
+
+- Fixed the GitHub Actions workflow syntax for tag-triggered PyPI publishing.
+- Reissued the task-first documentation release without force-moving the `v1.6.1` tag.
+
 ## 1.6.1 (2026-05-20)
 
 ### Documentation

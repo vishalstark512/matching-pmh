@@ -130,7 +130,7 @@ from pmh.recipe import (
 # Tier 0 = semver-stable adoption API (see docs/ARCHITECTURE.md and pmh._api).
 __all__ = list(__tier0__)
 
-__version__ = "1.6.1"
+__version__ = "1.6.2"
 
 
 def __getattr__(name: str):
