@@ -1,5 +1,7 @@
 # What is matching-pmh? (no paper required)
 
+**Integrating now?** Start at [START_HERE](START_HERE.md) — this page is background.
+
 You train a model on **one environment** and deploy on **another** — same task, same label meaning, different look or sensor or formatting.
 
 **matching-pmh** adds a regularizer so your model is less sensitive to the ways inputs change between those environments, without replacing your architecture or task loss.

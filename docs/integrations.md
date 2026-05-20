@@ -1,5 +1,8 @@
 # PyTorch integration
 
+!!! tip "Adoption path"
+    [APPLICATIONS](APPLICATIONS.md) → [Golden paths](GOLDEN_PATHS.md) → this page for `PMHCallback` / `train_epoch_with_pmh`.
+
 ## PMHCallback
 
 ```python

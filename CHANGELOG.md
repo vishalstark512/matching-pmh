@@ -1,5 +1,28 @@
 # Changelog
 
+## Unreleased
+
+## 1.5.3 (2026-05-19)
+
+### Documentation (adoption-first)
+
+- **[APPLICATIONS.md](docs/APPLICATIONS.md)** — decision tree, finder table, full 7-step walkthroughs + snippets per application
+- **[START_HERE.md](docs/START_HERE.md)** — gates + pointer to APPLICATIONS
+- **[MAP.md](docs/MAP.md)** — adoption ladder + what **not** to read first
+- **`format_shift_types()`** / **`explain_task()`** — terminal output: WHAT CHANGES + WALKTHROUGH
+- **`pmh-train route --search KEYWORD`** — find apps by hospital, pose, blur, temporal, …
+- **New application profiles:** augmentation (D3), temporal (D6), PyTorch Lightning (G1b)
+- **mkdocs nav** — **Adopt** tab (5 pages); Integrate / Research / Reference separated
+- **Stable anchors** — `GOLDEN_PATHS.md#g1` … `#g4` (fixes broken deep links)
+- Redirect stubs → START_HERE; walkthrough index marked “not for first adoption”
+- **GETTING_STARTED** — afternoon checklist (not a second onboarding path)
+
+### Developer onboarding (CLI)
+
+- **`pmh-train route`** / `explain_task()` / `list_tasks()` — task → golden path
+- **`pmh-train wizard`** — task menu first
+- Adoption banners on training, hooks, theory, integrations, WHEN_PMH_HELPS
+
 ## 1.5.2 (2026-05-19)
 
 ### Developer adaptability

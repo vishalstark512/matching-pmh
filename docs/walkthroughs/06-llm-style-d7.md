@@ -112,7 +112,7 @@ Uses `HashEncoder` when no GPU — wiring check only.
 ## Verify & controls
 
 - [ ] Same tokenizer + pooling in Phase A/B
-- [ ] [Walkthrough 8](08-falsification-controls.md)
+- [ ] Falsification arms — [walkthrough 08](08-falsification-controls.md)
 
 ---
 

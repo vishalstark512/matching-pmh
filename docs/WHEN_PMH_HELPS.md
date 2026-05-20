@@ -1,5 +1,8 @@
 # When PMH helps (and when it does not)
 
+!!! tip "Adoption path"
+    First: [Find your application](APPLICATIONS.md) (does your task fit?). This page: honest expectations.
+
 Honest expectations before you invest integration time. PMH is **not** a guarantee of higher accuracy; it is a **structured** way to reduce sensitivity along estimated deployment nuisance directions, with **falsification controls** so you can see whether gains are specific or generic.
 
 ---

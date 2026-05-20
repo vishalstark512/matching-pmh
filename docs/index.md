@@ -2,77 +2,57 @@
 
 **Train on site A. Deploy on site B. Same labels.**
 
-One package: estimate deployment nuisance → apply matched PMH → validate with controls.
-
 ---
 
-## Read in this order
+## Documentation (one path)
 
-| Step | Page | Time |
-|------|------|------|
-| 1 | [What is PMH?](WHAT_IS_PMH.md) | 5 min |
-| 2 | [Will it help my problem?](WHEN_PMH_HELPS.md) | 5 min |
-| 3 | [Your first hour](FIRST_HOUR.md) — install, demo, wizard | 30–60 min |
-| 4 | [Pick shift type D1–D7](NUISANCE_SUBTYPES.md) + [Golden paths](GOLDEN_PATHS.md) (G1/G1b/G2/G3/G3b/G4) | 10 min |
-| 5 | [Integrate your project](GETTING_STARTED.md) | 1 afternoon |
+| Step | Page |
+|------|------|
+| **1** | [**Find your application**](APPLICATIONS.md) — nuisance in plain English + walkthrough |
+| **2** | [**Golden paths**](GOLDEN_PATHS.md) — copy **one** of G1 / G1b / G2 / G3 / G3b / G4 |
+| **3** | [First hour](FIRST_HOUR.md) — install + demo |
+| **4** | [Your project](GETTING_STARTED.md) — afternoon checklist |
 
-**Not sure where to start?**
+**Map of the whole site:** [MAP.md](MAP.md) · **Gates only:** [START_HERE.md](START_HERE.md)
 
 ```bash
 pip install matching-pmh
-pmh-train wizard
+pmh-train route --search pose
+pmh-train route --task pose_or_keypoints
+pmh-train doctor
 ```
 
 ```python
-from pmh import suggest_subtype
-print(suggest_subtype(has_target_domain=True, has_target_labels=False))
+from pmh import explain_task
+print(explain_task("pose_or_keypoints"))
 ```
 
 ---
 
-## I want to…
+## Sidebar
 
-| Goal | Go to |
-|------|--------|
-| Check install | `pmh-train doctor` |
-| Load `.npy` / folders | [DATA_LAYOUT.md](DATA_LAYOUT.md) |
-| Ship Σ̂ bundle | [DEPLOYMENT.md](DEPLOYMENT.md) |
-| Run without installing | [Colab](COLAB.md) |
-| Copy-paste by stack | [Golden paths](GOLDEN_PATHS.md) (incl. Lightning **G1b**, HF Trainer **G3b**) |
-| Fix an error | [Troubleshooting](TROUBLESHOOTING.md) |
-| Compare to CORAL | [vs CORAL](COMPARE_TO_CORAL.md) |
-| See example console output | [Demo output](DEMO_OUTPUT.md) |
-| Replicate a paper block | [Research → Paper alignment](PAPER_ALIGNMENT.md) · [Recipe cards](recipes/README.md) |
-| API details | [Developer API](api/developer.md) · [PMHTrainer](api/pmh-trainer.md) |
-| All walkthroughs | [Walkthrough index](walkthroughs/index.md) |
+| Tab | Use |
+|-----|-----|
+| **Adopt** | Onboarding only — start here |
+| **Integrate** | CLI, hooks, data, deployment, APIs |
+| **Gallery** | Short templates by domain |
+| **Research** | Paper, benchmarks, 19 walkthroughs — **after** Adopt works |
+| **Reference** | D1–D7 lemmas, theory, training primitives |
+| **Contributors** | How docs are organized |
 
 ---
 
-## Default code (PyTorch, D4 domain shift)
+## Default code
 
 ```python
-from pmh import PMHTrainer, PMHConfig
+from pmh import check_applicability, robust_fit
 
-trainer = PMHTrainer(
-    model, hook=backbone, nuisance="domain_shift",
-    pmh_config=PMHConfig.balanced(),
+print(check_applicability(stack="pytorch", n_source=500, n_target=400).summary())
+out = robust_fit(
+    model, train_loader,
+    source_batches=src_loader, target_batches=tgt_loader,
+    hook="auto", epochs=20,
 )
-trainer.fit(train_loader, source_batches=src, target_batches=tgt, epochs=20)
 ```
 
-Install: `pip install matching-pmh` · [PyPI](https://pypi.org/project/matching-pmh/)
-
----
-
-## Doc sections (sidebar)
-
-| Section | Who it's for |
-|---------|----------------|
-| **Start here** | Everyone new |
-| **Integrate** | Wiring PMH into your stack |
-| **Gallery** | Examples by domain (vision / tabular / NLP) |
-| **Research** | Paper blocks, benchmarks, fidelity |
-| **Reference** | Estimators, training API, theory |
-| **Contributors** | Internal plans and doc maintenance |
-
-Older pages ([Quickstart](QUICKSTART.md), [Choose your setup](CHOOSE_YOUR_SETUP.md), …) redirect here or to the pages above.
+[PyPI](https://pypi.org/project/matching-pmh/) · [GitHub](https://github.com/vishalstark512/matching-pmh)

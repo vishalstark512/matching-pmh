@@ -1,6 +1,6 @@
 # Roadmap
 
-**Current release: v1.5.2** (ready to tag) — subtype guide, golden paths G1–G4 + G1b/G3b, custom geometry, `pmh-train doctor` / `validate` / folder estimate, deployment export.
+**Current release: v1.5.3** — adoption-first docs ([APPLICATIONS](APPLICATIONS.md), `pmh-train route`), plus v1.5.2 subtype guide, golden paths, custom geometry, doctor / validate / deployment.
 
 **v1.5.0** — developer API (`robust_fit`, `check_applicability`), golden paths G1–G3, wizard, Colab notebooks.
 

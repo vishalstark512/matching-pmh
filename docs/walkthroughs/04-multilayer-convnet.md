@@ -48,7 +48,7 @@ python examples/07_vision_multilayer.py
 ## Verify & controls
 
 - [ ] Each layer’s `d` matches artifact
-- [ ] [Walkthrough 8](08-falsification-controls.md)
+- [ ] Falsification arms — [walkthrough 08](08-falsification-controls.md)
 
 ---
 

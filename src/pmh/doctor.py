@@ -73,7 +73,7 @@ def run_doctor(*, stack: Stack = "pytorch") -> DoctorReport:
             rep.checks.append(f"sklearn {sklearn.__version__}")
         except ImportError:
             rep.errors.append('sklearn missing — pip install "matching-pmh[sklearn]"')
-        rep.suggested_path = "docs/GOLDEN_PATHS.md#g2--frozen-features--sklearn"
+        rep.suggested_path = "docs/GOLDEN_PATHS.md#g2"
         return rep
 
     if stack == "hf":
@@ -83,7 +83,7 @@ def run_doctor(*, stack: Stack = "pytorch") -> DoctorReport:
             rep.checks.append("transformers available")
         except ImportError:
             rep.errors.append('transformers missing — pip install "matching-pmh[hf]"')
-        rep.suggested_path = "docs/GOLDEN_PATHS.md#g3b--hugging-face-trainer-keep-your-training-stack"
+        rep.suggested_path = "docs/GOLDEN_PATHS.md#g3b"
         return rep
 
     # pytorch default
@@ -97,5 +97,5 @@ def run_doctor(*, stack: Stack = "pytorch") -> DoctorReport:
     except Exception as exc:
         rep.warnings.append(f"lightning check skipped: {exc}")
 
-    rep.suggested_path = "docs/GOLDEN_PATHS.md#g1--pytorch-two-domains"
+    rep.suggested_path = "docs/START_HERE.md"
     return rep

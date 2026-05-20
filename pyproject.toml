@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "matching-pmh"
-version = "1.5.2"
+version = "1.5.3"
 description = "Domain-robust PyTorch and sklearn: train on site A, deploy on site B with the same labels."
 readme = "README.md"
 license = "MIT"

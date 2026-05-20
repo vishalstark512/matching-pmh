@@ -42,7 +42,7 @@ trainer = PMHTrainer.from_artifact(
 trainer.fit(train_loader, epochs=20)
 ```
 
-Mode B (sklearn): load `sigma_task.pt` and use `PMHMatcher` / projection — see [G2](GOLDEN_PATHS.md#g2--frozen-features--sklearn).
+Mode B (sklearn): load `sigma_task.pt` and use `PMHMatcher` / projection — see [G2](GOLDEN_PATHS.md#g2).
 
 ---
 

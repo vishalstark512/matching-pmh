@@ -1,13 +1,12 @@
 # Gallery — copy-paste templates
 
-**You have two environments and the same labels?** Pick one row, copy the block, swap in your model/data.
+**Start:** [START_HERE](../START_HERE.md) → [Golden paths](../GOLDEN_PATHS.md) (one section).  
+This gallery is **short templates** by domain — not a second onboarding path.
 
-| You have… | Do this | Page |
-|-----------|---------|------|
-| PyTorch images/signals, site A + site B loaders | `PMHTrainer` + `nuisance="domain_shift"` | [Vision](vision.md) |
-| Precomputed embeddings (`.npy`), sklearn classifier | `PMHMatcher` in a `Pipeline` | [Tabular](tabular.md) |
-| LLM answers with same facts, different formatting | Style pairs JSONL + HF hook | [NLP](nlp.md) |
+| You have… | Golden path | Page |
+|-----------|-------------|------|
+| PyTorch, site A + B loaders | [G1](../GOLDEN_PATHS.md#g1) | [Vision](vision.md) |
+| Precomputed `.npy` + sklearn | [G2](../GOLDEN_PATHS.md#g2) | [Tabular](tabular.md) |
+| LLM format / style shift | [G3](../GOLDEN_PATHS.md#g3) | [NLP](nlp.md) |
 
-**Before you start:** [Docs home](../index.md) · [D1–D7 subtypes](../NUISANCE_SUBTYPES.md) · [First hour](../FIRST_HOUR.md)
-
-After it runs → [Controls walkthrough](../walkthroughs/08-falsification-controls.md) · [Troubleshooting glossary](../TROUBLESHOOTING.md#plain-language-glossary)
+After it runs → [Controls](../walkthroughs/08-falsification-controls.md) · [Troubleshooting](../TROUBLESHOOTING.md)

@@ -80,7 +80,7 @@ def recommend_setup(
             summary="Same factual content, different formatting — style-pair JSONL + HF hidden states.",
             install_extra='pip install "matching-pmh[hf]"',
             example_script="examples/08_hf_style_d7.py",
-            doc_link="docs/GOLDEN_PATHS.md#g3--llm--two-text-corpora-hfpmhtrainer",
+            doc_link="docs/GOLDEN_PATHS.md#g3",
             subtype_doc=subtype_doc,
             snippet=(
                 "from pmh import PMHTrainer, PMHConfig\n"
@@ -198,6 +198,7 @@ def _ask_yes_no(prompt: str, default: bool, input_fn: Callable[[str], str]) -> b
 def run_wizard(
     *,
     stack: Stack | None = None,
+    task_id: str | None = None,
     has_target_domain: bool | None = None,
     has_target_labels: bool | None = None,
     has_frozen_features: bool | None = None,
@@ -206,9 +207,49 @@ def run_wizard(
     input_fn: Callable[[str], str] = input,
 ) -> SetupRecommendation:
     """Interactive or flag-driven setup recommendation."""
-    if interactive and stack is None:
+    from pmh.task_router import TaskRoute, explain_task, format_task_menu, get_task, route_from_wizard_choice
+
+    selected_task: TaskRoute | None = None
+
+    def _apply_task(tr: TaskRoute) -> None:
+        nonlocal stack, has_frozen_features, has_style_pairs, has_target_labels, selected_task
+        selected_task = tr
+        stack = tr.stack
+        if stack == "sklearn":
+            has_frozen_features = True
+        if stack == "hf":
+            has_style_pairs = True
+        if tr.lemma == "D1":
+            has_target_labels = True
+
+    if task_id:
+        selected_task = get_task(task_id)
+        print(explain_task(task_id))
+        print()
+        _apply_task(selected_task)
+
+    if interactive and stack is None and selected_task is None:
         print("matching-pmh setup wizard")
-        print("Train on one environment, deploy on another — same labels.\n")
+        print("Train on one environment, deploy on another — same labels.")
+        print("One-page guide: docs/START_HERE.md\n")
+        print(format_task_menu())
+        from pmh.task_router import TASK_IDS
+
+        n = len(TASK_IDS)
+        tchoice = _ask_choice(
+            "Pick your task (or skip to stack-only setup)",
+            {str(i): f"Task {i}" for i in range(1, n + 1)}
+            | {"0": "Skip — I only know my stack (PyTorch / sklearn / HF)"},
+            input_fn,
+        )
+        if tchoice != "0":
+            tid = route_from_wizard_choice(tchoice)
+            if tid:
+                print(explain_task(tid))
+                print()
+                _apply_task(get_task(tid))
+
+    if interactive and stack is None:
         choice = _ask_choice(
             "What are you integrating with?",
             {
@@ -264,7 +305,8 @@ def run_wizard(
             has_target_labels = False
 
     subtype_flags: dict[str, bool] = {}
-    if interactive and stack == "pytorch" and has_target_domain:
+    preset_lemma = selected_task.lemma if selected_task is not None else None
+    if interactive and stack == "pytorch" and has_target_domain and preset_lemma is None:
         print()
         st = _ask_choice(
             "What best describes the deployment shift? (nuisance subtype)",
@@ -293,15 +335,21 @@ def run_wizard(
         has_temporal_sequences=subtype_flags.get("has_temporal_sequences", False),
         has_nuisance_indices=subtype_flags.get("has_nuisance_indices", False),
         noise_level_known=subtype_flags.get("noise_level_known", False),
+        lemma=preset_lemma or subtype_flags.get("lemma"),
     )
 
     print()
     print(format_setup_guide(rec))
     print()
     print("Next steps:")
-    print(f"  1. {rec.install_extra}")
-    print(f"  2. python {rec.example_script}")
-    print("  3. docs/FIRST_HOUR.md")
+    if selected_task is not None:
+        for i, step in enumerate(selected_task.walkthrough, 1):
+            print(f"  {i}. {step}")
+        print(f"  Read: {selected_task.doc_one_pager}")
+    else:
+        print(f"  1. {rec.install_extra}")
+        print(f"  2. python {rec.example_script}")
+        print("  3. docs/START_HERE.md")
     if rec.stack == "pytorch":
         print(
             "  Colab: https://colab.research.google.com/github/vishalstark512/matching-pmh/blob/main/notebooks/domain_shift_first_run.ipynb"

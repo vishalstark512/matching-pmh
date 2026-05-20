@@ -30,7 +30,7 @@ def _cmd_list_methods(_: argparse.Namespace) -> int:
         req = ", ".join(spec.required_data) or "(config only)"
         print(f"{spec.method:<6} {spec.name:<28} {spec.typical_tasks:<20} {req}")
         print(f"         {format_subtype_line(spec.method)}")
-    print("\nNew here: pmh-train wizard")
+    print("\nNew here: pmh-train route  |  pmh-train wizard")
     print("Paper block presets: pmh-train list-presets")
     print("Use: pmh-train estimate --config job.json")
     print("       pmh-train benchmark --config examples/configs/benchmark_sklearn.json")
@@ -38,14 +38,39 @@ def _cmd_list_methods(_: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_route(args: argparse.Namespace) -> int:
+    from pmh.task_router import explain_task, format_search_results, format_task_menu
+
+    if getattr(args, "search", None):
+        print(format_search_results(args.search))
+        return 0
+    if args.list:
+        print(format_task_menu(short=False))
+        return 0
+    if args.task is None:
+        print(format_task_menu(short=True))
+        print("\nExample: pmh-train route --task pose_or_keypoints")
+        print("Docs:    https://github.com/vishalstark512/matching-pmh/blob/main/docs/START_HERE.md")
+        return 0
+    try:
+        print(explain_task(args.task))
+    except KeyError as e:
+        print(e, file=sys.stderr)
+        return 2
+    if not args.quiet:
+        print("\nThen: pmh-train wizard --task", args.task)
+    return 0
+
+
 def _cmd_wizard(args: argparse.Namespace) -> int:
     from pmh.onboarding import run_wizard
 
-    if args.non_interactive and args.stack is None:
-        print("wizard --non-interactive requires --stack", file=sys.stderr)
+    if args.non_interactive and args.stack is None and args.task is None:
+        print("wizard --non-interactive requires --stack or --task", file=sys.stderr)
         return 2
     run_wizard(
         stack=args.stack,
+        task_id=args.task,
         has_target_domain=args.target_domain,
         has_target_labels=args.target_labels,
         has_frozen_features=args.frozen_features,
@@ -416,6 +441,25 @@ def main(argv: list[str] | None = None) -> int:
     )
     p_presets.set_defaults(func=_cmd_list_presets)
 
+    p_route = sub.add_parser(
+        "route",
+        help="Route your ML task to one PMH path (pose, vision, LLM, …)",
+    )
+    p_route.add_argument(
+        "--task",
+        default=None,
+        help="Task id, e.g. pose_or_keypoints, vision_classification",
+    )
+    p_route.add_argument(
+        "--search",
+        default=None,
+        metavar="KEYWORD",
+        help="Find applications by keyword (pose, hospital, blur, temporal, …)",
+    )
+    p_route.add_argument("--list", action="store_true", help="Print task menu")
+    p_route.add_argument("--quiet", action="store_true", help="No follow-up hints")
+    p_route.set_defaults(func=_cmd_route)
+
     p_wiz = sub.add_parser(
         "wizard",
         help="Interactive setup guide (stack, data, copy-paste snippet)",
@@ -432,9 +476,14 @@ def main(argv: list[str] | None = None) -> int:
     p_wiz.add_argument("--frozen-features", action="store_true", default=None)
     p_wiz.add_argument("--style-pairs", action="store_true", default=None)
     p_wiz.add_argument(
+        "--task",
+        default=None,
+        help="Task id from pmh-train route --list (e.g. pose_or_keypoints)",
+    )
+    p_wiz.add_argument(
         "--non-interactive",
         action="store_true",
-        help="Use flags only (requires --stack)",
+        help="Use flags only (requires --stack or --task)",
     )
     p_wiz.set_defaults(func=_cmd_wizard, target_domain=True)
 

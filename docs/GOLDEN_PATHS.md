@@ -1,8 +1,10 @@
 # Golden paths (G1–G4 + framework variants)
 
-Ignore the full walkthrough grid until **one** path below works. Everything else is **Advanced**.
+**Prerequisite:** [Find your application](APPLICATIONS.md) (nuisance + walkthrough). **Not first:** [walkthrough grid](walkthroughs/index.md).
 
-**Pick structural subtype D1–D7 first** (not paper block T1–T7): [NUISANCE_SUBTYPES.md](NUISANCE_SUBTYPES.md) · `pmh-train wizard` · `suggest_subtype(...)` from Python.
+Pick **one** section below. Your application → nuisance mapping lives in [APPLICATIONS](APPLICATIONS.md).
+
+Read **exactly one** section below (G1, G1b, G2, G3, G3b, or G4). Subtype D1–D7: use `pmh-train route` / `wizard` — details in [NUISANCE_SUBTYPES.md](NUISANCE_SUBTYPES.md) when needed.
 
 | Path | When |
 |------|------|
@@ -21,6 +23,8 @@ print(rec.method, rec.nuisance, rec.reason)  # e.g. D4 domain_shift
 ```
 
 ---
+
+<a id="g1"></a>
 
 ## G1 — PyTorch, two domains
 
@@ -57,6 +61,8 @@ print(report.summary())
 - Already on Lightning? → **G1b** below
 
 ---
+
+<a id="g1b"></a>
 
 ## G1b — PyTorch Lightning
 
@@ -97,6 +103,8 @@ trainer = pl.Trainer(callbacks=[PMHLightningCallback.from_artifact(artifact, pmh
 
 ---
 
+<a id="g2"></a>
+
 ## G2 — Frozen features + sklearn
 
 **You have:** `x_source`, `y_source`, `x_target` (embeddings).
@@ -118,6 +126,8 @@ print(report.summary())
 - Pipeline: [gallery/tabular.md](gallery/tabular.md)
 
 ---
+
+<a id="g3"></a>
 
 ## G3 — LLM / two text corpora (`HFPMHTrainer`)
 
@@ -147,6 +157,8 @@ print(out.preflight_message)
 - Style / format shift (D7): [walkthrough 6](walkthroughs/06-llm-style-d7.md) · `estimate_style`
 
 ---
+
+<a id="g3b"></a>
 
 ## G3b — Hugging Face `Trainer` (keep your training stack)
 
@@ -187,6 +199,8 @@ trainer.train()
 **G3 vs G3b:** use **G3** when pmh should own estimate+fit; use **G3b** when you must keep the HF `Trainer` API.
 
 ---
+
+<a id="g4"></a>
 
 ## G4 — Custom geometry (your deltas or \(W\))
 

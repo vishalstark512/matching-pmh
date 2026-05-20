@@ -1,5 +1,8 @@
 # Hook cookbook
 
+!!! tip "Adoption path"
+    Which hook for your task: [APPLICATIONS](APPLICATIONS.md) walkthrough → [Golden paths](GOLDEN_PATHS.md).
+
 Pick one representation `h = φ(x)` for **Phase A and Phase B**. Use `pmh.hooks` helpers or `PMHTrainer(..., hook=...)`.
 
 ## Quick pick

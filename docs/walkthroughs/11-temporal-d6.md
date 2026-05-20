@@ -73,7 +73,7 @@ pmh.capped_total(task_loss, h.reshape(-1, d) if h.dim() == 3 else h)
 ## Verify & controls
 
 - [ ] `artifact.method == "D6"`
-- [ ] [Walkthrough 8](08-falsification-controls.md)
+- [ ] Falsification arms — [walkthrough 08](08-falsification-controls.md)
 
 ---
 

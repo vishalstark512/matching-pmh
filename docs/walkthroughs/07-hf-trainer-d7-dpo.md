@@ -54,7 +54,7 @@ Use bundled `examples/data/preference_pairs_sample.jsonl` for wiring — replace
 ## Verify & controls
 
 - [ ] Style artifact matches hidden-state pooling
-- [ ] [Walkthrough 8](08-falsification-controls.md) on LM metric
+- [ ] Falsification arms — [walkthrough 08](08-falsification-controls.md) on LM metric
 
 ---
 

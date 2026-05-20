@@ -5,7 +5,7 @@ Use this when you **already** train with `transformers.Trainer` (PEFT, DPO, cust
 | Path | Doc |
 |------|-----|
 | **G3b (this page)** | Subclass `Trainer` via `get_pmh_trainer()` |
-| **G3** | [Golden paths — HFPMHTrainer](GOLDEN_PATHS.md#g3--llm--two-text-corpora-hfpmhtrainer) · `robust_fit_text_domains` |
+| **G3** | [Golden paths — HFPMHTrainer](GOLDEN_PATHS.md#g3) · `robust_fit_text_domains` |
 | **D7 style** | [Walkthrough 6](walkthroughs/06-llm-style-d7.md) |
 
 Install: `pip install "matching-pmh[hf]"`
@@ -70,4 +70,4 @@ total, task, pmh = compute_pmh_training_loss(model, inputs, pmh_loss, representa
 
 ## Style pairs (D7)
 
-For same-content / different-format JSONL, estimate with `HFPMHTrainer.estimate_style` ([G3](GOLDEN_PATHS.md#g3--llm--two-text-corpora-hfpmhtrainer)) or build artifact via [CUSTOM_GEOMETRY.md](CUSTOM_GEOMETRY.md), then pass to `PMHTrainer.from_artifact`.
+For same-content / different-format JSONL, estimate with `HFPMHTrainer.estimate_style` ([G3](GOLDEN_PATHS.md#g3)) or build artifact via [CUSTOM_GEOMETRY.md](CUSTOM_GEOMETRY.md), then pass to `PMHTrainer.from_artifact`.

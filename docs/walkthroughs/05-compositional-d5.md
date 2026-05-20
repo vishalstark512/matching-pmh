@@ -8,7 +8,7 @@
 | **Scripts** | `examples/03_compositional_d5.py`, `13_compositional_train_d5.py` |
 | **API** | `nuisance_indices=` on `PMHTrainer` / `PMHMatcher` |
 
-[nuisance_types.md](../nuisance_types.md#d5)
+[NUISANCE_SUBTYPES.md](../NUISANCE_SUBTYPES.md#d5-compositional)
 
 ---
 

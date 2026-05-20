@@ -2,7 +2,10 @@
 
 ```bash
 pip install matching-pmh
-pmh-train wizard          # start here
+pmh-train route --search hospital   # keyword finder
+pmh-train route --task pose_or_keypoints
+pmh-train route --list              # all apps + shift types
+pmh-train wizard          # interactive (task menu first)
 pmh-train doctor          # check install / extras
 pmh-train list-methods    # D1–D7 + subtype lines
 pmh-train list-presets    # paper + subtype presets
@@ -12,7 +15,8 @@ pmh-train list-presets    # paper + subtype presets
 
 | Command | Purpose |
 |---------|---------|
-| **`wizard`** | Interactive stack + subtype + snippet |
+| **`route`** | Find app (`--search KEYWORD`), full plan (`--task ID`), or `--list` |
+| **`wizard`** | Interactive task + stack + subtype + snippet |
 | **`doctor`** | Environment check (`--stack pytorch\|sklearn\|hf`) |
 | **`estimate`** | Phase A — JSON, `.npy` paths, or **folders** |
 | **`validate`** | Falsification pass/fail (exit 1 if controls fail) |

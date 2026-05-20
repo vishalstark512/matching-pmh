@@ -1,5 +1,8 @@
 # Training
 
+!!! tip "Adoption path"
+    Implementation: [Golden paths](GOLDEN_PATHS.md). Task fit: [APPLICATIONS](APPLICATIONS.md).
+
 ## Representation PMH
 
 ```python

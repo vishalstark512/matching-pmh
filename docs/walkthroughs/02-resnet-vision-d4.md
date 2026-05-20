@@ -124,7 +124,7 @@ Runs without your data (random tensors + brightness shift). Use it to verify ins
 
 - [ ] `preflight` pass/marginal
 - [ ] Target-domain val accuracy tracked
-- [ ] [Walkthrough 8](08-falsification-controls.md) arms run
+- [ ] Falsification arms run — [walkthrough 08](08-falsification-controls.md)
 
 ---
 

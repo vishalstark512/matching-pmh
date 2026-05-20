@@ -20,61 +20,72 @@ theme:
 
 nav:
   - Home: index.md
-  - "Start here":
-      - What is PMH?: WHAT_IS_PMH.md
-      - Will it help?: WHEN_PMH_HELPS.md
-      - Your first hour: FIRST_HOUR.md
-      - Shift types (D1–D7): NUISANCE_SUBTYPES.md
-      - Golden paths (G1–G4, G1b/G3b): GOLDEN_PATHS.md
-      - Custom geometry: CUSTOM_GEOMETRY.md
-      - Data layout (.npy / folders): DATA_LAYOUT.md
-      - Deployment bundle: DEPLOYMENT.md
-      - Integrate your project: GETTING_STARTED.md
+
+  - Adopt:
+      - "★ Find your application": APPLICATIONS.md
+      - Three gates: START_HERE.md
+      - Site map: MAP.md
+      - Golden paths (G1–G4): GOLDEN_PATHS.md
+      - Will PMH help?: WHEN_PMH_HELPS.md
       - Troubleshooting: TROUBLESHOOTING.md
+      - What is PMH? (background): WHAT_IS_PMH.md
+
   - Integrate:
-      - CLI & wizard: cli.md
-      - Colab: COLAB.md
-      - Developer API: api/developer.md
-      - PMHTrainer: api/pmh-trainer.md
-      - Subtypes API: api/subtypes.md
-      - Custom geometry API: api/custom.md
-      - Deployment API: api/deployment.md
-      - Hooks: hooks.md
-      - sklearn: sklearn.md
-      - "HF Trainer (G3b)": integrations-hf-trainer.md
-      - "Lightning (G1b)": integrations-lightning.md
-      - vs CORAL: COMPARE_TO_CORAL.md
-      - Demo output: DEMO_OUTPUT.md
+      - Onboarding:
+          - First hour: FIRST_HOUR.md
+          - Your project: GETTING_STARTED.md
+      - CLI & tools:
+          - CLI (route, wizard, doctor): cli.md
+          - Colab: COLAB.md
+          - Demo output: DEMO_OUTPUT.md
+      - Shift & compare:
+          - Subtypes D1–D7: NUISANCE_SUBTYPES.md
+          - vs CORAL: COMPARE_TO_CORAL.md
+      - Data & deployment:
+          - Data layout: DATA_LAYOUT.md
+          - Deployment bundle: DEPLOYMENT.md
+          - Custom geometry: CUSTOM_GEOMETRY.md
+      - By stack:
+          - Hooks: hooks.md
+          - sklearn: sklearn.md
+          - PyTorch (low-level): integrations.md
+          - Lightning (G1b): integrations-lightning.md
+          - HF Trainer (G3b): integrations-hf-trainer.md
+          - HF (low-level): integrations-hf.md
+      - API:
+          - Overview: api/index.md
+          - Developer API: api/developer.md
+          - PMHTrainer: api/pmh-trainer.md
+          - Subtypes: api/subtypes.md
+          - Custom geometry: api/custom.md
+          - Deployment: api/deployment.md
+          - Training primitives: training.md
+
   - Gallery:
       - Overview: gallery/README.md
       - Vision: gallery/vision.md
       - Tabular: gallery/tabular.md
       - NLP: gallery/nlp.md
+
   - Research:
       - Paper alignment: PAPER_ALIGNMENT.md
       - Fidelity by subtype: FIDELITY_BY_SUBTYPE.md
       - Recipe cards: recipes/README.md
-      - "Recipe D1 (T1)": recipes/t1-office31-d1.md
-      - "Recipe D2 (T2A)": recipes/t2a-vit-isotropic.md
-      - "Recipe D4 (T4)": recipes/t4-domain-d4.md
-      - "Recipe D7 (T7A)": recipes/t7a-style-d7.md
-      - Walkthroughs (all): walkthroughs/index.md
-      - Controls & falsification: walkthroughs/08-falsification-controls.md
+      - Walkthroughs (tiered index): walkthroughs/index.md
+      - Falsification controls: walkthroughs/08-falsification-controls.md
       - Office-31 real data: walkthroughs/19-office31-real-data.md
-      - Paper presets: walkthroughs/paper-presets-by-block.md
       - Benchmarks: BENCHMARKS.md
       - Correct usage: CORRECT_USAGE.md
       - Adaptation workbook: ADAPTATION_WORKBOOK.md
+
   - Reference:
-      - Estimators (D1–D7): estimators/index.md
-      - Training API: training.md
+      - Estimators D1–D7: estimators/index.md
       - Theory: THEORY.md
       - Datasets: datasets.md
-      - PyTorch integration: integrations.md
-      - HF (low-level): integrations-hf.md
+
   - Contributors:
       - Doc maintenance: DOCS_GUIDE.md
-      - Subtype rollout plan: NUISANCE_SUBTYPE_PLAN.md
+      - Subtype plan: NUISANCE_SUBTYPE_PLAN.md
       - Developer onboarding plan: DEVELOPER_ONBOARDING_PLAN.md
       - Roadmap: ROADMAP.md
       - Philosophy: PHILOSOPHY.md

@@ -1,59 +1,72 @@
 # Documentation guide (contributors)
 
-How the docs site is organized after the **subtype-first cleanup** (fewer entry points, redirects for legacy URLs).
+## Information architecture (v2)
+
+**Rule:** one adoption ladder. Never add a second “start here.”
+
+| Layer | Tab | Audience |
+|-------|-----|----------|
+| L0 | Home `index.md` | 10-line pointer to APPLICATIONS |
+| L1 | **Adopt** | All new developers |
+| L2 | **Integrate** | Wiring PMH into a stack |
+| L3 | **Gallery** | Copy-paste by domain |
+| L4 | **Research** | Paper / benchmarks / walkthroughs |
+| L5 | **Reference** | Lemmas, theory, primitives |
+| L6 | **Contributors** | Plans, roadmap |
+
+**Source of truth for applications:** `src/pmh/task_router.py` + [APPLICATIONS.md](APPLICATIONS.md) (keep in sync).
 
 ---
 
-## User journey (sidebar)
+## What to edit for a feature
 
-| Order | Page | Purpose |
-|-------|------|---------|
-| 1 | `index.md` | Single hub + reading order |
-| 2 | `WHAT_IS_PMH.md` | Concept, no paper |
-| 3 | `WHEN_PMH_HELPS.md` | Honest expectations |
-| 4 | `FIRST_HOUR.md` | Install, demo, wizard |
-| 5 | `NUISANCE_SUBTYPES.md` | Pick D1–D7 |
-| 6 | `GOLDEN_PATHS.md` | G1, **G1b** (Lightning), G2, G3, **G3b** (HF Trainer), G4 |
-| 7 | `GETTING_STARTED.md` | Afternoon integration |
-| 8 | `TROUBLESHOOTING.md` | Errors + glossary |
+| Change | Edit |
+|--------|------|
+| New user-facing task | `task_router.py` + `APPLICATIONS.md` section + optional `gallery/` |
+| New integration pattern | `GOLDEN_PATHS.md` only |
+| New subtype / estimator | `NUISANCE_SUBTYPES.md` + `estimators/dk.md` |
+| Paper block | `PAPER_ALIGNMENT.md` + `recipes/` |
+| CLI command | `cli.md` + `src/pmh/cli/main.py` |
 
-**Integrate** tab: CLI, Colab, API refs, hooks, sklearn/HF/Lightning, CORAL.
-
-**Research** tab: paper alignment, fidelity, recipes, walkthrough index, benchmarks — not required for first adoption.
-
-**Reference** tab: per-estimator pages, training API, theory.
+**Do not** add top-level Adopt pages without updating this guide.
 
 ---
 
-## Redirect stubs (keep files, do not expand)
+## Redirect stubs
 
-These URLs are linked from old READMEs, issues, and walkthroughs:
+Keep these files **short** (redirect only). Do not expand them.
 
-| File | Points to |
-|------|-----------|
-| `QUICKSTART.md` | `FIRST_HOUR.md` |
-| `CHOOSE_YOUR_SETUP.md` | `NUISANCE_SUBTYPES.md` + `GOLDEN_PATHS.md` |
+| Stub | Target |
+|------|--------|
+| `QUICKSTART.md`, `getting-started.md`, `CHOOSE_YOUR_SETUP.md` | `APPLICATIONS.md` |
 | `ADAPT_YOUR_PIPELINE.md` | `GETTING_STARTED.md` |
-| `nuisance_types.md` | `NUISANCE_SUBTYPES.md` + `estimators/` |
-| `getting-started.md` | `index.md` |
-
-When adding links in new content, **prefer the target page**, not the stub.
+| `nuisance_types.md` | `NUISANCE_SUBTYPES.md` |
 
 ---
 
-## Removed from main nav (still in repo)
+## Adoption banner (optional on long pages)
 
-- Duplicate **Theory** top-level tab (use Reference → Theory)
-- **19 numbered walkthroughs** in sidebar (listed only via `walkthroughs/index.md`)
-- **Estimators** duplicate under Reference + old Nuisance cookbook
-- **Contributors-only** plans: `NUISANCE_SUBTYPE_PLAN.md`, `DEVELOPER_ONBOARDING_PLAN.md`
+```markdown
+!!! tip "Adoption path"
+    New here? [Find your application](APPLICATIONS.md) → [Golden paths](GOLDEN_PATHS.md) (one section).
+```
 
-Walkthrough files remain; link from index or walkthrough hub.
+Use on Research / Reference pages, not on APPLICATIONS or GOLDEN_PATHS.
 
 ---
 
-## Adding new docs
+## mkdocs nav
 
-1. **User-facing feature** → update `GOLDEN_PATHS.md` or `api/developer.md`, not a new top-level page.
-2. **New subtype / estimator** → `NUISANCE_SUBTYPES.md` + `estimators/dk.md` + optional recipe card.
-3. **Paper block** → row in `PAPER_ALIGNMENT.md` + recipe or walkthrough, not a new “start here” page.
+Edit `mkdocs.yml` only when adding a **new Integrate or Research** page. Adopt tab should stay ≤6 entries.
+
+---
+
+## Pre-release check
+
+```bash
+python -m mkdocs build
+python -m pytest tests/test_task_router.py -q
+pmh-train route --list
+```
+
+Fix broken links to `GOLDEN_PATHS.md#g1` … `#g4` (use HTML `<a id="g1"></a>` anchors).

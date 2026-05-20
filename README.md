@@ -9,16 +9,22 @@ Add a domain-robustness regularizer to your PyTorch model or sklearn pipeline �
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/vishalstark512/matching-pmh/blob/main/LICENSE)
 [![CI](https://github.com/vishalstark512/matching-pmh/actions/workflows/ci.yml/badge.svg)](https://github.com/vishalstark512/matching-pmh/actions/workflows/ci.yml)
 
-[PyPI](https://pypi.org/project/matching-pmh/) · [GitHub](https://github.com/vishalstark512/matching-pmh) · **[What is this?](docs/WHAT_IS_PMH.md)** · **[First hour](docs/FIRST_HOUR.md)** · [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/vishalstark512/matching-pmh/blob/main/notebooks/domain_shift_first_run.ipynb)
+[PyPI](https://pypi.org/project/matching-pmh/) · [GitHub](https://github.com/vishalstark512/matching-pmh) · **[Find your application](docs/APPLICATIONS.md)** · [Docs map](docs/MAP.md) · [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/vishalstark512/matching-pmh/blob/main/notebooks/domain_shift_first_run.ipynb)
 
 ---
 
-## Developer API (start here)
+## New here?
+
+**[Find your application](docs/APPLICATIONS.md)** (nuisance + walkthrough) → **[Golden paths](docs/GOLDEN_PATHS.md)** (code) → `pmh-train route --task YOUR_TASK`
+
+[Doc map — what to read and skip](docs/MAP.md)
+
+## Developer API
 
 ```python
-from pmh import check_applicability, robust_fit, evaluate_baseline_vs_pmh, evaluate_robust_fit
+from pmh import check_applicability, explain_task, robust_fit
 
-# Go / marginal / no-go before training
+print(explain_task("pose_or_keypoints"))
 print(check_applicability(stack="pytorch", n_source=500, n_target=400).summary())
 
 # PyTorch: one call
@@ -33,17 +39,19 @@ report = evaluate_robust_fit(model, train_loader, val_loader, source_batches=src
 print(report.summary())
 ```
 
-**Three paths only:** [GOLDEN_PATHS.md](docs/GOLDEN_PATHS.md) · `pmh-train wizard` · [starter template](templates/matching-pmh-starter/)
+**Route your task:** `pmh-train route --search pose` · `pmh-train route --task pose_or_keypoints` · [GOLDEN_PATHS.md](docs/GOLDEN_PATHS.md) · `pmh-train wizard`
 
 ---
 
 ## Who this is for
 
-| You have | Start here |
-|----------|------------|
-| PyTorch model + source/target data | `PMHTrainer` + `nuisance="domain_shift"` · [Colab](https://colab.research.google.com/github/vishalstark512/matching-pmh/blob/main/notebooks/domain_shift_first_run.ipynb) |
-| Frozen `.npy` / sklearn features | `PMHMatcher` in a `Pipeline` · [Colab (sklearn)](https://colab.research.google.com/github/vishalstark512/matching-pmh/blob/main/notebooks/sklearn_frozen_features_first_run.ipynb) |
-| LLM style/format drift | [NLP walkthrough](docs/walkthroughs/06-llm-style-d7.md) |
+| You are doing… | Start here |
+|----------------|------------|
+| Pose / keypoints, new camera | `pmh-train route --task pose_or_keypoints` |
+| Vision classification / fine-tune | `pmh-train route --task vision_classification` |
+| Frozen `.npy` / sklearn | `pmh-train route --task frozen_embeddings_sklearn` |
+| LLM style/format drift | `pmh-train route --task llm_style_or_format` |
+| Not sure | [START_HERE.md](docs/START_HERE.md) (3 gates) |
 
 **Not for:** new test-time classes, unrelated label definitions, or “make any model robust to everything.”
 

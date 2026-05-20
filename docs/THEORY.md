@@ -1,5 +1,8 @@
 # Theory and the five-step recipe
 
+!!! tip "Adoption path"
+    Start with [APPLICATIONS](APPLICATIONS.md) and [Golden paths](GOLDEN_PATHS.md). This page is the research bridge to the paper.
+
 This page summarizes the **matching principle** as in the Grand Unification manuscript. The library implements the **practice**; the paper proves the **claims**. You do not need the paper codebase to use `matching-pmh` on a new task.
 
 ---

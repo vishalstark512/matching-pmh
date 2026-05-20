@@ -1,5 +1,7 @@
 # Gallery: vision — two sites, same labels
 
+**Pose / detection / segmentation?** Start with [START_HERE.md](../START_HERE.md) → `pmh-train route --task pose_or_keypoints`.
+
 **You have:** a PyTorch model (CNN, ViT, …), training data, and batches from a **second site** at deploy time (target labels optional).
 
 **You do:** point `hook` at your backbone, pass source + target loaders, call `trainer.fit`.

@@ -61,6 +61,23 @@ from pmh.onboarding import (
     run_wizard,
 )
 from pmh.suggest import NuisanceSuggestion, suggest_nuisance
+from pmh.applications import (
+    SHIFT_TYPES,
+    ShiftTypePlain,
+    explain_application,
+    format_application_finder,
+    format_search_results,
+    format_shift_types,
+    search_applications,
+)
+from pmh.task_router import (
+    TaskRoute,
+    explain_task,
+    format_task_menu,
+    get_task,
+    list_tasks,
+    search_applications as search_tasks,
+)
 from pmh.subtypes import (
     SubtypeRecommendation,
     format_subtype_line,
@@ -141,6 +158,19 @@ __all__ = [
     "NuisanceSuggestion",
     "suggest_subtype",
     "SubtypeRecommendation",
+    "TaskRoute",
+    "ShiftTypePlain",
+    "SHIFT_TYPES",
+    "explain_task",
+    "explain_application",
+    "format_shift_types",
+    "format_application_finder",
+    "format_search_results",
+    "search_applications",
+    "search_tasks",
+    "format_task_menu",
+    "get_task",
+    "list_tasks",
     "list_subtypes",
     "get_subtype",
     "format_subtype_line",
@@ -200,7 +230,7 @@ __all__ = [
     "tune_result_from_grid_search",
 ]
 
-__version__ = "1.5.2"
+__version__ = "1.5.3"
 
 
 def __getattr__(name: str):

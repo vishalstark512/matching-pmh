@@ -1,14 +1,23 @@
-# Estimators overview
+# Estimators overview (D1–D7)
 
-**Pick subtype first:** [NUISANCE_SUBTYPES.md](../NUISANCE_SUBTYPES.md) (user guide) · [FIDELITY_BY_SUBTYPE.md](../FIDELITY_BY_SUBTYPE.md) (paper vs default).
+!!! tip "Adoption path"
+    Pick nuisance in plain English: [Find your application](../APPLICATIONS.md).  
+    Read lemma pages here when you need formulas or factory kwargs.
 
-Each Lemma **D*k*** maps a structural assumption **A*k*** to an estimator $\hat\Sigma_{\mathrm{task}}$.
+| Lemma | Page | Plain nuisance |
+|-------|------|----------------|
+| D1 | [d1.md](d1.md) | Cross-site class geometry |
+| D2 | [d2.md](d2.md) | Isotropic |
+| D3 | [d3.md](d3.md) | Named augmentations |
+| D4 | [d4.md](d4.md) | Site / sensor appearance |
+| D5 | [d5.md](d5.md) | Indexed coordinates |
+| D6 | [d6.md](d6.md) | Temporal drift |
+| D7 | [d7.md](d7.md) | Style / alignment |
 
 ```python
 from pmh import SigmaTaskConfig, estimate_from_config
 
-# Factory helpers
-SigmaTaskConfig.for_subspace(rank=16)      # D1
+SigmaTaskConfig.for_subspace(rank=16)       # D1
 SigmaTaskConfig.for_isotropic(dim, 0.1)    # D2
 SigmaTaskConfig.for_augmentation()         # D3
 SigmaTaskConfig.for_domain(rank=64)        # D4
@@ -17,19 +26,4 @@ SigmaTaskConfig.for_temporal()             # D6
 SigmaTaskConfig.for_alignment(rank=128)    # D7
 ```
 
-Legacy API:
-
-```python
-from pmh import estimate_sigma_task
-sigma = estimate_sigma_task(src, tgt, method="D4", rank=64)
-```
-
-| Page | Lemma | Paper blocks |
-|------|-------|----------------|
-| [D1](d1.md) | Subspace SVD | T1 |
-| [D2](d2.md) | Isotropic | T2 |
-| [D3](d3.md) | Aug modes | T3 |
-| [D4](d4.md) | Domain Gram | T4 |
-| [D5](d5.md) | Compositional | T5 |
-| [D6](d6.md) | Temporal | T6 |
-| [D7](d7.md) | Style / PGD | T7 |
+[NUISANCE_SUBTYPES.md](../NUISANCE_SUBTYPES.md) · [FIDELITY_BY_SUBTYPE.md](../FIDELITY_BY_SUBTYPE.md)

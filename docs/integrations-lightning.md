@@ -5,7 +5,7 @@ Use this when you **already** have a `LightningModule` and want PMH added inside
 | Path | Doc |
 |------|-----|
 | **G1b (this page)** | `add_pmh_to_loss` + `PMHLightningCallback` |
-| **G1** | [Golden paths — plain PyTorch](GOLDEN_PATHS.md#g1--pytorch-two-domains) · `robust_fit` / `PMHTrainer` |
+| **G1** | [Golden paths — plain PyTorch](GOLDEN_PATHS.md#g1) · `robust_fit` / `PMHTrainer` |
 
 Install: `pip install "matching-pmh[lightning]"`
 
@@ -48,4 +48,4 @@ Example: `examples/09_lightning_module.py` · [walkthrough 10](walkthroughs/10-l
 - **`PMHLightningCallback`** only sets epoch for cap/warmup; you must call **`add_pmh_to_loss`** in `training_step`.
 - **`backbone_attr`**: name of the submodule that maps `x → h` (default `"backbone"`).
 - Dict batches: pass `inputs_key="image"` or include `"x"` / `"inputs"` keys.
-- Custom artifact: [G4 — Custom geometry](GOLDEN_PATHS.md#g4--custom-geometry-your-deltas-or-w) · `PMHLoss(artifact, ...)`.
+- Custom artifact: [G4 — Custom geometry](GOLDEN_PATHS.md#g4) · `PMHLoss(artifact, ...)`.

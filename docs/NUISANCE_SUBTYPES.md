@@ -1,6 +1,10 @@
 # Nuisance subtypes (D1–D7)
 
-**Pick the structural type of deployment shift first.** Paper tasks T1–T7 are **worked examples** of these subtypes—not a menu of thirteen separate tools.
+!!! note "Reference — not step 1"
+    New developers: [Find your application](APPLICATIONS.md) explains nuisances in plain English.  
+    `pmh-train route` picks D1–D7 for you. Read this page for D3/D5/D6 detail or paper fidelity.
+
+**Pick the structural type of deployment shift.** Paper tasks T1–T7 are **worked examples** of these subtypes—not a menu of thirteen separate tools.
 
 Every subtype uses the same pipeline:
 
@@ -120,7 +124,9 @@ trainer.fit(train_loader, source_batches=src, target_batches=tgt, epochs=20)
 
 ---
 
-### D5 — Compositional {#d5-compositional}
+### D5 — Compositional
+
+<span id="d5-compositional"></span>
 
 | | |
 |---|---|
