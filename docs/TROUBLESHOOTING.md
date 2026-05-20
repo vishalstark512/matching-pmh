@@ -2,6 +2,52 @@
 
 Common issues when adapting PMH to **your** pipeline. Symptom → cause → fix.
 
+**New to PMH?** See the [plain-language glossary](#plain-language-glossary) first, then [What is PMH?](WHAT_IS_PMH.md).
+
+---
+
+## Plain-language glossary
+
+| You see | Plain English | What to do |
+|---------|---------------|------------|
+| `preflight=pass` | Geometry estimate looks identifiable | Proceed; still run controls before big claims |
+| `preflight=marginal` | Weak signal — shift may be too small or too little data | More source/target batches in estimate; try lower `rank`; see [nuisance_types](nuisance_types.md) |
+| `preflight=fail` | Estimate not usable as-is | Do not trust matched PMH yet; fix data/hook/rank |
+| `eigengap` | How separated “nuisance” directions are from the rest | Low → treat like marginal; collect more data |
+| `nuisance="domain_shift"` | Default: two environments, same labels (Hospital A vs B) | Need `source_batches` + `target_batches` |
+| `nuisance="subspace"` | Labeled data on **both** sites | `fit(x_src, y_src, x_tgt, y_tgt)` or labeled loaders |
+| Phase A / estimate | One-time step: learn what differs between deploy and train | `trainer.fit(...)` runs this automatically |
+| Phase B / PMH loss | Extra training penalty on representation `h` | Same `hook` layer as Phase A |
+| `hook` | Layer where features `h` live (`[batch, d]`) | Pick one backbone layer; keep it fixed |
+| `artifact` / `.pt` file | Saved geometry from Phase A | Reuse path in `artifact_path=` |
+| `PMHTrainer` | Estimate + train in one object (PyTorch) | Default path for deep models |
+| `PMHMatcher` | Adapt frozen NumPy/sklearn features | `fit(x_source, x_target)` then `transform` |
+| `compare_arms` / `compare_arms_sklearn` | Falsification table (matched vs wrong controls) | **After** basic integration works |
+| `wrong_w` arm | Random directions ⊥ matched W (sanity check) | Should not beat matched on **both** accuracy and geometry |
+| `isotropic` (sklearn benchmark) | Unmatched domain directions (control), not “D2 noise” | See [CORRECT_USAGE](CORRECT_USAGE.md) |
+| `trace_iso` (training) | Training-time control arm name | Not the same as sklearn `isotropic` |
+| D1–D7 | Research estimator IDs | Ignore until [estimators](estimators/index.md); start with `domain_shift` |
+| `t1_office31_sklearn` preset | Paper benchmark protocol for Office-31 | Researchers only; use [FIRST_HOUR](FIRST_HOUR.md) first |
+| PMH loss = 0 | Warmup not finished or weight is zero | `PMHConfig(warmup_epochs=0)` to debug; check epoch callback |
+| Matched worse than baseline | Can happen — tradeoff | Report both; tune `weight` / `cap_ratio`; not always a bug |
+
+---
+
+## If you see this error (copy-paste)
+
+| Error snippet | Likely cause | Fix |
+|---------------|--------------|-----|
+| `ModuleNotFoundError: No module named 'sklearn'` | sklearn extra not installed | `pip install "matching-pmh[sklearn]"` |
+| `ModuleNotFoundError: No module named 'torch'` | Core dep missing | `pip install matching-pmh torch` |
+| `domain_shift (D4) requires target_batches` | PyTorch estimate without target data | `trainer.fit(..., target_batches=tgt_loader)` |
+| `Artifact dim X != hook dim Y` | Different layer in Phase A vs B | Same `hook` for estimate and train |
+| `encoder must return [B, d], got shape` | 4D feature map without pooling | `pool_spatial=True` or pooled hook ([hooks.md](hooks.md)) |
+| `rank must be in 1..d` | Rank larger than representation dim | Lower `rank` / upgrade package (auto-cap in recent versions) |
+| `PMHMatcher.fit` / wrong arity | Passed `y` where `x_target` expected | `matcher.fit(x_src, x_target=x_tgt)` |
+| `ImportError: transformers` | D7 / HF path without extra | `pip install "matching-pmh[hf]"` |
+| `KeyError: unknown preset` | Typo in preset name | `pmh-train list-presets` |
+| `preflight=fail` after estimate | Too little data or wrong story | More batches, lower rank, check [glossary](#plain-language-glossary) |
+
 ---
 
 ## Estimation (Phase A)
@@ -18,13 +64,15 @@ Common issues when adapting PMH to **your** pipeline. Symptom → cause → fix.
 
 ### `preflight=fail` or weak eigengap
 
-**Cause:** Nuisance subspace poorly identified (too little data, wrong Dk, or rank too high).  
+**Plain English:** The library could not find a clear “deployment shift” direction in your features.
+
+**Cause:** Too little data, hook too shallow/deep, wrong estimator, or rank too high.  
 **Fix:**
 
 1. More batches in Phase A (`max_batches=100+`)
 2. Lower `rank`
-3. Try D1 if you have **labels on both domains**
-4. See [nuisance_types.md](nuisance_types.md)
+3. If you have **labels on both sites**, try `nuisance="subspace"` (labeled cross-domain)
+4. See [glossary](#plain-language-glossary) and [nuisance_types.md](nuisance_types.md)
 
 ### `encoder must return [B, d], got shape ...`
 

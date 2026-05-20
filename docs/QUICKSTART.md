@@ -1,6 +1,6 @@
 # Quickstart (10 minutes)
 
-**New users:** read [Getting started (adoption guide)](GETTING_STARTED.md) first—it is the main path for plugging into your own project.
+**New users:** [What is PMH?](WHAT_IS_PMH.md) → [First hour](FIRST_HOUR.md) → this page.
 
 ---
 
@@ -12,15 +12,21 @@ pip install matching-pmh torch
 
 ---
 
-## 2. Run the canonical example
+## 2. Run the first-run demo (readable metrics)
 
 ```bash
 git clone https://github.com/vishalstark512/matching-pmh.git
 cd matching-pmh
+python examples/00_first_run_domain_shift.py
+```
+
+You should see **baseline vs PMH target accuracy**. Then:
+
+```bash
 python examples/01_domain_shift_d4.py
 ```
 
-You should see `preflight=...` and training losses. The script uses **`PMHTrainer`** (Phase A + B in one call).
+for the minimal `PMHTrainer` training loop.
 
 ---
 

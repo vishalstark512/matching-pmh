@@ -1,0 +1,40 @@
+name: Minimal repro (developers)
+description: Bug or integration issue with wizard output
+title: "[repro]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Run `pmh-train wizard` and paste the snippet. See [Golden paths](https://github.com/vishalstark512/matching-pmh/blob/main/docs/GOLDEN_PATHS.md).
+  - type: dropdown
+    id: golden_path
+    attributes:
+      label: Golden path
+      options:
+        - G1 PyTorch two domains
+        - G2 sklearn frozen features
+        - G3 HF two corpora
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: matching-pmh version
+      placeholder: pip show matching-pmh
+    validations:
+      required: true
+  - type: textarea
+    id: applicability
+    attributes:
+      label: check_applicability / preflight output
+      description: Verdict and preflight= pass|marginal|fail
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal script (20 lines) + full traceback
+    validations:
+      required: true

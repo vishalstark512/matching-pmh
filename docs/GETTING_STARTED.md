@@ -1,22 +1,23 @@
 # Getting started (adoption guide)
 
-**Goal:** add matched PMH to **your** model and **your** data in one afternoon—without reading the research paper.
+**New?** Read **[What is PMH?](WHAT_IS_PMH.md)** and **[Your first hour](FIRST_HOUR.md)** first (no paper). Run **`pmh-train wizard`** for a tailored snippet. Then come back here to wire your repo.
 
-**Full guides:** each [walkthrough](walkthroughs/index.md) includes runnable examples, `YOUR_*` copy-paste blocks, adaptation worksheets, and a controls checklist.
+**Goal:** add domain-robust training to **your** model in one afternoon.
 
-**Paper fidelity:** read **[Correct usage](CORRECT_USAGE.md)** before benchmarking—two PMH modes (train vs project), three meanings of “isotropic”, and per-block presets (`t1_office31_sklearn`, …).
+**Researchers / benchmarks:** [Correct usage](CORRECT_USAGE.md) and [Paper alignment](PAPER_ALIGNMENT.md) — skip until basic integration works.
 
-Start with the [Adaptation workbook](ADAPTATION_WORKBOOK.md) if you want a fill-in template before choosing a stack.
+**Full guides:** [walkthroughs](walkthroughs/index.md) with `YOUR_*` placeholders and a controls checklist.
 
 ---
 
 ## Step 0 — One sentence (required)
 
-Write down what changes at deployment **without changing the label**:
+What changes at deployment **without changing the label**?
 
 > *Example:* “Images from a new hospital camera, but the disease label still means the same thing.”
 
-If you cannot write this sentence, stop and read [Which nuisance type?](nuisance_types.md). PMH is not “make any dataset robust”; it is “regularize along **your** named deployment shift.”
+If that does not describe your problem, see [What is PMH — when not to use](WHAT_IS_PMH.md#when-not-to-use-it).  
+Advanced estimator choice (only if domain shift is not enough): [nuisance_types.md](nuisance_types.md).
 
 ---
 

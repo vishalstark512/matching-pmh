@@ -4,21 +4,40 @@ Installed with the package:
 
 ```bash
 pip install matching-pmh
-pmh-train list-methods
-pmh-train list-presets
+pmh-train wizard          # start here (interactive)
+pmh-train list-methods    # advanced: D1–D7 estimators
+pmh-train list-presets    # paper replication presets
 ```
 
 ## Commands
 
 | Command | Purpose |
 |---------|---------|
-| `list-methods` | Table of D1–D7 inputs |
-| `list-presets` | Paper block presets (`t1_office31_sklearn`, `t4_domain_d4`, …) |
+| **`wizard`** | **Interactive setup** — stack, data flags, install line, copy-paste snippet |
+| `list-methods` | Table of D1–D7 inputs (research / advanced) |
+| `list-presets` | Paper block presets (`t1_office31_sklearn`, …) |
 | `estimate --config job.json` | Run estimator, write `output.pt` + `.json` |
-| `preflight ARTIFACT.pt` | Eigengap $\gamma_r$ diagnostics |
+| `preflight ARTIFACT.pt` | Geometry diagnostics on saved artifact |
+| `benchmark --config …` | Sklearn falsification table from JSON job |
 | `run --config job.json` | Validate training job (artifact + PMH weights) |
 
-## Example jobs
+### Wizard
+
+```bash
+# Interactive (recommended for new users)
+pmh-train wizard
+
+# Non-interactive (CI / scripts)
+pmh-train wizard --non-interactive --stack pytorch
+pmh-train wizard --non-interactive --stack sklearn
+pmh-train wizard --non-interactive --stack hf --style-pairs
+```
+
+Same logic as `python -m pmh.onboarding --wizard`.
+
+---
+
+## Example jobs (advanced)
 
 - `examples/configs/d4_estimate.json` — domain Gram (numpy paths)
 - `examples/configs/d7_style_estimate.json` — HF style JSONL

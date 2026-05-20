@@ -1,13 +1,13 @@
 # Gallery — copy-paste templates
 
-**Read first:** [Getting started](../GETTING_STARTED.md) · [Choose your setup](../CHOOSE_YOUR_SETUP.md)
+**You have two environments and the same labels?** Pick one row, copy the block, swap in your model/data.
 
-Each page is a **minimal template**. Replace paths, model, and loaders with yours.
+| You have… | Do this | Page |
+|-----------|---------|------|
+| PyTorch images/signals, site A + site B loaders | `PMHTrainer` + `nuisance="domain_shift"` | [Vision](vision.md) |
+| Precomputed embeddings (`.npy`), sklearn classifier | `PMHMatcher` in a `Pipeline` | [Tabular](tabular.md) |
+| LLM answers with same facts, different formatting | Style pairs JSONL + HF hook | [NLP](nlp.md) |
 
-| Template | When | API |
-|----------|------|-----|
-| [Vision domain shift](vision.md) | Two image/signal domains, PyTorch | `PMHTrainer` + D4 |
-| [Tabular / frozen features](tabular.md) | `.npy` / sklearn, precomputed embeddings | `PMHMatcher` + D1/D4 |
-| [LLM style / format](nlp.md) | Same content, different style | D7 + HF |
+**Before you start:** [What is PMH?](../WHAT_IS_PMH.md) · [First hour](../FIRST_HOUR.md) · [Colab demo](../COLAB.md)
 
-After it runs → [Controls walkthrough](../walkthroughs/08-falsification-controls.md) · [Troubleshooting](../TROUBLESHOOTING.md)
+After it runs → [Controls walkthrough](../walkthroughs/08-falsification-controls.md) · [Troubleshooting glossary](../TROUBLESHOOTING.md#plain-language-glossary)

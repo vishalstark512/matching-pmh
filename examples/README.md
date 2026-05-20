@@ -1,16 +1,33 @@
 # Examples catalog
 
-Runnable templates for the [matching principle](https://github.com/vishalstark512/matching-pmh).
+Runnable templates for [matching-pmh](https://github.com/vishalstark512/matching-pmh).
 
-**New users:** start with [docs/GETTING_STARTED.md](../docs/GETTING_STARTED.md), then copy the closest script below.
-
-Each example pairs with a **full walkthrough guide** (steps, worksheets, controls): [docs/walkthroughs/](../docs/walkthroughs/index.md).  
-Generic fill-in: [ADAPTATION_WORKBOOK.md](../docs/ADAPTATION_WORKBOOK.md).
+**New users (no paper):** [GOLDEN_PATHS.md](../docs/GOLDEN_PATHS.md) → run one script below → [FIRST_HOUR.md](../docs/FIRST_HOUR.md).
 
 ```bash
 pip install matching-pmh torch
-# optional extras per table below
+pip install "matching-pmh[sklearn]"   # G2 / 06 / 22
+pmh-train wizard
 ```
+
+Copy a minimal project: [templates/matching-pmh-starter/](../templates/matching-pmh-starter/).
+
+---
+
+## Start here (developer)
+
+| Script | Path | What you get |
+|--------|------|----------------|
+| [00_first_run_domain_shift.py](00_first_run_domain_shift.py) | **G1** | Baseline vs PMH target accuracy (PyTorch, synthetic) |
+| [22_developer_api_demo.py](22_developer_api_demo.py) | G2 | `check_applicability` + `evaluate_baseline_vs_pmh` |
+| [06_office31_sklearn.py](06_office31_sklearn.py) | G2 | `PMHMatcher` + optional arm table |
+| [01_domain_shift_d4.py](01_domain_shift_d4.py) | G1 | Minimal `PMHTrainer` loop |
+| [10_hf_trainer.py](10_hf_trainer.py) | G3 | HF `Trainer` + PMH |
+| [08_hf_style_d7.py](08_hf_style_d7.py) | G3 alt | Style-pair JSONL (format shift) |
+
+Colab notebooks: [notebooks/](../notebooks/README.md).
+
+Advanced walkthroughs: [docs/walkthroughs/](../docs/walkthroughs/index.md) · [ADAPTATION_WORKBOOK.md](../docs/ADAPTATION_WORKBOOK.md).
 
 ---
 

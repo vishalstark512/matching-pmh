@@ -1,6 +1,10 @@
 # Roadmap
 
-**Current release: v1.4.1** — paper-faithful D1, block presets, CORRECT_USAGE guide.
+**Current release: v1.5.0** — developer API (`robust_fit`, `check_applicability`), golden paths G1–G3, wizard, Colab notebooks.
+
+**Paper / benchmarks (1.4.x):** D1 fidelity, presets, CORRECT_USAGE — see [PAPER_ALIGNMENT.md](PAPER_ALIGNMENT.md).
+
+**Onboarding (shipped):** [DEVELOPER_ONBOARDING_PLAN.md](DEVELOPER_ONBOARDING_PLAN.md).
 
 See [PAPER_ALIGNMENT.md](PAPER_ALIGNMENT.md) for task-by-task fidelity vs `Paper2/T1`–`T7`.
 

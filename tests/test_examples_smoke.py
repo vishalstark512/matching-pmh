@@ -14,6 +14,7 @@ EXAMPLES = ROOT / "examples"
 
 # Scripts that must finish quickly on CPU without downloads
 SMOKE_SCRIPTS = [
+    "00_first_run_domain_shift.py",
     "01_domain_shift_d4.py",
     "02_save_load_artifact.py",
     "03_compositional_d5.py",

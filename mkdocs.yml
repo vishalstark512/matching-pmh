@@ -1,5 +1,5 @@
 site_name: matching-pmh
-site_description: Matched PMH from estimated deployment nuisance geometry (Sigma_task, D1-D7)
+site_description: Domain-robust training for PyTorch and sklearn — train on site A, deploy on site B
 site_url: https://vishalstark512.github.io/matching-pmh/
 repo_url: https://github.com/vishalstark512/matching-pmh
 repo_name: vishalstark512/matching-pmh
@@ -21,19 +21,29 @@ theme:
 nav:
   - Home: index.md
   - "Start here":
+      - Golden paths (G1–G3): GOLDEN_PATHS.md
+      - What is PMH?: WHAT_IS_PMH.md
+      - Your first hour: FIRST_HOUR.md
+      - CLI wizard: cli.md
+      - Colab (no install): COLAB.md
+      - Demo output preview: DEMO_OUTPUT.md
       - Getting started: GETTING_STARTED.md
-      - Adaptation workbook: ADAPTATION_WORKBOOK.md
-      - Legacy redirect: getting-started.md
-      - Quickstart (10 min): QUICKSTART.md
       - Choose your setup: CHOOSE_YOUR_SETUP.md
-      - Adapt your pipeline: ADAPT_YOUR_PIPELINE.md
+      - Quickstart (10 min): QUICKSTART.md
       - Troubleshooting: TROUBLESHOOTING.md
       - vs CORAL: COMPARE_TO_CORAL.md
-      - Correct usage (read this): CORRECT_USAGE.md
+      - Adaptation workbook: ADAPTATION_WORKBOOK.md
+      - Adapt your pipeline: ADAPT_YOUR_PIPELINE.md
+      - Onboarding plan (contributors): DEVELOPER_ONBOARDING_PLAN.md
+      - Legacy redirect: getting-started.md
+  - Research:
+      - Theory: THEORY.md
+      - Correct usage: CORRECT_USAGE.md
       - Paper alignment: PAPER_ALIGNMENT.md
       - Benchmarks & TDI: BENCHMARKS.md
+      - Paper presets (T1–T7): walkthroughs/paper-presets-by-block.md
       - Reference table (synthetic): benchmarks/office31_synthetic_reference.md
-      - Reference table (Office-31 Amazon→DSLR): benchmarks/office31_amazon_to_dslr.md
+      - Reference table (Office-31): benchmarks/office31_amazon_to_dslr.md
       - Data policy: DATA_POLICY.md
   - Theory: THEORY.md
   - Integration:

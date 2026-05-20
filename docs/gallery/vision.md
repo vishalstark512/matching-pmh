@@ -1,16 +1,20 @@
-# Gallery: vision domain shift (D4)
+# Gallery: vision — two sites, same labels
+
+**You have:** a PyTorch model (CNN, ViT, …), training data, and batches from a **second site** at deploy time (target labels optional).
+
+**You do:** point `hook` at your backbone, pass source + target loaders, call `trainer.fit`.
 
 ```python
 import torch
 from torch.utils.data import DataLoader
-from pmh import PMHTrainer, PMHConfig, compare_arms
+from pmh import PMHTrainer, PMHConfig
 
-# --- YOUR model (example: timm or torchvision) ---
+# --- YOUR model ---
 # backbone = ...
 # head = ...
 # model = nn.Sequential(backbone, head)
 
-# --- YOUR loaders: source domain, target domain (unlabeled OK for D4), train ---
+# --- YOUR loaders: site A (source), site B (target), supervised train ---
 # src_loader, tgt_loader, train_loader = ...
 
 trainer = PMHTrainer(
@@ -28,9 +32,8 @@ trainer.fit(
     target_batches=tgt_loader,
     epochs=20,
 )
-
-# Optional: falsification table on your val loader
-# compare_arms(trainer.artifact_, model_factory, setup_model, train_loader, val_loader, epochs=10)
 ```
 
-Walkthrough: [ResNet D4](../walkthroughs/02-resnet-vision-d4.md) · Hooks: [hooks.md](../hooks.md)
+**Try first:** [Colab — Hospital A→B](../COLAB.md) · `examples/00_first_run_domain_shift.py`
+
+**Go deeper:** [ResNet walkthrough](../walkthroughs/02-resnet-vision-d4.md) · [Hook cookbook](../hooks.md) · [Falsification](../walkthroughs/08-falsification-controls.md) (`compare_arms`)

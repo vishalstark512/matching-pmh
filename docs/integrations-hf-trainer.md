@@ -1,5 +1,7 @@
 # Hugging Face Trainer
 
+**Golden path G3 (two corpora):** [GOLDEN_PATHS.md](GOLDEN_PATHS.md) · `robust_fit_text_domains` · [Colab notebook](https://colab.research.google.com/github/vishalstark512/matching-pmh/blob/main/notebooks/hf_two_corpora_first_run.ipynb)
+
 Install: `pip install "matching-pmh[hf]"`
 
 ```python

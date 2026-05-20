@@ -28,10 +28,28 @@ def _cmd_list_methods(_: argparse.Namespace) -> int:
     for spec in list_methods():
         req = ", ".join(spec.required_data) or "(config only)"
         print(f"{spec.method:<6} {spec.name:<28} {spec.typical_tasks:<20} {req}")
-    print("\nPaper block presets: pmh-train list-presets")
+    print("\nNew here: pmh-train wizard")
+    print("Paper block presets: pmh-train list-presets")
     print("Use: pmh-train estimate --config job.json")
     print("       pmh-train benchmark --config examples/configs/benchmark_sklearn.json")
     print("Samples: examples/configs/")
+    return 0
+
+
+def _cmd_wizard(args: argparse.Namespace) -> int:
+    from pmh.onboarding import run_wizard
+
+    if args.non_interactive and args.stack is None:
+        print("wizard --non-interactive requires --stack", file=sys.stderr)
+        return 2
+    run_wizard(
+        stack=args.stack,
+        has_target_domain=args.target_domain,
+        has_target_labels=args.target_labels,
+        has_frozen_features=args.frozen_features,
+        has_style_pairs=args.style_pairs,
+        interactive=not args.non_interactive,
+    )
     return 0
 
 
@@ -243,7 +261,7 @@ def _cmd_run(args: argparse.Namespace) -> int:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="pmh-train",
-        description="Estimate Sigma_task (D1--D7), benchmark arms, and inspect PMH jobs.",
+        description="Domain-robust training CLI: wizard, estimate jobs, benchmarks.",
     )
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -255,6 +273,28 @@ def main(argv: list[str] | None = None) -> int:
         help="List paper block presets (T1 Office-31, T4 domain, T7A style, …)",
     )
     p_presets.set_defaults(func=_cmd_list_presets)
+
+    p_wiz = sub.add_parser(
+        "wizard",
+        help="Interactive setup guide (stack, data, copy-paste snippet)",
+    )
+    p_wiz.add_argument(
+        "--stack",
+        choices=("pytorch", "sklearn", "hf"),
+        default=None,
+        help="Skip questionnaire when set",
+    )
+    p_wiz.add_argument("--target-domain", action="store_true", default=None)
+    p_wiz.add_argument("--no-target-domain", action="store_false", dest="target_domain")
+    p_wiz.add_argument("--target-labels", action="store_true", default=None)
+    p_wiz.add_argument("--frozen-features", action="store_true", default=None)
+    p_wiz.add_argument("--style-pairs", action="store_true", default=None)
+    p_wiz.add_argument(
+        "--non-interactive",
+        action="store_true",
+        help="Use flags only (requires --stack)",
+    )
+    p_wiz.set_defaults(func=_cmd_wizard, target_domain=True)
 
     p_est = sub.add_parser("estimate", help="Estimate Sigma_task from JSON")
     p_est.add_argument("--config", "-c", required=True, type=Path)

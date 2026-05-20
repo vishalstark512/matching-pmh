@@ -38,6 +38,27 @@ from pmh.matcher import PMHMatcher
 from pmh.nuisance import config_from_nuisance, list_nuisance_names, resolve_method
 from pmh.penalty import cap_pmh_term, pmh_penalty, pmh_penalty_feature_diff, pmh_penalty_on_rep
 from pmh.preflight import PreflightStatus, preflight_eigengap
+from pmh.developer import (
+    ApplicabilityReport,
+    DomainPair,
+    EvaluationReport,
+    HookSuggestion,
+    RobustFitResult,
+    check_applicability,
+    evaluate_baseline_vs_pmh,
+    evaluate_trainer_on_loader,
+    robust_fit,
+    robust_fit_text_domains,
+    suggest_hook,
+)
+from pmh.onboarding import (
+    SetupRecommendation,
+    format_setup_guide,
+    preflight_plain_english,
+    print_setup_guide,
+    recommend_setup,
+    run_wizard,
+)
 from pmh.suggest import NuisanceSuggestion, suggest_nuisance
 from pmh.data_context import DataContext
 from pmh.multi import MultiPMHLoss
@@ -92,6 +113,23 @@ __all__ = [
     "resolve_method",
     "suggest_nuisance",
     "NuisanceSuggestion",
+    "recommend_setup",
+    "print_setup_guide",
+    "format_setup_guide",
+    "SetupRecommendation",
+    "run_wizard",
+    "preflight_plain_english",
+    "check_applicability",
+    "ApplicabilityReport",
+    "DomainPair",
+    "robust_fit",
+    "robust_fit_text_domains",
+    "RobustFitResult",
+    "suggest_hook",
+    "HookSuggestion",
+    "evaluate_baseline_vs_pmh",
+    "evaluate_trainer_on_loader",
+    "EvaluationReport",
     "resolve_hook",
     "validate_representation",
     "detect_model_family",
@@ -112,7 +150,7 @@ __all__ = [
     "tune_result_from_grid_search",
 ]
 
-__version__ = "1.3.0"
+__version__ = "1.5.0"
 
 
 def __getattr__(name: str):
