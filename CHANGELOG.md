@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+## 1.6.1 (2026-05-20)
+
+### Documentation
+
+- Reframed the public docs around task-first production use cases: segmentation, pose, detection, speech, sensors, embeddings, LLM/text style, molecules, code, and adversarial-style robustness.
+- Added [TASK_PATTERNS.md](docs/TASK_PATTERNS.md) to map the 13 paper tasks into reusable patterns for other datasets and architectures.
+- Expanded [GOLDEN_PATHS.md](docs/GOLDEN_PATHS.md) into end-to-end runnable pipelines with demo, data replacement, training/scoring, and production-like evaluation steps.
+- Simplified the main docs navigation and walkthrough index so paper/theory material is secondary to adoption.
+
 ## 1.6.0 (2026-05-20)
 
 ### Product spine (adoption-first)

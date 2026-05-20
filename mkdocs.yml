@@ -17,37 +17,37 @@ theme:
     - search.suggest
 
 nav:
-  - Home: index.md
-
-  - Adopt:
-      - "★ Start here (60s)": ../ADOPT.md
-      - "★ Five-step recipe": FIVE_STEP_RECIPE.md
-      - What is deployment shift?: WHAT_IS_DEPLOYMENT_SHIFT.md
-      - Applications + route: APPLICATIONS.md
-      - Golden paths (G1–G4): GOLDEN_PATHS.md
-      - Integrate (install & CLI): INTEGRATE.md
+  - Start:
+      - What problem PMH solves: index.md
+      - Adopt PMH: ../ADOPT.md
+      - Five-step workflow: FIVE_STEP_RECIPE.md
       - Will PMH help?: WHEN_PMH_HELPS.md
+
+  - Use PMH:
+      - Find my task: APPLICATIONS.md
+      - 13 task patterns: TASK_PATTERNS.md
+      - Recipes to copy: GOLDEN_PATHS.md
+      - Integrate (install & CLI): INTEGRATE.md
       - Troubleshooting: TROUBLESHOOTING.md
+      - Parameters cheat sheet: PARAMETERS_CHEATSHEET.md
 
   - Evidence:
-      - Walkthroughs (index): walkthroughs/index.md
+      - Prove it worked: walkthroughs/08-falsification-controls.md
+      - Examples by task: walkthroughs/index.md
       - Daily AI job map: walkthroughs/DAILY_AI_USE.md
-      - Falsification (required): walkthroughs/08-falsification-controls.md
-      - Paper alignment: PAPER_ALIGNMENT.md
+      - Published evidence map: PAPER_ALIGNMENT.md
+      - vs CORAL: COMPARE_TO_CORAL.md
 
   - Reference:
-      - PMH parameters (tunable): PMH_PARAMETERS.md
-      - Parameters cheat sheet: PARAMETERS_CHEATSHEET.md
-      - 60s pipeline script: PIPELINE_60S.md
-      - Estimators (D1–D7 appendix): estimators/index.md
-      - Shift types D1–D7 (appendix): NUISANCE_SUBTYPES.md
-      - Custom geometry: CUSTOM_GEOMETRY.md
-      - vs CORAL: COMPARE_TO_CORAL.md
+      - What is deployment shift?: WHAT_IS_DEPLOYMENT_SHIFT.md
+      - PMH parameters: PMH_PARAMETERS.md
+      - Advanced shift types: NUISANCE_SUBTYPES.md
+      - Advanced estimators: estimators/index.md
+      - Custom change directions: CUSTOM_GEOMETRY.md
       - API reference: api/index.md
       - Theory: THEORY.md
-
-  - Contributors:
-      - Doc guide: DOCS_GUIDE.md
+      - 60s pipeline script: PIPELINE_60S.md
+      - Contributor doc guide: DOCS_GUIDE.md
       - Meta-structure: META_STRUCTURE.md
 
 plugins:
@@ -134,12 +134,14 @@ markdown_extensions:
       custom_fences:
         - name: mermaid
           class: mermaid
-          format: !!python/name:pymdownx.superfences.fence_code_format
+          format: !!python/name:pymdownx.superfences.fence_div_format
   - pymdownx.arithmatex:
       generic: true
   - toc:
       permalink: true
 
 extra_javascript:
+  - https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js
+  - javascripts/mermaid-init.js
   - https://polyfill.io/v3/polyfill.min.js?features=es6
   - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js

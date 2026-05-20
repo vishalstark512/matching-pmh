@@ -1,298 +1,124 @@
-# Find your application
+# Find My Task
 
-**CLI is the detailed walkthrough** — this page is a finder + anchors. Spine: [FIVE_STEP_RECIPE](FIVE_STEP_RECIPE.md) · code: [GOLDEN_PATHS](GOLDEN_PATHS.md).
+Start here if you are thinking:
+
+> I want my model to work better when production looks different from training.
+
+You do **not** need to learn theory terms first. Pick the task closest to yours, copy the recipe, then use the worked example only if you want deeper evidence. For the full set from the paper, use [13 task patterns](TASK_PATTERNS.md).
 
 ```bash
-pmh-train route --search hospital
-pmh-train route --task pose_or_keypoints
-```
-
-```python
-from pmh import explain_task
-print(explain_task("pose_or_keypoints"))
+pmh-train route --search segmentation
+pmh-train route --search pose
+pmh-train route --search speech
 ```
 
 ---
 
-## Finder
+## Task Finder
 
-<a id="application-finder"></a>
-
-| Application | What changes | Fit | Details |
-|-------------|--------------|-----|---------|
-| Pose / keypoints — new camera or site | Camera / studio / hospital **look** changes (lightin… | **YES** | [↓](#pose_or_keypoints) |
-| Image classification — new camera or site | Image **appearance** shifts (camera, geography, devi… | **YES** | [↓](#vision_classification) |
-| Object detection — same classes, new domain | Scene **style** and sensor change; bounding-box clas… | **TRY** | [↓](#vision_detection) |
-| Segmentation — same classes, new domain | Pixel **texture and sensor** shift; per-pixel class … | **TRY** | [↓](#vision_segmentation) |
-| Text classification — new corpus or channel | **Wording and channel** shift (support tickets vs ch… | **YES** | [↓](#nlp_text_classification) |
-| LLM — format / tone / template shift (same facts) | **Surface form** (markdown, bullets, JSON vs prose) … | **YES** | [↓](#llm_style_or_format) |
-| Tabular / clinical — new hospital or cohort | **Cohort / hospital distribution** in the same featu… | **YES** | [↓](#tabular_same_schema) |
-| Speech / audio — new mic, room, or channel | **Acoustic channel** (mic, room, codec) — same words… | **YES** | [↓](#speech_or_audio) |
-| Frozen embeddings (.npy) — adapt without training CNN | **Feature distribution** between sites; you already … | **YES** | [↓](#frozen_embeddings_sklearn) |
-| Known augmentations — robust to blur, color, crop, … | **Named transforms** you apply in training (blur, JP… | **YES** | [↓](#augmentation_robustness) |
-| Temporal drift — same patient / session label over time | **Measurement drift over time** (sensor aging, progr… | **YES** | [↓](#temporal_drift) |
-| PyTorch Lightning — keep your LightningModule | Same as your underlying task (usually **site / camer… | **YES** | [↓](#pytorch_lightning) |
-| Compositional features — nuisance in part of h | **Only some dimensions** of the representation move … | **YES** | [↓](#compositional_coordinates) |
-| Other PyTorch task (regression, multi-head, custom) | Whatever **environmental factor** changes between tr… | **TRY** | [↓](#generic_pytorch) |
-
-**YES** = usual fit · **TRY** = validate on deploy metric first.
+| I want to improve... | Production change | Closest worked example | Start here |
+|----------------------|-------------------|-----------------------|------------|
+| Image classification | New camera, scanner, geography, store, hospital | Vision domain adaptation | [Train/fine-tune recipe](GOLDEN_PATHS.md#train-or-fine-tune-a-model) |
+| Segmentation | New city, camera, scanner, weather, lighting | Multi-layer vision block | [Train/fine-tune recipe](GOLDEN_PATHS.md#train-or-fine-tune-a-model) |
+| Object detection | New scene style, sensor, camera, store layout | Vision domain adaptation | [Train/fine-tune recipe](GOLDEN_PATHS.md#train-or-fine-tune-a-model) |
+| Pose / keypoints | New studio, camera angle, hospital room | Pose block | [Train/fine-tune recipe](GOLDEN_PATHS.md#train-or-fine-tune-a-model) |
+| Depth estimation | New lighting, texture, photometric conditions | Depth block | [Train/fine-tune recipe](GOLDEN_PATHS.md#train-or-fine-tune-a-model) |
+| Medical imaging | New hospital, scanner, protocol, patient mix | CheXpert / vision blocks | [Train/fine-tune recipe](GOLDEN_PATHS.md#train-or-fine-tune-a-model) |
+| Speech / ASR | New mic, room, codec, accent mix | Whisper / speech block | [Train/fine-tune recipe](GOLDEN_PATHS.md#train-or-fine-tune-a-model) |
+| Time-series / sensors | Sensor drift, device aging, session drift | HAR / temporal block | [Train/fine-tune recipe](GOLDEN_PATHS.md#train-or-fine-tune-a-model) |
+| Frozen embeddings | You already exported features from train and deploy | Office-31 block | [Embeddings/sklearn recipe](GOLDEN_PATHS.md#use-existing-embeddings-or-sklearn) |
+| Tabular / clinical rows | New hospital or cohort, same columns and label | Office-31-style feature block | [Embeddings/sklearn recipe](GOLDEN_PATHS.md#use-existing-embeddings-or-sklearn) |
+| LLM style / format | Same task, new tone, template, JSON wrapper, chat format | Qwen / style block | [LLM/text recipe](GOLDEN_PATHS.md#llm-or-text-style) |
+| HF Trainer / DPO / LoRA | Same as above, but keep your trainer stack | Qwen / DPO block | [LLM/text recipe](GOLDEN_PATHS.md#llm-or-text-style) |
+| Code models | Token groups or code style changes, same label | CodeBERT block | [Advanced evidence](walkthroughs/15-codebert-tokens-d5.md) |
+| Molecules / graphs | Position, conformer, or node block changes | QM9 block | [Advanced evidence](walkthroughs/14-qm9-molecule-d5.md) |
+| Adversarial robustness | Perturbations are the production threat | CIFAR PGD block | [Advanced evidence](PAPER_ALIGNMENT.md) |
 
 ---
+
+## If You Want the Full Paper Set
+
+The paper covers 13 reusable task patterns: frozen features, ViT, medical imaging, pose, depth, vision domain shift, segmentation-style multi-layer vision, molecules, code, speech, time series, LLM style, and adversarial-style perturbations.
+
+Open [13 task patterns](TASK_PATTERNS.md) to see how each one transfers to your own data and architecture.
+
+---
+
+## CLI Task Shortcuts
+
+These anchors keep `pmh-train route --task ...` stable while the public docs stay task-first.
+
+| CLI task | Human task | Start |
+|----------|------------|-------|
+| [`pose_or_keypoints`](#pose_or_keypoints) | Pose / keypoints from a new camera or room | [Train/fine-tune](GOLDEN_PATHS.md#train-or-fine-tune-a-model) |
+| [`vision_classification`](#vision_classification) | Image classification in a new visual environment | [Train/fine-tune](GOLDEN_PATHS.md#train-or-fine-tune-a-model) |
+| [`vision_detection`](#vision_detection) | Detection in a new visual environment | [Train/fine-tune](GOLDEN_PATHS.md#train-or-fine-tune-a-model) |
+| [`vision_segmentation`](#vision_segmentation) | Segmentation in a new visual environment | [Train/fine-tune](GOLDEN_PATHS.md#train-or-fine-tune-a-model) |
+| [`nlp_text_classification`](#nlp_text_classification) | Text classification across channels | [Train/fine-tune](GOLDEN_PATHS.md#train-or-fine-tune-a-model) |
+| [`llm_style_or_format`](#llm_style_or_format) | LLM/text style, tone, template, or format changes | [LLM/text](GOLDEN_PATHS.md#llm-or-text-style) |
+| [`tabular_same_schema`](#tabular_same_schema) | Tabular rows from a new cohort or hospital | [Embeddings/sklearn](GOLDEN_PATHS.md#use-existing-embeddings-or-sklearn) |
+| [`speech_or_audio`](#speech_or_audio) | Speech/audio from a new mic, room, or codec | [Train/fine-tune](GOLDEN_PATHS.md#train-or-fine-tune-a-model) |
+| [`frozen_embeddings_sklearn`](#frozen_embeddings_sklearn) | Exported embeddings or sklearn features | [Embeddings/sklearn](GOLDEN_PATHS.md#use-existing-embeddings-or-sklearn) |
+| [`augmentation_robustness`](#augmentation_robustness) | Known transforms such as blur, JPEG, crop, color | [Train/fine-tune](GOLDEN_PATHS.md#train-or-fine-tune-a-model) |
+| [`temporal_drift`](#temporal_drift) | Time-series or sensor drift | [Train/fine-tune](GOLDEN_PATHS.md#train-or-fine-tune-a-model) |
+| [`pytorch_lightning`](#pytorch_lightning) | Existing Lightning project | [Train/fine-tune](GOLDEN_PATHS.md#train-or-fine-tune-a-model) |
+| [`compositional_coordinates`](#compositional_coordinates) | Known feature blocks, token groups, molecules, graph parts | [13 task patterns](TASK_PATTERNS.md) |
+| [`generic_pytorch`](#generic_pytorch) | Any custom PyTorch task with stable labels | [Train/fine-tune](GOLDEN_PATHS.md#train-or-fine-tune-a-model) |
 
 <a id="pose_or_keypoints"></a>
-
-## Pose / keypoints — new camera or site
-
-**Fit:** YES — Good fit when keypoint definitions are identical across cameras/sites and you can pass unlabeled frames from the deploy camera.
-
-| | |
-|--|--|
-| **What changes** | Camera / studio / hospital **look** changes (lighting, viewpoint, sensor) but each keypoint index still means the same body joint. |
-| **Mapping** | D4 · `nuisance='domain_shift'` |
-| **Golden path** | [G1 — PyTorch (docs/GOLDEN_PATHS.md#g1)](GOLDEN_PATHS.md#g1) |
-| **Data** | Labeled pose data from training site; unlabeled (or labeled) batches from deploy site in the same skeleton format. |
-| **Not for** | Different keypoint sets, new body parts at deploy, or no frames from deploy camera. |
-
-**CLI:** `pmh-train route --task pose_or_keypoints` · **Example:** `examples/00_first_run_domain_shift.py`
-
----
-
 <a id="vision_classification"></a>
-
-## Image classification — new camera or site
-
-**Fit:** YES — Default path for train-on-A / deploy-on-B with the same class names.
-
-| | |
-|--|--|
-| **What changes** | Image **appearance** shifts (camera, geography, device) while class names and meanings stay fixed. |
-| **Mapping** | D4 · `nuisance='domain_shift'` |
-| **Golden path** | [G1 — PyTorch (docs/GOLDEN_PATHS.md#g1)](GOLDEN_PATHS.md#g1) |
-| **Data** | Source train/val; target domain loader (labels optional for D4). |
-| **Not for** | New classes only at test time; different label semantics per site. |
-
-**CLI:** `pmh-train route --task vision_classification` · **Example:** `examples/00_first_run_domain_shift.py`
-
----
-
 <a id="vision_detection"></a>
-
-## Object detection — same classes, new domain
-
-**Fit:** TRY — PMH applies to the **shared backbone**; you wire source/target image loaders. Box heads and matching are your framework — start with backbone-only shift.
-
-| | |
-|--|--|
-| **What changes** | Scene **style** and sensor change; bounding-box class IDs unchanged. |
-| **Mapping** | D4 · `nuisance='domain_shift'` |
-| **Golden path** | [G1 — PyTorch (docs/GOLDEN_PATHS.md#g1)](GOLDEN_PATHS.md#g1) |
-| **Data** | Batches of images from train and deploy domains (same class list). |
-| **Not for** | Different category sets per region without relabeling. |
-
-**CLI:** `pmh-train route --task vision_detection` · **Example:** `examples/00_first_run_domain_shift.py`
-
----
-
 <a id="vision_segmentation"></a>
-
-## Segmentation — same classes, new domain
-
-**Fit:** TRY — Same as detection: penalize backbone/encoder `h`, keep pixel loss.
-
-| | |
-|--|--|
-| **What changes** | Pixel **texture and sensor** shift; per-pixel class IDs (road, person, …) unchanged. |
-| **Mapping** | D4 · `nuisance='domain_shift'` |
-| **Golden path** | [G1 — PyTorch (docs/GOLDEN_PATHS.md#g1)](GOLDEN_PATHS.md#g1) |
-| **Data** | Paired domain image loaders; same label map. |
-| **Not for** | New stuff classes at deploy only. |
-
-**CLI:** `pmh-train route --task vision_segmentation` · **Example:** `examples/00_first_run_domain_shift.py`
-
----
-
 <a id="nlp_text_classification"></a>
-
-## Text classification — new corpus or channel
-
-**Fit:** YES — Encoder hook + source/target text batches; same label set.
-
-| | |
-|--|--|
-| **What changes** | **Wording and channel** shift (support tickets vs chat) but intent/label set fixed. |
-| **Mapping** | D4 · `nuisance='domain_shift'` |
-| **Golden path** | [G1 — PyTorch (docs/GOLDEN_PATHS.md#g1)](GOLDEN_PATHS.md#g1) |
-| **Data** | Labeled source; target corpus (unlabeled OK for D4). |
-| **Not for** | Topic drift that changes label meaning; new intent labels at deploy. |
-
-**CLI:** `pmh-train route --task nlp_text_classification` · **Example:** `examples/08_hf_style_d7.py`
-
----
-
 <a id="llm_style_or_format"></a>
-
-## LLM — format / tone / template shift (same facts)
-
-**Fit:** YES — Use D7 style pairs when content is fixed but surface form changes.
-
-| | |
-|--|--|
-| **What changes** | **Surface form** (markdown, bullets, JSON vs prose) — not the underlying facts or instructions. |
-| **Mapping** | D7 · `nuisance='style'` |
-| **Golden path** | [G3 — HF corpora (docs/GOLDEN_PATHS.md#g3)](GOLDEN_PATHS.md#g3) |
-| **Data** | Style pair JSONL or two corpora with matched content. |
-| **Not for** | Factual drift, new knowledge at deploy, safety policy changes only. |
-
-**CLI:** `pmh-train route --task llm_style_or_format` · **Example:** `examples/08_hf_style_d7.py`
-
----
-
 <a id="tabular_same_schema"></a>
-
-## Tabular / clinical — new hospital or cohort
-
-**Fit:** YES — Often G2: frozen features per row, PMHMatcher then sklearn classifier.
-
-| | |
-|--|--|
-| **What changes** | **Cohort / hospital distribution** in the same feature columns; disease definition unchanged. |
-| **Mapping** | D1 · `nuisance='subspace'` |
-| **Golden path** | [G2 — sklearn (docs/GOLDEN_PATHS.md#g2)](GOLDEN_PATHS.md#g2) |
-| **Data** | Feature matrix + labels on source; features from target cohort. |
-| **Not for** | Different schemas, new columns only at deploy, label definition change. |
-
-**CLI:** `pmh-train route --task tabular_same_schema` · **Example:** `examples/06_office31_sklearn.py`
-
----
-
 <a id="speech_or_audio"></a>
-
-## Speech / audio — new mic, room, or channel
-
-**Fit:** YES — Encoder hook on spectrogram or wav2vec trunk; D4 domain shift.
-
-| | |
-|--|--|
-| **What changes** | **Acoustic channel** (mic, room, codec) — same words / phoneme labels. |
-| **Mapping** | D4 · `nuisance='domain_shift'` |
-| **Golden path** | [G1 — PyTorch (docs/GOLDEN_PATHS.md#g1)](GOLDEN_PATHS.md#g1) |
-| **Data** | Source transcripts/labels; target-domain audio batches. |
-| **Not for** | New vocabulary or language at deploy without relabeling. |
-
-**CLI:** `pmh-train route --task speech_or_audio` · **Example:** `examples/00_first_run_domain_shift.py`
-
----
-
 <a id="frozen_embeddings_sklearn"></a>
-
-## Frozen embeddings (.npy) — adapt without training CNN
-
-**Fit:** YES — Fastest path — no PyTorch training loop required.
-
-| | |
-|--|--|
-| **What changes** | **Feature distribution** between sites; you already extracted h and won't fine-tune the encoder. |
-| **Mapping** | D4 · `nuisance='domain_shift'` |
-| **Golden path** | [G2 — sklearn (docs/GOLDEN_PATHS.md#g2)](GOLDEN_PATHS.md#g2) |
-| **Data** | source_features.npy, target_features.npy (+ labels on source). |
-| **Not for** | Need to adapt the neural encoder itself (use G1 instead). |
-
-**CLI:** `pmh-train route --task frozen_embeddings_sklearn` · **Example:** `examples/06_office31_sklearn.py`
-
----
-
 <a id="augmentation_robustness"></a>
-
-## Known augmentations — robust to blur, color, crop, …
-
-**Fit:** YES — You can list finite transforms and run them on training data; PMH estimates sensitivity along those modes (D3).
-
-| | |
-|--|--|
-| **What changes** | **Named transforms** you apply in training (blur, JPEG, rotation policy) — not an unknown new camera. |
-| **Mapping** | D3 · `nuisance='augmentation'` |
-| **Golden path** | [G1 — PyTorch (docs/GOLDEN_PATHS.md#g1)](GOLDEN_PATHS.md#g1) |
-| **Data** | Labeled train set + code to apply each aug mode; stack aug deltas [M, d]. |
-| **Not for** | Unknown deploy camera with no relation to your aug list; use D4 domain_shift instead. |
-
-**CLI:** `pmh-train route --task augmentation_robustness` · **Example:** `examples/18_augmentation_d3.py`
-
----
-
 <a id="temporal_drift"></a>
-
-## Temporal drift — same patient / session label over time
-
-**Fit:** YES — Sequences [N,T,d] with label fixed over time; D6 estimates drift directions.
-
-| | |
-|--|--|
-| **What changes** | **Measurement drift over time** (sensor aging, progression) while entity-level label is fixed. |
-| **Mapping** | D6 · `nuisance='temporal'` |
-| **Golden path** | [G1 — PyTorch (docs/GOLDEN_PATHS.md#g1)](GOLDEN_PATHS.md#g1) |
-| **Data** | Batches shaped [N, T, d] with fixed label per sequence; T≥2. |
-| **Not for** | Independent snapshots with no time axis; use D4. |
-
-**CLI:** `pmh-train route --task temporal_drift` · **Example:** `examples/00_first_run_domain_shift.py`
-
----
-
 <a id="pytorch_lightning"></a>
-
-## PyTorch Lightning — keep your LightningModule
-
-**Fit:** YES — Same nuisance as G1; wire Phase A estimate + PMHLoss in training_step.
-
-| | |
-|--|--|
-| **What changes** | Same as your underlying task (usually **site / camera** D4) — Lightning is the training shell. |
-| **Mapping** | D4 · `nuisance='domain_shift'` |
-| **Golden path** | [G1b — Lightning (docs/GOLDEN_PATHS.md#g1b)](GOLDEN_PATHS.md#g1) |
-| **Data** | source_batches + target_batches for Phase A; task loss in training_step. |
-| **Not for** | Plain script with no Lightning — use G1 robust_fit instead. |
-
-**CLI:** `pmh-train route --task pytorch_lightning` · **Example:** `examples/09_lightning_module.py`
-
----
-
 <a id="compositional_coordinates"></a>
-
-## Compositional features — nuisance in part of h
-
-**Fit:** YES — You know which coordinates of h are nuisance (joints, tokens, atom blocks); PMH uses D5 with nuisance_indices.
-
-| | |
-|--|--|
-| **What changes** | **Only some dimensions** of the representation move with deploy shift (not the whole vector). |
-| **Mapping** | D5 · `nuisance='compositional'` |
-| **Golden path** | [G1 — PyTorch (docs/GOLDEN_PATHS.md#g1)](GOLDEN_PATHS.md#g1) |
-| **Data** | Feature matrix [N,d] + list of nuisance column indices. |
-| **Not for** | Global camera shift with no index structure — use D4. |
-
-**CLI:** `pmh-train route --task compositional_coordinates` · **Example:** `examples/16_qm9_molecule_d5.py`
-
----
-
 <a id="generic_pytorch"></a>
 
-## Other PyTorch task (regression, multi-head, custom)
+---
 
-**Fit:** TRY — If labels mean the same on A and B and you have a representation `h`, use G1. Otherwise PMH is not automatic — run the gate below.
+## The Only Question That Matters
 
-| | |
-|--|--|
-| **What changes** | Whatever **environmental factor** changes between train and deploy without changing your target definition. |
-| **Mapping** | D4 · `nuisance='domain_shift'` |
-| **Golden path** | [G1 — PyTorch (docs/GOLDEN_PATHS.md#g1)](GOLDEN_PATHS.md#g1) |
-| **Data** | source_batches + target_batches from deploy environment. |
-| **Not for** | Pure i.i.d. training with no deploy domain. |
+For your task, fill this in:
 
-**CLI:** `pmh-train route --task generic_pytorch` · **Example:** `examples/00_first_run_domain_shift.py`
+> My model is trained on **A** and deployed on **B**. The input changes because of **X**, but the label still means **Y**.
+
+Examples:
+
+- "trained on warehouse cameras, deployed on store cameras, product class stays the same"
+- "trained on Hospital A scans, deployed on Hospital B scans, disease label stays the same"
+- "trained on support tickets, deployed on chat messages, intent label stays the same"
+- "trained on one prompt format, deployed with JSON output, factual task stays the same"
+
+If you can write that sentence, PMH may fit. If you cannot, fix the task definition first.
 
 ---
 
-## Not PMH
+## What You Need
 
-New classes at deploy or unrelated labels → [WHEN_PMH_HELPS](WHEN_PMH_HELPS.md).
+| Recipe | You need |
+|--------|----------|
+| Train/fine-tune a model | normal training data, examples from the production environment, one model layer to read features from |
+| Use existing embeddings | feature arrays from training and production, plus labels for evaluation |
+| LLM/text style | two text sources or style pairs where the task stays the same |
 
-D1–D7 detail: [estimators/index.md](estimators/index.md) (when identification step requires it).
+Every path needs a production holdout. That is how you prove the model improved where it matters.
+
+---
+
+## When Not to Use PMH
+
+Do not use PMH if:
+
+- production has new classes;
+- label definitions changed;
+- the product goal changed;
+- you cannot collect any production examples;
+- you only want a generic "make it robust" switch.
+
+Read [When PMH helps](WHEN_PMH_HELPS.md) for the boundary cases.

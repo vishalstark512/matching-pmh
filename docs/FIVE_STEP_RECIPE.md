@@ -1,137 +1,148 @@
-# Five-step recipe
+# Five-Step Workflow
 
-**Train on site A. Deploy on site B. Same labels.**
-
-**One line:** estimate deployment geometry once → train with capped PMH → compare **matched / wrong-W / isotropic** on **deploy holdout**.
-
-Product spine from the paper (§7, Fig. 4). Everything in matching-pmh implements this pipeline—not thirteen separate task scripts.
-
-Meta-structure: [META_STRUCTURE.md](META_STRUCTURE.md) · Code: `pmh.recipe` · CLI: `pmh-train recipe`
-
----
-
-## The one object
-
-**Deployment shift geometry** — ways inputs can change at site B vs site A **without changing the label**.
-
-(In the paper this is written with “nuisance” \(n\) and \(\Sigma_{\mathrm{task}}\); in code you pick a **shift type** with `nuisance="domain_shift"` etc. **Plain English:** [WHAT_IS_DEPLOYMENT_SHIFT.md](WHAT_IS_DEPLOYMENT_SHIFT.md).)
-
-You **estimate** that geometry once, then **train** with a capped penalty on representation sensitivity along it.
-
----
-
-## Flow
+Use this workflow when you want a model to work better in production than standard training alone: same task, same labels, different environment.
 
 ```mermaid
 flowchart LR
-  S0[0 Scope] --> S1[1 Identify A_k]
-  S1 --> S2[2 Estimate]
-  S2 --> S3[3 Apply PMH]
-  S3 --> S4[4 Cap protocol]
-  S4 --> S5[5 Evidence]
+  Pick["1 Pick task"] --> Change["2 Say what changed"]
+  Change --> Learn["3 Learn that change"]
+  Learn --> Train["4 Train with PMH"]
+  Train --> Prove["5 Prove it worked"]
 ```
 
-| Step | What you do | Python |
-|------|-------------|--------|
-| **0 Scope** | Same labels on A and B? Deploy story label-preserving? | `check_applicability` · `pmh.scope` |
-| **1 Identify** | What changes at deploy? → `nuisance=` shift type | `suggest_nuisance` · `pmh-train shifts` · [plain guide](WHAT_IS_DEPLOYMENT_SHIFT.md) |
-| **2 Estimate** | \(\hat\Sigma_{\mathrm{task}}\) + eigengap preflight | `estimate_from_config` · `PMHTrainer.estimate` · `recipe.step_estimate` |
-| **3 Apply** | Mode **A** (Jacobian) or **B** (projection) | below · `pmh.apply` · [INTEGRATE](INTEGRATE.md) |
-| **4 Protocol** | Cap PMH vs task loss; hybrid = sum of capped terms | `PMHConfig.balanced()` · [PMH_PARAMETERS](PMH_PARAMETERS.md) |
-| **5 Evidence** | matched / wrong-\(W\) / isotropic (+ signal-\(W\)); geometry ≠ accuracy | `compare_arms` · `pmh.evidence` |
+```
+pick task -> say what changed -> learn that change -> train -> prove it worked
+```
 
 ---
 
-<a id="step-3-mode-a-vs-b"></a>
+## Step 1 - Pick the Task
 
-## Step 3 — Mode A vs B
+Start from the thing you are trying to improve:
 
-One \(\hat\Sigma_{\mathrm{task}}\), two application operators:
+- segmentation in a new city or scanner;
+- pose estimation from a new camera angle;
+- classification in a new hospital or geography;
+- speech recognition in a new room or microphone;
+- an LLM workflow with a new output format;
+- frozen embeddings from a new customer group.
 
-| Mode | When | API |
-|------|------|-----|
-| **A — Jacobian** | Train/fine-tune; hook \(h=\phi(x)\) | `robust_fit`, `PMHTrainer`, `PMHLoss` |
-| **B — projection** | Frozen features / sklearn | `PMHMatcher`, `compare_arms_sklearn` |
-
-```python
-from pmh.recipe import recommended_application_mode, step_identify
-shift = step_identify(has_target_domain=True, has_source_labels=True)
-print(recommended_application_mode(shift, stack="pytorch"))  # or "sklearn"
-```
-
-Stack guides: [INTEGRATE.md](INTEGRATE.md) · code templates: [GOLDEN_PATHS.md](GOLDEN_PATHS.md).
+Then go to [Find my task](APPLICATIONS.md).
 
 ---
 
-## Quick start (bundled steps)
+## Step 2 - Say What Changed
 
-**PyTorch (Mode A)** — steps 0–3 in one call:
+Write one sentence:
+
+> We train on A, deploy on B, and the label still means the same thing.
+
+Good:
+
+- "Train on Hospital A images; deploy on Hospital B images; disease labels are the same."
+- "Train on warehouse camera images; deploy on store cameras; product classes are the same."
+- "Train on support tickets; deploy on chat transcripts; intent labels are the same."
+
+Bad:
+
+- "Deploy has new classes."
+- "Hospital B uses a different disease definition."
+- "We do not know what changes at deploy."
+
+```bash
+pmh-train route --search hospital
+pmh-train route --search segmentation
+pmh-train route --search pose
+```
+
+---
+
+## Step 3 - Learn That Change From Data
+
+PMH needs examples from training and production. Labels on production examples are useful for evaluation; they are not always required for learning the change.
 
 ```python
-from pmh import check_applicability, robust_fit
+from pmh import robust_fit
 
-print(check_applicability(stack="pytorch", n_source=500, n_target=400).summary())
-out = robust_fit(
-    model, train_loader,
-    source_batches=src, target_batches=tgt,
-    hook="auto", epochs=20,
+pmh_run = robust_fit(
+    model,
+    train_loader,
+    source_batches=source_loader,
+    target_batches=target_loader,
+    hook="auto",
 )
+print(pmh_run.preflight_message)
 ```
 
-**sklearn (Mode B)** — frozen features:
+If PMH cannot see a stable production change in your features, it should say so before you make claims.
+
+---
+
+## Step 4 - Train With PMH
+
+PMH does not replace your segmentation loss, classification loss, CTC loss, reward loss, or regression loss. It sits next to your normal loss and teaches the model to care less about the production change.
+
+```python
+from pmh import PMHConfig
+
+config = PMHConfig.balanced()
+```
+
+Use the default settings first. Tune only after the production-like holdout says PMH is helping.
+
+---
+
+## Step 5 - Prove It Before Shipping
+
+A better metric from one run is not enough. You need controls.
+
+The evidence you want is:
+
+> PMH improves the production-like holdout and beats wrong controls.
+
+```python
+from pmh import evaluate_robust_fit
+
+report = evaluate_robust_fit(
+    model,
+    train_loader,
+    deploy_holdout_loader,
+    source_batches=source_loader,
+    target_batches=target_loader,
+    hook="auto",
+    pmh_result=pmh_run,
+)
+print(report.summary())
+```
+
+For frozen features:
 
 ```python
 from pmh import evaluate_baseline_vs_pmh
 
-report = evaluate_baseline_vs_pmh(x_source, y_source, x_target, y_target)  # Step 5 arms by default
-print(report.summary())  # matched / wrong-W / isotropic on deploy holdout
-```
-
-**Explicit steps:**
-
-```python
-from pmh.recipe import step_scope, step_identify, format_five_step_guide
-
-print(format_five_step_guide(stack="pytorch"))
-scope = step_scope(stack="pytorch", n_source=500, n_target=400)
-shift = step_identify(has_target_domain=True, has_source_labels=True)
-print(scope.summary(), shift.nuisance, shift.assumption)
-```
-
-CLI:
-
-```bash
-pmh-train recipe
-pmh-train recipe --stack sklearn --identify --target-domain
-pmh-train recipe --task pose_or_keypoints
+report = evaluate_baseline_vs_pmh(x_source, y_source, x_target, y_target)
+print(report.summary())
 ```
 
 ---
 
-## After the recipe works
+## The Two Main Ways PMH Enters a Pipeline
 
-| Next | Page |
+| Pipeline | What PMH does | Start |
+|----------|---------------|-------|
+| Training or fine-tuning | Adds PMH beside your normal training loss | [Train/fine-tune recipe](GOLDEN_PATHS.md#train-or-fine-tune-a-model) |
+| Existing embeddings / sklearn | Tests PMH on exported features without retraining the encoder | [Embeddings recipe](GOLDEN_PATHS.md#use-existing-embeddings-or-sklearn) |
+
+LLM/text, Lightning, HF Trainer, and custom pipelines are variants of these two modes.
+
+---
+
+## What to Read Next
+
+| Need | Page |
 |------|------|
-| Finder + `route --task` | [APPLICATIONS.md](APPLICATIONS.md) |
-| Install, CLI, stacks | [INTEGRATE.md](INTEGRATE.md) |
-| Copy one code path | [GOLDEN_PATHS.md](GOLDEN_PATHS.md) |
-| Falsification (Step 5 detail) | [walkthroughs/08-falsification-controls.md](walkthroughs/08-falsification-controls.md) |
-| Paper block examples only | **Evidence** tab · [walkthroughs/index.md](walkthroughs/index.md) |
-
-**Do not skip Step 5** for production claims—matched-only improvements are inconclusive (paper §7).
-
----
-
-## Symptom → assumption (Table 4)
-
-| You notice | \(A_k\) | `nuisance` |
-|------------|---------|------------|
-| Site / camera / cohort look, same labels | \(A_4\) | `domain_shift` |
-| Same classes, different feature geometry | \(A_1\) | `subspace` |
-| Known aug modes (blur, crop, …) | \(A_3\) | `augmentation` |
-| Only some coordinates of \(h\) move | \(A_5\) | `compositional` |
-| Sequence drift, label constant | \(A_6\) | `temporal` |
-| LLM surface / PGD deltas | \(A_7\) | `style` / alignment |
-| No preferred direction (sensor noise) | \(A_2\) | `isotropic` |
-
-Full table: [NUISANCE_SUBTYPES.md](NUISANCE_SUBTYPES.md) · `pmh-train list-methods`
+| One-page field guide | [ADOPT.md](../ADOPT.md) |
+| Find your task | [APPLICATIONS.md](APPLICATIONS.md) |
+| Copy code | [GOLDEN_PATHS.md](GOLDEN_PATHS.md) |
+| Install / CLI / stack details | [INTEGRATE.md](INTEGRATE.md) |
+| Paper examples and advanced settings | [walkthroughs/index.md](walkthroughs/index.md) |

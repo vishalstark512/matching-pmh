@@ -1,258 +1,248 @@
-# Golden paths (G1–G4 + framework variants)
+# End-to-End Recipes
 
-**Prerequisite:** [Five-step recipe](FIVE_STEP_RECIPE.md) → [Applications](APPLICATIONS.md) → [Integrate](INTEGRATE.md) for install/CLI.
+Pick the path that matches your pipeline and run it end to end. Each recipe has the same shape:
 
-Pick **one** section below. Your application → nuisance mapping lives in [APPLICATIONS](APPLICATIONS.md).
+1. run a tiny demo;
+2. replace demo data with your training and production data;
+3. train or score with PMH;
+4. test on production-like data;
+5. ship only if PMH beats the sanity checks.
 
-Read **exactly one** section below (G1, G1b, G2, G3, G3b, or G4). Subtype D1–D7: use `pmh-train route` / `wizard` — details in [NUISANCE_SUBTYPES.md](NUISANCE_SUBTYPES.md) when needed.
+| I want to improve... | Run |
+|----------------------|-----|
+| segmentation, pose, detection, image classification, speech, sensors, or any model I train | [Train or fine-tune a model](#train-or-fine-tune-a-model) |
+| a pipeline that already has embeddings, `.npy` files, tabular features, or sklearn | [Use existing embeddings or sklearn](#use-existing-embeddings-or-sklearn) |
+| an LLM/text workflow where style, template, tone, channel, or format changes | [LLM or text style](#llm-or-text-style) |
 
-| Path | When |
-|------|------|
-| **G1** | Plain PyTorch loop or `robust_fit` |
-| **G1b** | You already use **Lightning** |
-| **G2** | Frozen features + **sklearn** |
-| **G3** | HF model + two text corpora (`HFPMHTrainer`) |
-| **G3b** | You already use **`transformers.Trainer`** (DPO, LoRA, etc.) |
-| **G4** | Your own deltas / \(W\) / saved artifact |
-
-```python
-from pmh import suggest_subtype
-
-rec = suggest_subtype(has_target_domain=True, has_target_labels=False)
-print(rec.method, rec.nuisance, rec.reason)  # e.g. D4 domain_shift
-```
+If you want to start from one of the 13 paper tasks and adapt it to another dataset or architecture, see [13 task patterns](TASK_PATTERNS.md).
 
 ---
 
-<a id="g1"></a>
+<a id="train-or-fine-tune-a-model"></a>
+<a id="pytorch-training"></a>
 
-## G1 — PyTorch, two domains
+## Train or fine-tune a model
 
-**Mode A (Jacobian)** · **Step 5:** compare deploy holdout + [falsification controls](walkthroughs/08-falsification-controls.md) (`compare_arms` or `evaluate_robust_fit` + wrong-W / isotropic).
+Use this for segmentation, pose/keypoints, detection, image classification, medical imaging, speech, time series, text encoders, Lightning modules, or any custom model you train.
 
-**You have:** `model`, train loader, source + target loaders (target labels optional).
+Plain English: you have examples from training and production. The label means the same thing. You want the model to care less about what changed between those environments.
+
+### 1. Run the demo
+
+```bash
+pip install matching-pmh torch
+python examples/00_first_run_domain_shift.py
+pmh-train evaluate --demo --stack pytorch
+```
+
+### 2. Replace the demo with your data
+
+| Your task | Training data | Production data | Output/label must stay the same |
+|-----------|---------------|-----------------|---------------------------------|
+| Segmentation | labeled source images + masks | production-like images | same mask classes |
+| Pose | labeled source frames + keypoints | production-like frames | same skeleton/keypoint order |
+| Detection | labeled source images + boxes | production-like images | same object classes |
+| Speech | labeled source audio | production-like audio | same transcripts or labels |
+| Time series | labeled source sequences | production-like sequences | same target definition |
+
+You provide three loaders:
 
 ```python
-from pmh import check_applicability, robust_fit, suggest_hook
+train_loader = ...          # normal supervised training data
+source_loader = ...         # batches from training environment A
+target_loader = ...         # batches from production environment B
+deploy_holdout_loader = ... # labeled production-like validation/test data
+```
+
+For segmentation, detection, pose, or speech, use your normal model and loss. PMH only needs a feature layer before the task head, often `hook="auto"` or a backbone layer.
+
+### 3. Train with PMH and evaluate
+
+```python
+from pmh import check_applicability, evaluate_robust_fit, robust_fit
 
 print(check_applicability(stack="pytorch", n_source=500, n_target=400).summary())
 
-out = robust_fit(
+pmh_run = robust_fit(
     model,
     train_loader,
     source_batches=source_loader,
     target_batches=target_loader,
     hook="auto",
-    head=classifier,
     epochs=20,
 )
-print(out.preflight_message)
-
-# Optional: ERM vs PMH on labeled target holdout (same report shape as sklearn)
-from pmh import evaluate_robust_fit
 
 report = evaluate_robust_fit(
-    model, train_loader, val_loader,
-    source_batches=source_loader, target_batches=target_loader,
-    hook="auto", head=classifier, epochs=20, pmh_result=out,
-    include_falsification=True,  # default — Step 5 on hook embeddings
+    model,
+    train_loader,
+    deploy_holdout_loader,
+    source_batches=source_loader,
+    target_batches=target_loader,
+    hook="auto",
+    pmh_result=pmh_run,
 )
 print(report.summary())
 ```
 
-- Colab: [domain_shift_first_run.ipynb](https://colab.research.google.com/github/vishalstark512/matching-pmh/blob/main/notebooks/domain_shift_first_run.ipynb)
-- CLI Step 5: `pmh-train evaluate --demo --stack pytorch` or `--source-dir A/ --target-dir B/`
-- Parameters: [PARAMETERS_CHEATSHEET.md](PARAMETERS_CHEATSHEET.md)
-- Already on Lightning? → **G1b** below
+### 4. What to change for your task
+
+| If your task is... | Change |
+|--------------------|--------|
+| Segmentation | use your segmentation `train_loader`; hook the encoder/backbone before the mask head |
+| Pose/keypoints | use your pose loss and keypoint labels; hook the image backbone |
+| Detection | keep your box/class losses; start by hooking the shared backbone |
+| Speech | hook the audio encoder before the transcript/classification head |
+| Lightning | keep your `LightningModule`; see [Lightning walkthrough](walkthroughs/10-lightning.md) |
+
+The report should compare your normal model, PMH, and sanity checks on `deploy_holdout_loader`.
 
 ---
 
-<a id="g1b"></a>
+<a id="use-existing-embeddings-or-sklearn"></a>
+<a id="frozen-features--sklearn"></a>
 
-## G1b — PyTorch Lightning
+## Use existing embeddings or sklearn
 
-**Mode A** · **Step 5:** [falsification controls](walkthroughs/08-falsification-controls.md) before production claims.
+Use this when your pipeline already exports features, embeddings, tabular rows, or `.npy` arrays and you want to test PMH without retraining the encoder.
 
-**You have:** a `LightningModule`, task loss in `training_step`, and hook features `h = backbone(x)` from source vs target for Phase A.
-
-```python
-pip install "matching-pmh[lightning]"
-```
-
-```python
-from pmh import PMHConfig, PMHLoss, SigmaTaskConfig, estimate_from_config
-from pmh.integrations.lightning import PMHLightningCallback, add_pmh_to_loss, _require_lightning
-import torch.nn.functional as F
-
-# Phase A — once (unlabeled domain features on the same backbone)
-with torch.no_grad():
-    h_src = model.backbone(x_source_batch)
-    h_tgt = model.backbone(x_target_batch)
-artifact = estimate_from_config(SigmaTaskConfig.for_domain(rank=32), h_src, h_tgt)
-pmh_cfg = PMHConfig.balanced()
-pmh_loss = PMHLoss(artifact, pmh_cfg)
-
-# Phase B — inside training_step
-def training_step(self, batch, batch_idx):
-    x, y = batch
-    task = F.cross_entropy(self.head(self.backbone(x)), y)
-    total, pmh_term = add_pmh_to_loss(
-        self, (x,), task, pmh_loss, backbone_attr="backbone"
-    )
-    return total
-
-# Epoch schedule for cap/warmup
-trainer = pl.Trainer(callbacks=[PMHLightningCallback.from_artifact(artifact, pmh_cfg)])
-```
-
-- Template: [`lightning_g1b_minimal.py`](https://github.com/vishalstark512/matching-pmh/blob/main/templates/matching-pmh-starter/lightning_g1b_minimal.py)
-- Example: `examples/09_lightning_module.py` · walkthrough [10 Lightning](walkthroughs/10-lightning.md)
-
----
-
-<a id="g2"></a>
-
-## G2 — Frozen features + sklearn
-
-**Mode B (projection)** · **Step 5:** `evaluate_baseline_vs_pmh` (falsification arms **on by default**).
-
-**You have:** `x_source`, `y_source`, `x_target` (embeddings). Start with the **Office-31-style synthetic** demo (no download), then swap your `.npy` files.
-
-```python
-from pmh import check_applicability, evaluate_baseline_vs_pmh, load_g2_demo_arrays
-
-# Same spirit as T1 Office-31 (amazon -> dslr) — synthetic, runs in seconds
-x_source, y_source, x_target, y_target = load_g2_demo_arrays(n=500, seed=0)
-
-print(check_applicability(stack="sklearn", n_source=len(x_source), n_target=len(x_target)).summary())
-
-report = evaluate_baseline_vs_pmh(
-    x_source=x_source, y_source=y_source,
-    x_target=x_target, y_target=y_target,
-    compare_to=("coral",),  # optional baseline; Step 5 arms always included
-)
-print(report.summary())  # matched / wrong-W / isotropic on deploy holdout
-```
-
-**Real Office-31** (after basics work):
+### 1. Run the demo
 
 ```bash
-python examples/06_office31_sklearn.py --office31-root /path/to/office31
+pip install "matching-pmh[sklearn]"
+pmh-train evaluate --demo
 ```
 
-- Colab: [sklearn_frozen_features_first_run.ipynb](https://colab.research.google.com/github/vishalstark512/matching-pmh/blob/main/notebooks/sklearn_frozen_features_first_run.ipynb)
-- Quick script: `examples/02_g2_office31_style_demo.py`
+### 2. Replace the demo arrays
+
+You need arrays like this:
+
+```python
+x_source = ...  # features from training environment A, shape [n, d]
+y_source = ...  # labels for A
+x_target = ...  # features from production environment B, shape [m, d]
+y_target = ...  # labels for production-like holdout B
+```
+
+This fits:
+
+- CLIP/ViT/ResNet embeddings exported from image folders;
+- tabular features from two hospitals or customer cohorts;
+- CRM/churn features from two regions;
+- frozen encoder outputs from any model.
+
+### 3. Run the full comparison
+
+```python
+from pmh import evaluate_baseline_vs_pmh, load_g2_demo_arrays
+
+x_source, y_source, x_target, y_target = load_g2_demo_arrays(n=500, seed=0)
+report = evaluate_baseline_vs_pmh(x_source, y_source, x_target, y_target)
+print(report.summary())
+```
+
+Then replace `load_g2_demo_arrays(...)` with your arrays.
+
+### 4. Folder layout option
+
+```text
+site_a/
+  features.npy
+  labels.npy
+site_b/
+  features.npy
+  labels.npy
+```
+
+```bash
+pmh-train evaluate --source-dir site_a --target-dir site_b
+```
 
 ---
 
-<a id="g3"></a>
+<a id="llm-or-text-style"></a>
 
-## G3 — LLM / two text corpora (`HFPMHTrainer`)
+## LLM or text style
 
-**Mode A** · **Step 5:** style/geometry checks — [falsification controls](walkthroughs/08-falsification-controls.md); report task and geometry separately ([§7.2](THEORY.md)).
+Use this when the underlying task is stable but production changes surface form: chat vs ticket, Markdown vs JSON, bullets vs paragraphs, formal vs casual, one prompt template vs another.
 
-**You have:** texts from corpus A and B, same labels; you want **pmh** to estimate and train (no subclass of `transformers.Trainer` required).
+This is not for "new facts" or a changed policy. It is for the same task under a different text channel or format.
+
+### 1. Route your task
+
+```bash
+pip install "matching-pmh[hf]"
+pmh-train route --task llm_style_or_format
+```
+
+### 2. Prepare texts
+
+You need either two corpora for the same task:
 
 ```python
-pip install "matching-pmh[hf]"
+texts_a = [...]  # training channel, old prompt, old format
+texts_b = [...]  # production channel, new prompt, new format
 ```
+
+or style pairs where the content stays fixed:
+
+```json
+{"content": "same underlying answer", "style_a": "paragraph", "style_b": "json"}
+```
+
+### 3. Train or fine-tune
 
 ```python
 from pmh import check_applicability, robust_fit_text_domains
 
 print(check_applicability(stack="hf", n_source=len(texts_a), n_target=len(texts_b)).summary())
 
-out = robust_fit_text_domains(
-    model, tokenizer, train_loader,
+pmh_run = robust_fit_text_domains(
+    model,
+    tokenizer,
+    train_loader,
     source_texts=texts_a,
     target_texts=texts_b,
     epochs=3,
     rank=32,
 )
-print(out.preflight_message)
+print(pmh_run.preflight_message)
 ```
 
-- Colab: [hf_two_corpora_first_run.ipynb](https://colab.research.google.com/github/vishalstark512/matching-pmh/blob/main/notebooks/hf_two_corpora_first_run.ipynb)
-- Template: [`hf_minimal.py`](https://github.com/vishalstark512/matching-pmh/blob/main/templates/matching-pmh-starter/hf_minimal.py)
-- Style / format shift (D7): [walkthrough 6](walkthroughs/06-llm-style-d7.md) · `estimate_style`
+### 4. Evaluate
+
+Use your normal LLM/text metric on production-format examples. Then use the PMH report to check that the improvement is not just a generic penalty.
 
 ---
 
+## Variants
+
+| If you use... | Do this |
+|---------------|---------|
+| PyTorch Lightning | Put the same PMH loss in `training_step`; see [Lightning walkthrough](walkthroughs/10-lightning.md) |
+| Hugging Face `Trainer`, DPO, or LoRA | Keep your trainer and add PMH in the loss; see [HF walkthrough](walkthroughs/07-hf-trainer-d7-dpo.md) |
+| ResNet / torchvision | Use the penultimate feature layer; see [ResNet walkthrough](walkthroughs/02-resnet-vision-d4.md) |
+| ViT / timm / HF ViT | Use CLS or pooled patch features; see [ViT walkthrough](walkthroughs/12-vit-cls-d4.md) |
+| Your own saved change directions | Use [custom change directions](CUSTOM_GEOMETRY.md) |
+
+Older anchors still work:
+
+<a id="g1"></a>
+<a id="g1b"></a>
+<a id="g2"></a>
+<a id="g3"></a>
 <a id="g3b"></a>
-
-## G3b — Hugging Face `Trainer` (keep your training stack)
-
-**Mode A** · **Step 5:** [falsification controls](walkthroughs/08-falsification-controls.md) (matched / wrong-Σ / isotropic for D7).
-
-**You have:** an existing `transformers.Trainer` setup (PEFT, DPO, custom callbacks). Add PMH in `compute_loss` via **`get_pmh_trainer()`**.
-
-```python
-pip install "matching-pmh[hf]"
-```
-
-```python
-from pmh import PMHConfig, SigmaTaskConfig, estimate_from_config
-from pmh.integrations.hf_trainer import get_pmh_trainer
-
-# Phase A — collect representations h from source vs target (same hook as training)
-with torch.no_grad():
-    h_src = representation_fn(model, batch_from_site_a)  # [B, d]
-    h_tgt = representation_fn(model, batch_from_site_b)
-artifact = estimate_from_config(SigmaTaskConfig.for_domain(rank=32), h_src, h_tgt)
-
-PMHTrainer = get_pmh_trainer()
-trainer = PMHTrainer.from_artifact(
-    artifact,
-    PMHConfig.balanced(),
-    model=model,
-    args=training_args,
-    train_dataset=train_dataset,
-    representation_fn=lambda m, inputs: m.get_hidden(inputs),  # your hook
-)
-trainer.train()
-```
-
-**Rules:** same `representation_fn` for estimate and train; default uses last hidden state if `output_hidden_states=True`.
-
-- Template: [`hf_trainer_g3b_minimal.py`](https://github.com/vishalstark512/matching-pmh/blob/main/templates/matching-pmh-starter/hf_trainer_g3b_minimal.py)
-- Example: `examples/10_hf_trainer.py` · walkthrough [7 HF Trainer + DPO](walkthroughs/07-hf-trainer-d7-dpo.md)
-- Low-level loss only: `compute_pmh_training_loss` in [integrations-hf-trainer.md](integrations-hf-trainer.md)
-
-**G3 vs G3b:** use **G3** when pmh should own estimate+fit; use **G3b** when you must keep the HF `Trainer` API.
-
----
-
 <a id="g4"></a>
 
-## G4 — Custom geometry (your deltas or \(W\))
-
-**Mode A or B** (depends on hook) · **Step 5:** [falsification controls](walkthroughs/08-falsification-controls.md).
-
-**You have:** precomputed deltas, external \(W\), or a saved `.pt` artifact — same PMH train step.
-
-```python
-from pmh import PMHTrainer, PMHConfig, artifact_from_deltas
-
-art = artifact_from_deltas(my_deltas, method="D7", rank=16)
-trainer = PMHTrainer.from_artifact(model, art, hook=backbone, pmh_config=PMHConfig.balanced())
-trainer.fit(train_loader, epochs=20)
-```
-
-Full guide: [CUSTOM_GEOMETRY.md](CUSTOM_GEOMETRY.md) · example `examples/23_custom_geometry_train.py`
-
 ---
 
-## Before production
+## Before Production
 
 ```bash
 pmh-train doctor --stack pytorch
 ```
 
-1. `check_applicability(...)` — go / marginal / no-go  
-2. Target holdout metric — `evaluate_baseline_vs_pmh` or your own val loop  
-3. `pmh-train validate -c examples/configs/validate_sklearn_synthetic.json` (sklearn)  
-   or `validate_pytorch_smoke.json` (PyTorch toy arms)  
-4. `export_deployment(artifact, "deploy/bundle", pmh_config=...)` — handoff bundle  
-5. [Falsification controls](walkthroughs/08-falsification-controls.md) — full PyTorch compare
-
-**Data on disk:** [DATA_LAYOUT.md](DATA_LAYOUT.md) · **Ship bundle:** [DEPLOYMENT.md](DEPLOYMENT.md)
+1. Check that labels mean the same thing in training and production.
+2. Keep a production-like holdout.
+3. Run the recipe.
+4. Compare your normal model, PMH, and wrong controls.
+5. Ship only if PMH wins on the production-like metric.

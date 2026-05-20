@@ -1,21 +1,84 @@
 # matching-pmh
 
-**Train on site A. Deploy on site B. Same labels.**
+**PMH helps production models handle the everyday failure mode: training data and production data look different, but the answer should stay the same.**
 
-Estimate deployment geometry once → train with capped PMH → compare **matched / wrong-W / isotropic** on a **deploy holdout** before you trust gains.
+Most AI systems hit this problem before anyone gives it a name:
+
+- a vision model trained on warehouse cameras is deployed in stores;
+- a clinical model trained at Hospital A is deployed at Hospital B;
+- an audio model trained on one microphone is used in another room;
+- a support-ticket classifier sees chat messages instead;
+- an LLM workflow keeps the same task but deploys with a new format, tone, or template.
+
+The class labels did not change. The input world did.
+
+PMH gives that failure mode a repeatable engineering loop: **say what changes -> learn that change from data -> train the model to ignore it -> prove it worked before shipping.**
 
 [![PyPI](https://img.shields.io/pypi/v/matching-pmh.svg)](https://pypi.org/project/matching-pmh/)
 [![Python](https://img.shields.io/pypi/pyversions/matching-pmh.svg)](https://pypi.org/project/matching-pmh/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/vishalstark512/matching-pmh/blob/main/LICENSE)
 [![CI](https://github.com/vishalstark512/matching-pmh/actions/workflows/ci.yml/badge.svg)](https://github.com/vishalstark512/matching-pmh/actions/workflows/ci.yml)
 
-[PyPI](https://pypi.org/project/matching-pmh/) · [GitHub](https://github.com/vishalstark512/matching-pmh) · **[Docs](https://vishalstark512.github.io/matching-pmh/)** · [Five-step recipe](docs/FIVE_STEP_RECIPE.md) · [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/vishalstark512/matching-pmh/blob/main/notebooks/domain_shift_first_run.ipynb)
+[Docs](https://vishalstark512.github.io/matching-pmh/) · [Adopt](ADOPT.md) · [Production recipes](docs/GOLDEN_PATHS.md) · [PyPI](https://pypi.org/project/matching-pmh/) · [Colab](https://colab.research.google.com/github/vishalstark512/matching-pmh/blob/main/notebooks/domain_shift_first_run.ipynb)
 
 ---
 
-## Adopt in 60 seconds
+## Find Your Use Case
 
-**→ [ADOPT.md](ADOPT.md)** (same checklist, zero noise)
+| I want to improve... | Production change | Start |
+|----------------------|-------------------|-------|
+| Segmentation | new city, camera, scanner, weather, lighting | [Train/fine-tune recipe](docs/GOLDEN_PATHS.md#train-or-fine-tune-a-model) |
+| Pose / keypoints | new camera angle, studio, hospital room | [Train/fine-tune recipe](docs/GOLDEN_PATHS.md#train-or-fine-tune-a-model) |
+| Image classification | new camera, geography, device, hospital | [Train/fine-tune recipe](docs/GOLDEN_PATHS.md#train-or-fine-tune-a-model) |
+| Object detection | new scene style, sensor, store layout | [Train/fine-tune recipe](docs/GOLDEN_PATHS.md#train-or-fine-tune-a-model) |
+| Speech / ASR | new mic, room, codec, accent mix | [Train/fine-tune recipe](docs/GOLDEN_PATHS.md#train-or-fine-tune-a-model) |
+| Time-series / sensors | sensor drift, device aging, session drift | [Train/fine-tune recipe](docs/GOLDEN_PATHS.md#train-or-fine-tune-a-model) |
+| Frozen embeddings / sklearn | features from train and production already exist | [Embeddings recipe](docs/GOLDEN_PATHS.md#use-existing-embeddings-or-sklearn) |
+| Tabular / clinical rows | new hospital or cohort, same columns and label | [Embeddings recipe](docs/GOLDEN_PATHS.md#use-existing-embeddings-or-sklearn) |
+| LLM / text workflow | same task, new tone, template, JSON wrapper, channel | [LLM/text recipe](docs/GOLDEN_PATHS.md#llm-or-text-style) |
+| Molecules, code, adversarial-style robustness | you want the closest worked example | [13 task patterns](docs/TASK_PATTERNS.md) |
+
+---
+
+## The Problem
+
+Standard training optimizes for the training distribution. Production asks for something harder: **perform well when the environment changes in ways that should not change the answer.**
+
+Data augmentation helps when you already know the transform. Adversarial training helps against worst-case perturbations. Domain adaptation often aligns distributions but does not always prove the improvement came from the deployment factor you care about.
+
+PMH is practical: it asks you to say what changed in production, learn that change from examples, and train the model to be less sensitive to it while keeping your normal task loss primary.
+
+```mermaid
+flowchart LR
+  TrainEnv["Train environment A"] --> Shift["Deployment changes inputs"]
+  DeployEnv["Deploy environment B"] --> Shift
+  Shift --> SameLabels["Labels still mean the same thing"]
+  SameLabels --> Learn["Learn what changed"]
+  Learn --> Train["Train model to ignore it"]
+  Train --> Evidence["Prove before shipping"]
+```
+
+```
+Train A + Deploy B, same labels
+        -> learn what changed
+        -> train the model to ignore that change
+        -> ship only if production-like tests beat controls
+```
+
+---
+
+## When PMH Is the Right Tool
+
+| You have | PMH fit |
+|----------|---------|
+| Same label semantics in train and deploy | Yes |
+| Batches or features from the deploy environment | Yes |
+| A PyTorch, sklearn, HF, or Lightning pipeline you can evaluate | Yes |
+| New classes only at deploy | No |
+| Label definitions changed between sites | No |
+| No deploy data, no style pairs, no shift story | Not yet |
+
+## Install and Smoke Test
 
 ```bash
 pip install matching-pmh torch
@@ -23,135 +86,111 @@ pmh-train doctor
 pmh-train evaluate --demo
 ```
 
-| Step | Do this |
-|------|---------|
-| 1 | `python examples/00_first_run_domain_shift.py` or Colab |
-| 2 | `pmh-train route --task YOUR_TASK` |
-| 3 | Copy **one** [golden path](docs/GOLDEN_PATHS.md) (G1–G4) |
-| 4 | Step 5 on deploy holdout (`evaluate_*` or `pmh-train evaluate`) |
-| 5 | [Parameters cheat sheet](docs/PARAMETERS_CHEATSHEET.md) if tuning |
-
-[`nuisance=` = deployment shift type](docs/WHAT_IS_DEPLOYMENT_SHIFT.md) · Evidence walkthroughs: [daily AI map](docs/walkthroughs/DAILY_AI_USE.md)
-
----
-
-## Install
+Optional extras:
 
 ```bash
-pip install matching-pmh
-pip install "matching-pmh[sklearn]"   # frozen features / G2
-pip install "matching-pmh[hf]"        # LLM corpora or style pairs
-pip install "matching-pmh[lightning]" # G1b
+pip install "matching-pmh[sklearn]"   # frozen embeddings / tabular features
+pip install "matching-pmh[hf]"        # LLM and text pipelines
+pip install "matching-pmh[lightning]" # PyTorch Lightning
 ```
 
 ---
 
-## Who this is for
+## Use PMH in Your Pipeline
 
-| You are doing… | Start here |
-|----------------|------------|
-| Pose / keypoints, new camera | `pmh-train route --task pose_or_keypoints` |
-| Vision classification / fine-tune | `pmh-train route --task vision_classification` |
-| Frozen `.npy` / sklearn | `pmh-train route --task frozen_embeddings_sklearn` |
-| LLM style/format drift | `pmh-train route --task llm_style_or_format` |
-| Not sure | `pmh-train shifts` then [five-step recipe](docs/FIVE_STEP_RECIPE.md) |
+1. **Say what changes.** Site, camera, cohort, microphone, prompt format, season?
+2. **Check that labels are stable.** If class meaning changed, PMH is the wrong tool.
+3. **Learn the change once.** Use training and production batches or frozen features.
+4. **Train with PMH.** Keep your normal task loss primary.
+5. **Prove before shipping.** PMH must beat wrong controls on a production-like holdout.
 
-**Not for:** new test-time classes, unrelated label definitions, or “make any model robust to everything.”
+```bash
+pmh-train shifts
+pmh-train route --search hospital
+pmh-train route --task vision_classification
+```
 
 ---
 
-## Minimal code (Tier 0)
+## Copy One Production Recipe
+
+### PyTorch training: new site, camera, sensor, or cohort
 
 ```python
-from pmh import (
-    check_applicability,
-    evaluate_baseline_vs_pmh,
-    evaluate_robust_fit,
-    robust_fit,
-)
+from pmh import check_applicability, evaluate_robust_fit, robust_fit
 
-# PyTorch — estimate + train + optional Step 5
 print(check_applicability(stack="pytorch", n_source=500, n_target=400).summary())
-out = robust_fit(
-    model, train_loader,
-    source_batches=src, target_batches=tgt,
-    hook="auto", epochs=20,
+
+pmh_run = robust_fit(
+    model,
+    train_loader,
+    source_batches=source_loader,
+    target_batches=target_loader,
+    hook="auto",
+    epochs=20,
 )
+
 report = evaluate_robust_fit(
-    model, train_loader, val_loader,
-    source_batches=src, target_batches=tgt,
-    hook="auto", pmh_result=out,
+    model,
+    train_loader,
+    deploy_holdout_loader,
+    source_batches=source_loader,
+    target_batches=target_loader,
+    hook="auto",
+    pmh_result=pmh_run,
 )
 print(report.summary())
+```
 
-# sklearn — frozen features + Step 5 (falsification on by default)
+### Frozen embeddings / sklearn: fastest adoption path
+
+```python
+from pmh import evaluate_baseline_vs_pmh, load_g2_demo_arrays
+
+x_source, y_source, x_target, y_target = load_g2_demo_arrays(n=500, seed=0)
 report = evaluate_baseline_vs_pmh(x_source, y_source, x_target, y_target)
-print(report.summary())
+print(report.summary())  # normal model / PMH / wrong controls
 ```
 
-Copy-paste templates: [templates/matching-pmh-starter/](templates/matching-pmh-starter/) · Examples: [examples/](examples/) · `pmh-train wizard`
+### LLM or text style shift
 
----
+Use PMH when the task is the same but deployment changes wording, format, tone, or template. Start with:
 
-## CLI (common)
-
-| Command | Purpose |
-|---------|---------|
-| `pmh-train doctor` | Install check + pipeline checklist |
-| `pmh-train shifts` | Plain English shift types (`nuisance=` keys) |
-| `pmh-train evaluate --demo` | G2 Step 5 smoke test |
-| `pmh-train route --task ID` | Your task walkthrough |
-| `pmh-train recipe` | Full five-step recipe text |
-
----
-
-## How it works
-
-```mermaid
-flowchart LR
-  A[Site A data] --> E[Estimate shift geometry once]
-  B[Site B data] --> E
-  E --> T[Train your model]
-  T --> H[Hook h]
-  H --> L[Task loss + capped PMH]
+```bash
+pmh-train route --task llm_style_or_format
 ```
 
-Same hook for estimate and train. Optional depth: [vs CORAL](docs/COMPARE_TO_CORAL.md) · [Theory](docs/THEORY.md).
+Then use the HF recipe in [production recipes](docs/GOLDEN_PATHS.md#llm-or-text-style).
 
 ---
 
-## API tiers
+## What Counts as Evidence?
 
-| Tier | Who | Import |
-|------|-----|--------|
-| **0 — Adopt** | First integration | `from pmh import robust_fit, PMHMatcher, evaluate_baseline_vs_pmh, …` — see `pmh.__all__` |
-| **1 — Integrate** | Wiring + ship | `PMHLoss`, `estimate_from_config`, `compare_arms`, … |
-| **2 — Evidence** | Paper replication | `pmh.evidence`, benchmarks, walkthroughs |
+A single improved metric is not enough. PMH ships with controls because production robustness claims need a sanity check.
 
-Map: [META_STRUCTURE.md](docs/META_STRUCTURE.md).
+| Check | Meaning |
+|-------|---------|
+| Normal model | Your usual training or classifier |
+| PMH | Train against the production change you identified |
+| Wrong-change check | Same machinery pointed at the wrong change |
+| Generic-regularizer check | Generic smoothing, not your production change |
 
----
-
-## Documentation
-
-| I want to… | Read |
-|------------|------|
-| Plain English (“nuisance”?) | [WHAT_IS_DEPLOYMENT_SHIFT.md](docs/WHAT_IS_DEPLOYMENT_SHIFT.md) |
-| Product spine | [FIVE_STEP_RECIPE.md](docs/FIVE_STEP_RECIPE.md) |
-| My task | [APPLICATIONS.md](docs/APPLICATIONS.md) |
-| Code to copy | [GOLDEN_PATHS.md](docs/GOLDEN_PATHS.md) |
-| Install / CLI / folders | [INTEGRATE.md](docs/INTEGRATE.md) |
-| Parameters | [PARAMETERS_CHEATSHEET.md](docs/PARAMETERS_CHEATSHEET.md) |
-| Will it help? | [WHEN_PMH_HELPS.md](docs/WHEN_PMH_HELPS.md) |
-| Paper / benchmarks | [walkthroughs](docs/walkthroughs/index.md) (optional) |
+The claim is credible only when **PMH wins on production-like data and beats the wrong controls**.
 
 ---
 
-## Appendix (not for day one)
+## Where to Go Next
 
-**D1–D7** — estimator IDs for the same geometry under different shift assumptions. Use `suggest_nuisance` or `pmh-train list-methods`; details in [NUISANCE_SUBTYPES.md](docs/NUISANCE_SUBTYPES.md).
-
-**T1–T7** — paper replication presets: `pmh-train list-presets` · [PAPER_ALIGNMENT.md](docs/PAPER_ALIGNMENT.md).
+| Need | Page |
+|------|------|
+| One-page field guide | [ADOPT.md](ADOPT.md) |
+| The plain production workflow | [Five-step recipe](docs/FIVE_STEP_RECIPE.md) |
+| Find your task | [Applications](docs/APPLICATIONS.md) |
+| Map the 13 paper tasks to your own model | [13 task patterns](docs/TASK_PATTERNS.md) |
+| Copy code | [Production recipes](docs/GOLDEN_PATHS.md) |
+| Install, CLI, stack details | [Integrate](docs/INTEGRATE.md) |
+| When PMH will not help | [Will PMH help?](docs/WHEN_PMH_HELPS.md) |
+| Paper evidence and walkthroughs | [Evidence walkthroughs](docs/walkthroughs/index.md) |
 
 ---
 
@@ -159,7 +198,7 @@ Map: [META_STRUCTURE.md](docs/META_STRUCTURE.md).
 
 ```bibtex
 @software{matching_pmh,
-  title  = {matching-pmh: Matched PMH training from estimated deployment nuisance geometry},
+  title  = {matching-pmh: Matched PMH training for deployment shift robustness},
   author = {Rajput, Vishal},
   year   = {2026},
   url    = {https://github.com/vishalstark512/matching-pmh}
