@@ -19,7 +19,7 @@ You want **reproducible estimate/train jobs** without importing Python in every 
 
 ## Step-by-step
 
-1. List methods: `pmh-train list-methods`
+1. List methods: `pmh-train list-methods` · paper presets: `pmh-train list-presets`
 2. Copy `examples/configs/d4_estimate.json` → edit paths to **your** data (outside repo).
 3. Run: `pmh-train estimate --config YOUR_JOB.json`
 4. Benchmark: `pmh-train benchmark --config examples/configs/benchmark_sklearn.json`

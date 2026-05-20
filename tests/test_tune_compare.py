@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from pmh import PMHConfig, compare_arms_sklearn
 from pmh.suggest import suggest_nuisance
@@ -14,6 +15,7 @@ def test_pmh_config_presets():
 
 
 def test_compare_arms_sklearn():
+    pytest.importorskip("sklearn")
     rng = np.random.default_rng(0)
     n, d = 100, 20
     xs = rng.standard_normal((n, d)).astype(np.float32)

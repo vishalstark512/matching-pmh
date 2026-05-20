@@ -19,7 +19,13 @@ from pathlib import Path
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="PMH sklearn benchmark table")
-    parser.add_argument("--rank", type=int, default=16)
+    parser.add_argument("--rank", type=int, default=None, help="Override preset rank (Office-31: use 32 via preset)")
+    parser.add_argument(
+        "--preset",
+        type=str,
+        default=None,
+        help="Paper block preset (default: t1_office31_sklearn with --office31-root, else t1_synthetic_sklearn)",
+    )
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--office31-root", type=str, default=None)
     parser.add_argument("--source", type=str, default="amazon")
@@ -58,17 +64,22 @@ def main() -> None:
     from pmh import compare_arms_sklearn
     from pmh.benchmark.report import benchmark_to_markdown
 
-    result = compare_arms_sklearn(
-        x_src,
-        y_src,
-        x_tgt,
-        y_tgt,
-        rank=args.rank,
-        include_coral=not args.no_coral,
-        include_geometry=True,
-        seed=args.seed,
-        report_dir=args.report,
+    preset = args.preset or (
+        "t1_office31_sklearn" if args.office31_root else "t1_synthetic_sklearn"
     )
+    print(f"Preset: {preset}")
+
+    kw: dict = {
+        "preset": preset,
+        "include_coral": not args.no_coral,
+        "include_geometry": True,
+        "seed": args.seed,
+        "report_dir": args.report,
+    }
+    if args.rank is not None:
+        kw["rank"] = args.rank
+
+    result = compare_arms_sklearn(x_src, y_src, x_tgt, y_tgt, **kw)
 
     print("\n" + benchmark_to_markdown(result.to_dict(), title="Sklearn benchmark (accuracy + TDI)"))
 

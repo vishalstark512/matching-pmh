@@ -5,6 +5,7 @@ Installed with the package:
 ```bash
 pip install matching-pmh
 pmh-train list-methods
+pmh-train list-presets
 ```
 
 ## Commands
@@ -12,6 +13,7 @@ pmh-train list-methods
 | Command | Purpose |
 |---------|---------|
 | `list-methods` | Table of D1–D7 inputs |
+| `list-presets` | Paper block presets (`t1_office31_sklearn`, `t4_domain_d4`, …) |
 | `estimate --config job.json` | Run estimator, write `output.pt` + `.json` |
 | `preflight ARTIFACT.pt` | Eigengap $\gamma_r$ diagnostics |
 | `run --config job.json` | Validate training job (artifact + PMH weights) |

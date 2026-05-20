@@ -96,7 +96,11 @@ Programmatic:
 from pmh import compare_arms_sklearn
 from pmh.benchmark.report import benchmark_to_markdown
 
-result = compare_arms_sklearn(x_src, y_src, x_tgt, y_tgt, rank=16, report_dir="results/run1")
+result = compare_arms_sklearn(
+    x_src, y_src, x_tgt, y_tgt,
+    preset="t1_office31_sklearn",  # or t1_synthetic_sklearn for quick demo
+    report_dir="results/run1",
+)
 print(benchmark_to_markdown(result.to_dict()))
 ```
 

@@ -28,9 +28,29 @@ def _cmd_list_methods(_: argparse.Namespace) -> int:
     for spec in list_methods():
         req = ", ".join(spec.required_data) or "(config only)"
         print(f"{spec.method:<6} {spec.name:<28} {spec.typical_tasks:<20} {req}")
-    print("\nUse: pmh-train estimate --config job.json")
+    print("\nPaper block presets: pmh-train list-presets")
+    print("Use: pmh-train estimate --config job.json")
     print("       pmh-train benchmark --config examples/configs/benchmark_sklearn.json")
     print("Samples: examples/configs/")
+    return 0
+
+
+def _cmd_list_presets(_: argparse.Namespace) -> int:
+    from pmh.benchmark.presets import PRESETS
+
+    print(f"{'Preset':<22} {'Block':<6} {'Lemma':<5} {'Mode':<10} rank  PMH w/cap")
+    print("-" * 78)
+    for pid in sorted(PRESETS):
+        p = PRESETS[pid]
+        w = p.pmh_config.weight
+        c = p.pmh_config.cap_ratio
+        print(
+            f"{pid:<22} {p.paper_type:<6} {p.lemma:<5} {p.application_mode:<10} "
+            f"{p.default_rank:<4}  {w:.2f}/{c:.2f}"
+        )
+    print("\nSklearn: compare_arms_sklearn(..., preset='t1_office31_sklearn')")
+    print("PyTorch: compare_arms(..., preset='t4_domain_d4', include_geometry=True)")
+    print("Docs: docs/CORRECT_USAGE.md, docs/walkthroughs/paper-presets-by-block.md")
     return 0
 
 
@@ -229,6 +249,12 @@ def main(argv: list[str] | None = None) -> int:
 
     p_list = sub.add_parser("list-methods", help="List nuisance types D1--D7")
     p_list.set_defaults(func=_cmd_list_methods)
+
+    p_presets = sub.add_parser(
+        "list-presets",
+        help="List paper block presets (T1 Office-31, T4 domain, T7A style, …)",
+    )
+    p_presets.set_defaults(func=_cmd_list_presets)
 
     p_est = sub.add_parser("estimate", help="Estimate Sigma_task from JSON")
     p_est.add_argument("--config", "-c", required=True, type=Path)

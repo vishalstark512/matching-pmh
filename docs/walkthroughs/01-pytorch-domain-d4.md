@@ -10,7 +10,9 @@
 | **Time** | ~2 min CPU (quick), ~10 min default |
 | **API** | `PMHTrainer` (recommended) or manual `collect_features` + `PMHLoss` |
 
-[Adaptation workbook](../ADAPTATION_WORKBOOK.md) · [Choose setup](../CHOOSE_YOUR_SETUP.md)
+[Adaptation workbook](../ADAPTATION_WORKBOOK.md) · [Choose setup](../CHOOSE_YOUR_SETUP.md) · [Paper presets](paper-presets-by-block.md)
+
+**Paper preset:** `t4_domain_d4` (D4, rank 64, weight 0.5 / cap 0.3, warmup 2). `pmh-train list-presets`.
 
 ---
 
@@ -95,16 +97,34 @@ Rule: `h = hook(x)` must be `[B, d]` with fixed `d` for all batches.
 ### Step 2 — Build `PMHTrainer`
 
 ```python
-from pmh import PMHTrainer, PMHConfig
+from pmh import PMHTrainer
+from pmh.benchmark.presets import get_preset
 
+p = get_preset("t4_domain_d4")
 trainer = PMHTrainer(
     YOUR_MODEL,
     hook=YOUR_HOOK,
     head=YOUR_CLASSIFIER,              # optional if head inside model
-    nuisance="domain_shift",           # D4
-    rank=32,                           # start 16–32
-    pmh_config=PMHConfig.balanced(),
+    nuisance=p.nuisance,               # domain_shift / D4
+    rank=p.default_rank,               # 64 in paper T4
+    pmh_config=p.pmh_config,
     artifact_path="artifacts/YOUR_EXPERIMENT/sigma.pt",
+)
+```
+
+Compare falsification arms after training:
+
+```python
+from pmh import compare_arms
+
+compare_arms(
+    YOUR_MODEL,
+    YOUR_TRAIN_LOADER,
+    source_batches=YOUR_SOURCE_LOADER,
+    target_batches=YOUR_TARGET_LOADER,
+    hook=YOUR_HOOK,
+    preset="t4_domain_d4",
+    include_geometry=True,
 )
 ```
 

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 
+import pytest
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset
@@ -66,6 +67,7 @@ def test_benchmark_protocol_runs_four_arms():
 
 def test_sklearn_benchmark_high_d():
     """Isotropic arm uses Vt (feature directions); must work when n < d."""
+    pytest.importorskip("sklearn")
     from pmh.benchmark.sklearn_protocol import run_sklearn_benchmark, synthetic_office31_features
 
     xs, y, xt, yt = synthetic_office31_features(n=80, d=256, seed=1)
@@ -74,6 +76,7 @@ def test_sklearn_benchmark_high_d():
 
 
 def test_sklearn_benchmark_synthetic():
+    pytest.importorskip("sklearn")
     import numpy as np
 
     rng = np.random.default_rng(0)

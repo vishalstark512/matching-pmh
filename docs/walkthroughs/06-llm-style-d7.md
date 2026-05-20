@@ -8,7 +8,9 @@
 | **Script** | `examples/08_hf_style_d7.py` |
 | **Sample data** | `examples/data/style_pairs_sample.jsonl` (tiny, OK in git) |
 
-[Walkthrough 7](07-hf-trainer-d7-dpo.md) · [gallery/nlp.md](../gallery/nlp.md)
+[Walkthrough 7](07-hf-trainer-d7-dpo.md) · [gallery/nlp.md](../gallery/nlp.md) · [Paper presets](paper-presets-by-block.md)
+
+**Paper preset:** `t7a_style_d7` — D7 rank 128, shrinkage 0.1, `PMHConfig(weight=0.7, cap_ratio=0.3, warmup_epochs=5)`.
 
 ---
 
@@ -67,8 +69,11 @@ Or `pmh-train estimate --config examples/configs/d7_style_estimate.json` (edit p
 ## Step 4 — Train with PMH
 
 ```python
-from pmh import PMHLoss, PMHConfig
-pmh = PMHLoss(artifact, PMHConfig(weight=0.2, cap_ratio=0.3, warmup_epochs=1))
+from pmh import PMHLoss
+from pmh.benchmark.presets import get_preset
+
+p = get_preset("t7a_style_d7")
+pmh = PMHLoss(artifact, p.pmh_config)
 # in step: total, _ = pmh.capped_total(task_loss, h)
 ```
 

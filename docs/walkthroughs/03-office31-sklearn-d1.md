@@ -10,7 +10,9 @@
 | **Time** | ~1 min synthetic; ~15 min with ResNet feature extraction on real images |
 | **API** | `PMHMatcher`, `compare_arms_sklearn`, optional `Pipeline` / `GridSearchCV` |
 
-[Adaptation workbook](../ADAPTATION_WORKBOOK.md) · [sklearn.md](../sklearn.md) · [BENCHMARKS.md](../BENCHMARKS.md)
+[Adaptation workbook](../ADAPTATION_WORKBOOK.md) · [sklearn.md](../sklearn.md) · [BENCHMARKS.md](../BENCHMARKS.md) · [Paper presets](paper-presets-by-block.md)
+
+**Paper preset:** `t1_office31_sklearn` (rank **32**, pool=200, test=250, T1 D1 protocol). List all: `pmh-train list-presets`.
 
 ---
 
@@ -91,8 +93,11 @@ Then load `.npy` in your training script.
 
 ## Step 2 — Estimate + compare arms
 
+**Recommended (T1 preset):** rank 32 and paper pool/test split — do not use `rank=16` on real Office-31 (stale broken-protocol tables).
+
 ```python
 from pmh import PMHMatcher, compare_arms_sklearn, suggest_nuisance
+from pmh.benchmark.presets import get_preset
 
 print(suggest_nuisance(
     has_source_labels=True,
@@ -100,14 +105,14 @@ print(suggest_nuisance(
     has_target_domain=True,
 ))  # often suggests subspace / D1
 
-matcher = PMHMatcher(nuisance="subspace", rank=16, seed=0)
+preset = get_preset("t1_office31_sklearn")
+matcher = PMHMatcher(nuisance="subspace", rank=preset.default_rank, seed=0)
 matcher.fit(x_source, y_source, x_target, y_target)
 print(matcher.artifact_.preflight, matcher.artifact_.eigengap)
 
 result = compare_arms_sklearn(
     x_source, y_source, x_target, y_target,
-    rank=16,
-    include_coral=True,
+    preset="t1_office31_sklearn",
     report_dir="results/YOUR_RUN",   # gitignored
 )
 ```
@@ -124,7 +129,7 @@ from sklearn.linear_model import LogisticRegression
 from pmh import PMHMatcher, default_pmh_param_grid, grid_search_pmh_pipeline
 
 pipe = Pipeline([
-    ("pmh", PMHMatcher(nuisance="subspace", rank=16, X_target=x_target)),
+    ("pmh", PMHMatcher(nuisance="subspace", rank=32, X_target=x_target)),
     ("clf", LogisticRegression(max_iter=500)),
 ])
 pipe.fit(x_source, y_source)
@@ -168,7 +173,7 @@ Bundled reference (metrics only): [office31_amazon_to_dslr.md](../benchmarks/off
 |-------------------|--------------|
 | ResNet-18 512-d | Your CLIP / ViT / custom `d` |
 | amazon → dslr | site A → site B |
-| `rank=16` | Tune 8–32 via `grid_search_pmh_pipeline` |
+| `preset=t1_office31_sklearn`, rank 32 | Tune 8–32 via `grid_search_pmh_pipeline` |
 | LogisticRegression | Your sklearn / XGBoost on `matcher.transform(x)` |
 
 ---
@@ -176,7 +181,8 @@ Bundled reference (metrics only): [office31_amazon_to_dslr.md](../benchmarks/off
 ## Verify success
 
 - [ ] `compare_arms_sklearn` completes; `benchmark.md` written.
-- [ ] **matched** target accuracy ≥ **wrong_w** (ideally > **b0**).
+- [ ] **wrong_w** / **isotropic** do not beat **matched** on both accuracy and geometry (Lemma C).
+- [ ] On Office-31 linear head, **matched** may be near **b0**; CORAL can lead — see [BENCHMARKS.md](../BENCHMARKS.md).
 - [ ] **TDI_cls** lower for matched than b0 (geometry; see [BENCHMARKS.md](../BENCHMARKS.md)).
 - [ ] Honest comparison to **coral** if claiming SOTA.
 

@@ -17,6 +17,15 @@ def test_list_methods():
     assert main(["list-methods"]) == 0
 
 
+def test_list_presets(capsys):
+    from pmh.cli.main import main
+
+    assert main(["list-presets"]) == 0
+    out = capsys.readouterr().out
+    assert "t1_office31_sklearn" in out
+    assert "t4_domain_d4" in out
+
+
 def test_estimate_d2(tmp_path: Path):
     from pmh.cli.main import main
 

@@ -62,13 +62,22 @@ def benchmark_to_markdown(
 
     lines.extend(["", "## How to read", ""])
     lines.append(
-        "- **Matched** should beat **B0** on deployment-relevant `val_metric` when the nuisance story is correct."
+        "- **Protocol reference**, not a guaranteed PMH win: Office-31 linear heads often show CORAL ≥ matched (paper T1)."
     )
     lines.append(
-        "- **TDI_cls** (class-layout) and **D_N/D_S** track geometry separately from accuracy (paper §6)."
+        "- **Lemma C (falsification):** wrong-W (⊥ matched W) and sklearn **isotropic** (D4 unmatched) "
+        "should not beat **matched** on *both* target accuracy and geometry."
     )
-    lines.append("- **Wrong-W** and **isotropic** should not beat **matched** on both accuracy and geometry (Lemma C).")
-    lines.append("- If only matched wins vs B0 but wrong-W also wins, the gain may be generic regularization.")
+    lines.append(
+        "- **TDI_cls** (lower better) and **D_N/D_S** track layout / drift separately from accuracy (§6)."
+    )
+    lines.append(
+        "- Suspect gain: matched > B0 but wrong-W also wins → likely generic regularization, not matched geometry."
+    )
+    lines.append(
+        "- Tables with B0 ≈ 0.7 and rank 16 used a **broken protocol** (pre-2026-05-19); "
+        "T1 preset uses ~0.22 scale — see [CORRECT_USAGE.md](https://github.com/vishalstark512/matching-pmh/blob/main/docs/CORRECT_USAGE.md)."
+    )
 
     notes = data.get("notes") or []
     if notes:

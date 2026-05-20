@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 import torch
 
 from pmh.benchmark.presets import get_preset, list_presets
@@ -49,6 +50,7 @@ def test_gradient_subspace():
 
 
 def test_compare_sklearn_with_preset():
+    pytest.importorskip("sklearn")
     from pmh.benchmark.sklearn_protocol import synthetic_office31_features
 
     xs, y, xt, yt = synthetic_office31_features(n=100, d=24, seed=0)

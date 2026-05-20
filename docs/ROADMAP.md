@@ -1,6 +1,6 @@
 # Roadmap
 
-**Current release: v1.4.0** — trajectory TDI, API docs, fixed Office-31 sklearn protocol.
+**Current release: v1.4.1** — paper-faithful D1, block presets, CORRECT_USAGE guide.
 
 See [PAPER_ALIGNMENT.md](PAPER_ALIGNMENT.md) for task-by-task fidelity vs `Paper2/T1`–`T7`.
 

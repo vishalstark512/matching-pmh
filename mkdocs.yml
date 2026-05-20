@@ -49,6 +49,7 @@ nav:
       - NLP: gallery/nlp.md
   - Walkthroughs:
       - Overview: walkthroughs/index.md
+      - Paper presets (T1–T7): walkthroughs/paper-presets-by-block.md
       - "1 PyTorch D4": walkthroughs/01-pytorch-domain-d4.md
       - "2 ResNet D4": walkthroughs/02-resnet-vision-d4.md
       - "3 Office-31": walkthroughs/03-office31-sklearn-d1.md
