@@ -1,5 +1,13 @@
 # Walkthrough 2: ResNet / torchvision + D4 — full guide
 
+
+!!! tip "Adopt PMH first"
+    **Start:** [ADOPT.md](../../ADOPT.md) → [Golden path G1–G4](../GOLDEN_PATHS.md#g1) · **Route:** `pmh-train route --task vision_classification` · **Step 5:** evaluate_robust_fit
+    This walkthrough is **evidence / depth** — not your first page.
+
+> **API note:** `nuisance=` is the **deployment shift type** (D1–D7 API key), not “bad data.” [What is deployment shift?](../WHAT_IS_DEPLOYMENT_SHIFT.md)
+
+
 **At a glance**
 
 | | |
@@ -7,7 +15,7 @@
 | **Estimator** | D4 on ResNet penultimate features (512-d for ResNet-18) |
 | **Stack** | torchvision + PyTorch |
 | **Script** | `examples/12_resnet_hook_d4.py` |
-| **Related** | [hooks.md](../hooks.md) · [Walkthrough 1](01-pytorch-domain-d4.md) |
+| **Related** | [hooks.md](../INTEGRATE.md) · [Walkthrough 1](01-pytorch-domain-d4.md) |
 
 ---
 
@@ -27,7 +35,7 @@ pip install "matching-pmh[vision]"
 
 ---
 
-## Your nuisance sentence
+## Your deployment shift sentence
 
 *“Target-site photos are darker / different camera; object class unchanged.”* → **D4**.
 
@@ -62,7 +70,7 @@ tgt_loader = DataLoader(ImageFolder("YOUR_PATH/target", transform=YOUR_TRANSFORM
 train_loader = DataLoader(ImageFolder("YOUR_PATH/train", ...), ...)
 ```
 
-**Do not commit** image folders — [DATA_POLICY.md](../DATA_POLICY.md).
+**Do not commit** image folders — [DATA_POLICY.md](../DOCS_GUIDE.md).
 
 ---
 

@@ -17,7 +17,10 @@ pip install "matching-pmh[hf]"        # for hf_minimal.py
 | `hf_trainer_g3b_minimal.py` | **G3b** — `transformers.Trainer` + `get_pmh_trainer()` |
 
 ```bash
-pmh-train wizard
+pmh-train doctor
+pmh-train evaluate --demo          # G2 Step 5 (sklearn)
+python pytorch_minimal.py          # G1 + Step 5
 ```
 
-Docs: https://github.com/vishalstark512/matching-pmh/blob/main/docs/GOLDEN_PATHS.md
+Parameters: [PMH_PARAMETERS.md](https://github.com/vishalstark512/matching-pmh/blob/main/docs/PMH_PARAMETERS.md)  
+Docs: [GOLDEN_PATHS](https://github.com/vishalstark512/matching-pmh/blob/main/docs/GOLDEN_PATHS.md) · [60s script](https://github.com/vishalstark512/matching-pmh/blob/main/docs/PIPELINE_60S.md)

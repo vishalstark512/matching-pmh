@@ -2,57 +2,33 @@
 
 **Train on site A. Deploy on site B. Same labels.**
 
+Estimate deployment geometry once → train with capped PMH → compare **matched / wrong-W / isotropic** on **deploy holdout**.
+
 ---
 
-## Documentation (one path)
+## Read this (4 pages)
 
-| Step | Page |
-|------|------|
-| **1** | [**Find your application**](APPLICATIONS.md) — nuisance in plain English + walkthrough |
-| **2** | [**Golden paths**](GOLDEN_PATHS.md) — copy **one** of G1 / G1b / G2 / G3 / G3b / G4 |
-| **3** | [First hour](FIRST_HOUR.md) — install + demo |
-| **4** | [Your project](GETTING_STARTED.md) — afternoon checklist |
+| # | Page |
+|---|------|
+| 0 | [**What is deployment shift?**](WHAT_IS_DEPLOYMENT_SHIFT.md) — plain English (read if “nuisance” confuses you) |
+| 1 | [**Five-step recipe**](FIVE_STEP_RECIPE.md) — the whole product |
+| 2 | [**Applications**](APPLICATIONS.md) + `pmh-train route --task …` |
+| 3 | [**Golden paths**](GOLDEN_PATHS.md) — copy **one** of G1–G4 |
+| 4 | [**Integrate**](INTEGRATE.md) — install, CLI, your stack |
 
-**Map of the whole site:** [MAP.md](MAP.md) · **Gates only:** [START_HERE.md](START_HERE.md)
+Then: [Will PMH help?](WHEN_PMH_HELPS.md) · [Troubleshooting](TROUBLESHOOTING.md)
+
+**Paper / benchmarks (optional):** [Evidence walkthroughs](walkthroughs/index.md)
 
 ```bash
 pip install matching-pmh
-pmh-train route --search pose
+pmh-train recipe
 pmh-train route --task pose_or_keypoints
-pmh-train doctor
 ```
 
 ```python
-from pmh import explain_task
-print(explain_task("pose_or_keypoints"))
-```
-
----
-
-## Sidebar
-
-| Tab | Use |
-|-----|-----|
-| **Adopt** | Onboarding only — start here |
-| **Integrate** | CLI, hooks, data, deployment, APIs |
-| **Gallery** | Short templates by domain |
-| **Research** | Paper, benchmarks, 19 walkthroughs — **after** Adopt works |
-| **Reference** | D1–D7 lemmas, theory, training primitives |
-| **Contributors** | How docs are organized |
-
----
-
-## Default code
-
-```python
-from pmh import check_applicability, robust_fit
-
+from pmh import robust_fit, check_applicability
 print(check_applicability(stack="pytorch", n_source=500, n_target=400).summary())
-out = robust_fit(
-    model, train_loader,
-    source_batches=src_loader, target_batches=tgt_loader,
-    hook="auto", epochs=20,
-)
 ```
 
 [PyPI](https://pypi.org/project/matching-pmh/) · [GitHub](https://github.com/vishalstark512/matching-pmh)

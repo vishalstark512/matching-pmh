@@ -4,7 +4,7 @@ Use this when identification is **yours** (PGD deltas, gradient SVD, external \(
 
 **artifact** → **PMHTrainer** / **PMHLoss** → **falsification controls**
 
-See also [NUISANCE_SUBTYPES.md](NUISANCE_SUBTYPES.md) (pick Dk) · [FIDELITY_BY_SUBTYPE.md](FIDELITY_BY_SUBTYPE.md) (default vs refinement).
+See also [NUISANCE_SUBTYPES.md](NUISANCE_SUBTYPES.md) (pick Dk) · [PAPER_ALIGNMENT.md](PAPER_ALIGNMENT.md) (refinements).
 
 ---
 

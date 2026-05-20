@@ -76,7 +76,7 @@ class PMHTrainer:
         self.nuisance = resolve_nuisance_arg(nuisance, **auto_kw)
         self.rank = rank
         self.shrinkage = shrinkage
-        self.pmh_config = pmh_config or PMHConfig()
+        self.pmh_config = pmh_config or PMHConfig.balanced()
         self.artifact_path = Path(artifact_path) if artifact_path else None
         self.nuisance_indices = nuisance_indices
         self.noise_level = noise_level

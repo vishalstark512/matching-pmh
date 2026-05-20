@@ -44,4 +44,4 @@ x_src_c, _ = coral_align(x_src, x_tgt)
 4. Run `compare_arms_sklearn` or `compare_arms` with **CORAL as extra baseline** if desired.  
 5. Report **matched** vs **wrong_w** vs **isotropic**, not only vs B0.
 
-→ [Integrate your project](GETTING_STARTED.md)
+→ [Integrate your project](INTEGRATE.md)

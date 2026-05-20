@@ -30,11 +30,20 @@ def _cmd_list_methods(_: argparse.Namespace) -> int:
         req = ", ".join(spec.required_data) or "(config only)"
         print(f"{spec.method:<6} {spec.name:<28} {spec.typical_tasks:<20} {req}")
         print(f"         {format_subtype_line(spec.method)}")
-    print("\nNew here: pmh-train route  |  pmh-train wizard")
+    print("\nNew here: pmh-train recipe  |  pmh-train shifts  |  pmh-train evaluate --demo")
     print("Paper block presets: pmh-train list-presets")
     print("Use: pmh-train estimate --config job.json")
     print("       pmh-train benchmark --config examples/configs/benchmark_sklearn.json")
     print("Samples: examples/configs/")
+    return 0
+
+
+def _cmd_shifts(_: argparse.Namespace) -> int:
+    from pmh import format_shift_types
+
+    print(format_shift_types())
+    print("Detail: docs/WHAT_IS_DEPLOYMENT_SHIFT.md")
+    print("Pick task: pmh-train route --list")
     return 0
 
 
@@ -49,8 +58,12 @@ def _cmd_route(args: argparse.Namespace) -> int:
         return 0
     if args.task is None:
         print(format_task_menu(short=True))
+        from pmh.adoption import format_recipe_banner
+
+        print()
+        print(format_recipe_banner())
         print("\nExample: pmh-train route --task pose_or_keypoints")
-        print("Docs:    https://github.com/vishalstark512/matching-pmh/blob/main/docs/START_HERE.md")
+        print("Docs:    docs/FIVE_STEP_RECIPE.md")
         return 0
     try:
         print(explain_task(args.task))
@@ -252,7 +265,12 @@ def _cmd_estimate(args: argparse.Namespace) -> int:
 def _cmd_doctor(args: argparse.Namespace) -> int:
     from pmh.doctor import run_doctor
 
-    rep = run_doctor(stack=args.stack)
+    artifact = str(args.artifact) if getattr(args, "artifact", None) else None
+    rep = run_doctor(
+        stack=args.stack,
+        artifact_path=artifact,
+        rank=getattr(args, "rank", None),
+    )
     print(rep.summary())
     return 0 if rep.ok else 1
 
@@ -425,14 +443,82 @@ def _cmd_run(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_recipe(args: argparse.Namespace) -> int:
+    from pmh.recipe import format_five_step_guide, plan_recipe
+
+    print(
+        format_five_step_guide(
+            task_id=getattr(args, "task", None),
+            stack=getattr(args, "stack", None),
+        )
+    )
+    if getattr(args, "identify", False):
+        flags = {
+            "has_source_labels": args.source_labels,
+            "has_target_labels": args.target_labels,
+            "has_target_domain": args.target_domain,
+            "has_augmentation_modes": args.augmentation_modes,
+            "has_style_pairs": args.style_pairs,
+            "has_temporal_sequences": args.temporal,
+            "has_nuisance_indices": args.compositional,
+            "noise_level_known": args.isotropic_noise,
+        }
+        shift = plan_recipe(
+            stack=args.stack or "pytorch",
+            identify_flags=flags,
+        ).shift
+        print()
+        print("Identification (Step 1):")
+        print(f"  {shift.assumption} / {shift.method} → nuisance={shift.nuisance!r}")
+        print(f"  {shift.title}: {shift.reason}")
+        print(f"  application_mode={shift.application_mode!r}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
+    from pmh.adoption import RECIPE_ONE_LINER
+
     parser = argparse.ArgumentParser(
         prog="pmh-train",
-        description="Domain-robust training CLI: wizard, estimate jobs, benchmarks.",
+        description=f"Matched PMH — {RECIPE_ONE_LINER}",
     )
     sub = parser.add_subparsers(dest="command", required=True)
 
-    p_list = sub.add_parser("list-methods", help="List nuisance types D1--D7")
+    p_recipe = sub.add_parser(
+        "recipe",
+        help="Print the 5-step matching-principle recipe (paper §7)",
+    )
+    p_recipe.add_argument("--task", default=None, help="Append task profile from route")
+    p_recipe.add_argument(
+        "--stack",
+        choices=("pytorch", "sklearn", "hf"),
+        default=None,
+        help="Show suggested nuisance + mode for stack",
+    )
+    p_recipe.add_argument(
+        "--identify",
+        action="store_true",
+        help="Run Step 1 from flags below",
+    )
+    p_recipe.add_argument("--source-labels", action="store_true", default=True)
+    p_recipe.add_argument("--no-source-labels", action="store_false", dest="source_labels")
+    p_recipe.add_argument("--target-labels", action="store_true", default=False)
+    p_recipe.add_argument("--target-domain", action="store_true", default=True)
+    p_recipe.add_argument("--no-target-domain", action="store_false", dest="target_domain")
+    p_recipe.add_argument("--augmentation-modes", action="store_true", default=False)
+    p_recipe.add_argument("--style-pairs", action="store_true", default=False)
+    p_recipe.add_argument("--temporal", action="store_true", default=False)
+    p_recipe.add_argument("--compositional", action="store_true", default=False)
+    p_recipe.add_argument("--isotropic-noise", action="store_true", default=False)
+    p_recipe.set_defaults(func=_cmd_recipe)
+
+    p_shifts = sub.add_parser(
+        "shifts",
+        help="Plain English: what deployment shift types exist (nuisance= API keys)",
+    )
+    p_shifts.set_defaults(func=_cmd_shifts)
+
+    p_list = sub.add_parser("list-methods", help="List estimator IDs D1--D7 (technical)")
     p_list.set_defaults(func=_cmd_list_methods)
 
     p_presets = sub.add_parser(
@@ -506,7 +592,18 @@ def main(argv: list[str] | None = None) -> int:
         choices=("pytorch", "sklearn", "hf"),
         default="pytorch",
     )
+    p_doc.add_argument(
+        "--artifact",
+        type=Path,
+        default=None,
+        help="Optional saved SigmaTaskEstimate — report preflight before Step 5",
+    )
+    p_doc.add_argument("--rank", type=int, default=None, help="Rank for preflight when using --artifact")
     p_doc.set_defaults(func=_cmd_doctor)
+
+    from pmh.cli.evaluate import add_evaluate_parser
+
+    add_evaluate_parser(sub)
 
     p_pf = sub.add_parser("preflight", help="Eigengap for saved artifact")
     p_pf.add_argument("artifact", type=Path)

@@ -59,7 +59,7 @@ SHIFT_TYPES: tuple[ShiftTypePlain, ...] = (
     ),
     ShiftTypePlain(
         id="coordinate_blocks",
-        you_notice="Only **part** of the vector is nuisance (joint indices, token blocks, molecular coords).",
+        you_notice="Only **part** of the feature vector can change at deploy (joint indices, token blocks, molecular coords).",
         pmh_targets="Shift along known coordinate indices in h.",
         subtype="D5",
         nuisance_key="compositional",
@@ -75,7 +75,37 @@ SHIFT_TYPES: tuple[ShiftTypePlain, ...] = (
         need_data="[N, T, d] sequences per entity.",
         not_for="Independent snapshots with no time axis.",
     ),
+    ShiftTypePlain(
+        id="isotropic_noise",
+        you_notice="Deploy sensitivity has **no preferred direction** (e.g. isotropic sensor / representation noise).",
+        pmh_targets="Uniform noise-level geometry in representation space (specialist cases).",
+        subtype="D2",
+        nuisance_key="isotropic",
+        need_data="Known or assumed noise level; feature dim.",
+        not_for="Clear site/camera shift (use domain_shift D4 first).",
+    ),
 )
+
+
+def explain_nuisance_key(nuisance: str) -> str:
+    """Plain English for a ``nuisance=`` API value (no paper vocabulary required)."""
+    from pmh.nuisance import resolve_method
+
+    key = nuisance.strip().lower().replace("-", "_")
+    for s in SHIFT_TYPES:
+        if s.nuisance_key == key:
+            return (
+                f"nuisance={s.nuisance_key!r} ({s.subtype})\n"
+                f"  You notice: {s.you_notice}\n"
+                f"  PMH targets: {s.pmh_targets}\n"
+                f"  You need: {s.need_data}\n"
+                f"  Not for: {s.not_for}"
+            )
+    method = resolve_method(nuisance)
+    return (
+        f"nuisance={nuisance!r} maps to estimator {method}.\n"
+        f"  See docs/WHAT_IS_DEPLOYMENT_SHIFT.md or pmh-train shifts"
+    )
 
 
 def format_shift_types() -> str:
@@ -134,6 +164,7 @@ __all__ = [
     "format_application_finder",
     "format_search_results",
     "format_shift_types",
+    "explain_nuisance_key",
     "search_applications",
     "get_task",
     "list_tasks",

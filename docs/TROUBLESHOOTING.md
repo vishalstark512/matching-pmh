@@ -2,7 +2,7 @@
 
 Common issues when adapting PMH to **your** pipeline. Symptom → cause → fix.
 
-**New to PMH?** See the [plain-language glossary](#plain-language-glossary) first, then [What is PMH?](WHAT_IS_PMH.md).
+**New to PMH?** Read [What is deployment shift?](WHAT_IS_DEPLOYMENT_SHIFT.md), then the [glossary](#plain-language-glossary) below.
 
 ---
 
@@ -13,9 +13,11 @@ Common issues when adapting PMH to **your** pipeline. Symptom → cause → fix.
 | `preflight=pass` | Geometry estimate looks identifiable | Proceed; still run controls before big claims |
 | `preflight=marginal` | Weak signal — shift may be too small or too little data | More source/target batches in estimate; try lower `rank`; see [NUISANCE_SUBTYPES](NUISANCE_SUBTYPES.md) |
 | `preflight=fail` | Estimate not usable as-is | Do not trust matched PMH yet; fix data/hook/rank |
-| `eigengap` | How separated “nuisance” directions are from the rest | Low → treat like marginal; collect more data |
-| `nuisance="domain_shift"` | Default: two environments, same labels (Hospital A vs B) | Need `source_batches` + `target_batches` |
-| `nuisance="subspace"` | Labeled data on **both** sites | `fit(x_src, y_src, x_tgt, y_tgt)` or labeled loaders |
+| **Deployment shift** | How deploy can change inputs **without** changing the label | [WHAT_IS_DEPLOYMENT_SHIFT](WHAT_IS_DEPLOYMENT_SHIFT.md) |
+| `nuisance=` (API) | **Shift type** string in code — not “bad data” | `pmh-train shifts` · `explain_nuisance_key("domain_shift")` |
+| `eigengap` | How separated shift directions are from the rest | Low → treat like marginal; collect more data |
+| `nuisance="domain_shift"` | Site A vs B **look**, same labels (default) | `source_batches` + `target_batches` |
+| `nuisance="subspace"` | **Labels on both** sites, class geometry moves | `fit(x_src, y_src, x_tgt, y_tgt)` or labeled loaders |
 | Phase A / estimate | One-time step: learn what differs between deploy and train | `trainer.fit(...)` runs this automatically |
 | Phase B / PMH loss | Extra training penalty on representation `h` | Same `hook` layer as Phase A |
 | `hook` | Layer where features `h` live (`[batch, d]`) | Pick one backbone layer; keep it fixed |
@@ -26,8 +28,8 @@ Common issues when adapting PMH to **your** pipeline. Symptom → cause → fix.
 | `wrong_w` arm | Random directions ⊥ matched W (sanity check) | Should not beat matched on **both** accuracy and geometry |
 | `isotropic` (sklearn benchmark) | Unmatched domain directions (control), not “D2 noise” | See [CORRECT_USAGE](CORRECT_USAGE.md) |
 | `trace_iso` (training) | Training-time control arm name | Not the same as sklearn `isotropic` |
-| D1–D7 | Research estimator IDs | Ignore until [estimators](estimators/index.md); start with `domain_shift` |
-| `t1_office31_sklearn` preset | Paper benchmark protocol for Office-31 | Researchers only; use [FIRST_HOUR](FIRST_HOUR.md) first |
+| D1–D7 | Evidence estimator IDs | Ignore until [estimators](estimators/index.md); start with `domain_shift` |
+| `t1_office31_sklearn` preset | Paper benchmark protocol for Office-31 | Researchers only; use [INTEGRATE](INTEGRATE.md) first |
 | PMH loss = 0 | Warmup not finished or weight is zero | `PMHConfig(warmup_epochs=0)` to debug; check epoch callback |
 | Matched worse than baseline | Can happen — tradeoff | Report both; tune `weight` / `cap_ratio`; not always a bug |
 

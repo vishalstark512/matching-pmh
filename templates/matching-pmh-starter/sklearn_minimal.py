@@ -1,29 +1,24 @@
 """G2 golden path — replace arrays with your embeddings."""
 
-import numpy as np
+from pmh import check_applicability, evaluate_baseline_vs_pmh, load_g2_demo_arrays
 
-from pmh import check_applicability, evaluate_baseline_vs_pmh
+# Office-31-style demo (no download). Swap for your x_source, y_source, x_target, y_target.
+x_source, y_source, x_target, y_target = load_g2_demo_arrays(n=500, seed=0)
 
+print(check_applicability(
+    stack="sklearn",
+    n_source=len(x_source),
+    n_target=len(x_target),
+).summary())
 
-def main() -> None:
-    rng = np.random.default_rng(0)
-    n, d = 300, 64
-    x_src = rng.standard_normal((n, d)).astype(np.float32)
-    y = rng.integers(0, 4, n)
-    q, _ = np.linalg.qr(rng.standard_normal((d, 6)))
-    x_tgt = x_src + (x_src @ q) @ q.T
-
-    print(check_applicability(stack="sklearn", n_source=n, n_target=n, feature_dim=d).summary())
-
-    report = evaluate_baseline_vs_pmh(
-        x_source=x_src,
-        y_source=y,
-        x_target=x_tgt,
-        y_target=y,
-        compare_to=("coral",),
-    )
-    print(report.summary())
-
-
-if __name__ == "__main__":
-    main()
+# Tunable: rank=16, nuisance="domain_shift" (or subspace), compare_to=("coral",)
+report = evaluate_baseline_vs_pmh(
+    x_source=x_source,
+    y_source=y_source,
+    x_target=x_target,
+    y_target=y_target,
+    rank=16,
+    nuisance="domain_shift",
+    compare_to=("coral",),
+)
+print(report.summary())

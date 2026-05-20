@@ -1,5 +1,13 @@
 # Walkthrough 4: Multi-layer CNN features — full guide
 
+
+!!! tip "Adopt PMH first"
+    **Start:** [ADOPT.md](../../ADOPT.md) → [Golden path G1–G4](../GOLDEN_PATHS.md#g1) · **Route:** `pmh-train route --task vision_classification` · **Step 5:** compare_arms — paper multilayer
+    This walkthrough is **evidence / depth** — not your first page.
+
+> **API note:** `nuisance=` is the **deployment shift type** (D1–D7 API key), not “bad data.” [What is deployment shift?](../WHAT_IS_DEPLOYMENT_SHIFT.md)
+
+
 **At a glance**
 
 | | |
@@ -14,11 +22,11 @@
 
 ## Who this is for
 
-CNNs where nuisance lives in **early layers** (texture) and task signal in **late layers** — you want PMH on multiple feature maps, not only final `h`.
+CNNs where deployment shift lives in **early layers** (texture) and task signal in **late layers** — you want PMH on multiple feature maps, not only final `h`.
 
 ---
 
-## Your nuisance sentence
+## Your deployment shift sentence
 
 *“Deployment changes low-level texture; class semantics in late features unchanged.”*
 

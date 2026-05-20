@@ -563,8 +563,12 @@ def get_task(task_id: str) -> TaskRoute:
 
 def explain_task(task_id: str) -> str:
     """Human-readable plan for one task (CLI and notebooks)."""
+    from pmh.adoption import RECIPE_ONE_LINER
+
     r = get_task(task_id)
     lines = [
+        RECIPE_ONE_LINER,
+        "",
         f"Application: {r.title}",
         f"Fit: {r.verdict.upper()} — {r.verdict_summary}",
         "",

@@ -12,6 +12,7 @@ from pmh import (
     check_applicability,
     evaluate_baseline_vs_pmh,
     evaluate_robust_fit,
+    load_g2_demo_arrays,
     robust_fit,
     suggest_hook,
 )
@@ -73,11 +74,27 @@ def test_evaluate_robust_fit():
     src = DataLoader(TensorDataset(torch.randn(24, 8), torch.randint(0, 2, (24,))), batch_size=8)
     tgt = DataLoader(TensorDataset(torch.randn(24, 8) + 0.5, torch.randint(0, 2, (24,))), batch_size=8)
     rep = evaluate_robust_fit(
-        m, tr, val, source_batches=src, target_batches=tgt, hook=m.enc, head=m.head, epochs=1
+        m,
+        tr,
+        val,
+        source_batches=src,
+        target_batches=tgt,
+        hook=m.enc,
+        head=m.head,
+        epochs=1,
+        include_falsification=True,
     )
     assert 0 <= rep.baseline_metric <= 1
     assert 0 <= rep.pmh_metric <= 1
+    assert rep.falsification_arms
+    assert "matched" in rep.falsification_arms
     assert rep.summary()
+
+
+def test_load_g2_demo_arrays():
+    x, y, xt, yt = load_g2_demo_arrays(n=80, seed=1)
+    assert x.shape[0] == y.shape[0] == 80
+    assert xt.shape == x.shape
 
 
 def test_evaluate_baseline_vs_pmh():
@@ -94,4 +111,6 @@ def test_evaluate_baseline_vs_pmh():
     )
     assert 0 <= rep.baseline_metric <= 1
     assert 0 <= rep.pmh_metric <= 1
+    assert rep.falsification_arms
+    assert {"matched", "wrong_w", "isotropic"} <= set(rep.falsification_arms)
     assert rep.summary()

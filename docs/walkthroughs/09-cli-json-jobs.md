@@ -1,5 +1,13 @@
 # Walkthrough 9: CLI JSON jobs — full guide
 
+
+!!! tip "Adopt PMH first"
+    **Start:** [ADOPT.md](../../ADOPT.md) → [Golden paths](../GOLDEN_PATHS.md) · **Step 5:** compare_arms_sklearn on saved benchmark
+    This walkthrough is **evidence / depth** — not your first page.
+
+> **API note:** `nuisance=` is the **deployment shift type** (D1–D7 API key), not “bad data.” [What is deployment shift?](../WHAT_IS_DEPLOYMENT_SHIFT.md)
+
+
 **At a glance**
 
 | | |
@@ -14,6 +22,12 @@
 ## Who this is for
 
 You want **reproducible estimate/train jobs** without importing Python in every shell script — clusters, Makefiles, CI.
+
+---
+
+## Your deployment shift sentence
+
+*Batch jobs estimate Sigma_task for site A vs B; same labels, reproducible JSON configs.* -> any Dk your config names.
 
 ---
 
@@ -42,7 +56,7 @@ python examples/05_yaml_config.py
 ## Verify
 
 - [ ] JSON validates; artifact written
-- [ ] Paths not committed ([DATA_POLICY.md](../DATA_POLICY.md))
+- [ ] Paths not committed ([DATA_POLICY.md](../DOCS_GUIDE.md))
 
 ---
 

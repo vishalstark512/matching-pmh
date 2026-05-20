@@ -2,44 +2,47 @@
 
 **Train on site A. Deploy on site B. Same labels.**
 
-Add a domain-robustness regularizer to your PyTorch model or sklearn pipeline — without replacing your architecture or reading a research paper first.
+Estimate deployment geometry once → train with capped PMH → compare **matched / wrong-W / isotropic** on a **deploy holdout** before you trust gains.
 
 [![PyPI](https://img.shields.io/pypi/v/matching-pmh.svg)](https://pypi.org/project/matching-pmh/)
 [![Python](https://img.shields.io/pypi/pyversions/matching-pmh.svg)](https://pypi.org/project/matching-pmh/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/vishalstark512/matching-pmh/blob/main/LICENSE)
 [![CI](https://github.com/vishalstark512/matching-pmh/actions/workflows/ci.yml/badge.svg)](https://github.com/vishalstark512/matching-pmh/actions/workflows/ci.yml)
 
-[PyPI](https://pypi.org/project/matching-pmh/) · [GitHub](https://github.com/vishalstark512/matching-pmh) · **[Find your application](docs/APPLICATIONS.md)** · [Docs map](docs/MAP.md) · [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/vishalstark512/matching-pmh/blob/main/notebooks/domain_shift_first_run.ipynb)
+[PyPI](https://pypi.org/project/matching-pmh/) · [GitHub](https://github.com/vishalstark512/matching-pmh) · **[Docs](https://vishalstark512.github.io/matching-pmh/)** · [Five-step recipe](docs/FIVE_STEP_RECIPE.md) · [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/vishalstark512/matching-pmh/blob/main/notebooks/domain_shift_first_run.ipynb)
 
 ---
 
-## New here?
+## Adopt in 60 seconds
 
-**[Find your application](docs/APPLICATIONS.md)** (nuisance + walkthrough) → **[Golden paths](docs/GOLDEN_PATHS.md)** (code) → `pmh-train route --task YOUR_TASK`
+**→ [ADOPT.md](ADOPT.md)** (same checklist, zero noise)
 
-[Doc map — what to read and skip](docs/MAP.md)
-
-## Developer API
-
-```python
-from pmh import check_applicability, explain_task, robust_fit
-
-print(explain_task("pose_or_keypoints"))
-print(check_applicability(stack="pytorch", n_source=500, n_target=400).summary())
-
-# PyTorch: one call
-out = robust_fit(model, train_loader, source_batches=src, target_batches=tgt, hook="auto", epochs=20)
-
-# sklearn: baseline vs PMH on target holdout
-report = evaluate_baseline_vs_pmh(x_source, y_source, x_target, y_target, compare_to=("coral",))
-print(report.summary())
-
-# PyTorch: same report shape on val_loader
-report = evaluate_robust_fit(model, train_loader, val_loader, source_batches=src, target_batches=tgt, hook="auto", epochs=10)
-print(report.summary())
+```bash
+pip install matching-pmh torch
+pmh-train doctor
+pmh-train evaluate --demo
 ```
 
-**Route your task:** `pmh-train route --search pose` · `pmh-train route --task pose_or_keypoints` · [GOLDEN_PATHS.md](docs/GOLDEN_PATHS.md) · `pmh-train wizard`
+| Step | Do this |
+|------|---------|
+| 1 | `python examples/00_first_run_domain_shift.py` or Colab |
+| 2 | `pmh-train route --task YOUR_TASK` |
+| 3 | Copy **one** [golden path](docs/GOLDEN_PATHS.md) (G1–G4) |
+| 4 | Step 5 on deploy holdout (`evaluate_*` or `pmh-train evaluate`) |
+| 5 | [Parameters cheat sheet](docs/PARAMETERS_CHEATSHEET.md) if tuning |
+
+[`nuisance=` = deployment shift type](docs/WHAT_IS_DEPLOYMENT_SHIFT.md) · Evidence walkthroughs: [daily AI map](docs/walkthroughs/DAILY_AI_USE.md)
+
+---
+
+## Install
+
+```bash
+pip install matching-pmh
+pip install "matching-pmh[sklearn]"   # frozen features / G2
+pip install "matching-pmh[hf]"        # LLM corpora or style pairs
+pip install "matching-pmh[lightning]" # G1b
+```
 
 ---
 
@@ -51,140 +54,104 @@ print(report.summary())
 | Vision classification / fine-tune | `pmh-train route --task vision_classification` |
 | Frozen `.npy` / sklearn | `pmh-train route --task frozen_embeddings_sklearn` |
 | LLM style/format drift | `pmh-train route --task llm_style_or_format` |
-| Not sure | [START_HERE.md](docs/START_HERE.md) (3 gates) |
+| Not sure | `pmh-train shifts` then [five-step recipe](docs/FIVE_STEP_RECIPE.md) |
 
 **Not for:** new test-time classes, unrelated label definitions, or “make any model robust to everything.”
 
-[When PMH helps (honest expectations) →](docs/WHEN_PMH_HELPS.md) · [What is PMH →](docs/WHAT_IS_PMH.md)
-
 ---
 
-## 5-minute try
-
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/vishalstark512/matching-pmh/blob/main/notebooks/domain_shift_first_run.ipynb)  
-or locally:
-
-```bash
-pip install matching-pmh torch
-git clone https://github.com/vishalstark512/matching-pmh.git
-cd matching-pmh
-python examples/00_first_run_domain_shift.py
-```
-
-You get **baseline vs PMH target accuracy** on synthetic data, then copy the pattern into your project.
-
-Expected output: [docs/DEMO_OUTPUT.md](docs/DEMO_OUTPUT.md)
-
-```bash
-pmh-train wizard
-```
-
----
-
-## Default integration (PyTorch)
+## Minimal code (Tier 0)
 
 ```python
-from pmh import PMHTrainer, PMHConfig
+from pmh import (
+    check_applicability,
+    evaluate_baseline_vs_pmh,
+    evaluate_robust_fit,
+    robust_fit,
+)
 
-trainer = PMHTrainer(
-    model,
-    hook=backbone,
-    head=classifier,
-    nuisance="domain_shift",
-    pmh_config=PMHConfig.balanced(),
-    artifact_path="artifacts/my_run.pt",
+# PyTorch — estimate + train + optional Step 5
+print(check_applicability(stack="pytorch", n_source=500, n_target=400).summary())
+out = robust_fit(
+    model, train_loader,
+    source_batches=src, target_batches=tgt,
+    hook="auto", epochs=20,
 )
-trainer.fit(
-    train_loader,
-    source_batches=source_loader,
-    target_batches=target_loader,
-    epochs=20,
+report = evaluate_robust_fit(
+    model, train_loader, val_loader,
+    source_batches=src, target_batches=tgt,
+    hook="auto", pmh_result=out,
 )
+print(report.summary())
+
+# sklearn — frozen features + Step 5 (falsification on by default)
+report = evaluate_baseline_vs_pmh(x_source, y_source, x_target, y_target)
+print(report.summary())
 ```
 
-## sklearn `Pipeline` (frozen features)
-
-You already have embeddings `x_source`, `x_target` (same dimension). Adapt, then classify — like any other preprocessing step:
-
-```python
-pip install "matching-pmh[sklearn]"
-
-from pmh import PMHMatcher
-from sklearn.pipeline import Pipeline
-from sklearn.linear_model import LogisticRegression
-
-pipe = Pipeline([
-    ("adapt", PMHMatcher(nuisance="domain_shift").fit(x_source, x_target)),
-    ("clf", LogisticRegression(max_iter=500)),
-])
-pipe.fit(x_source, y_source)
-# Score on held-out TARGET rows — not source-only accuracy
-```
-
-[Gallery: tabular](docs/gallery/tabular.md) · `examples/06_office31_sklearn.py`
+Copy-paste templates: [templates/matching-pmh-starter/](templates/matching-pmh-starter/) · Examples: [examples/](examples/) · `pmh-train wizard`
 
 ---
 
-## How it works (30 seconds)
+## CLI (common)
+
+| Command | Purpose |
+|---------|---------|
+| `pmh-train doctor` | Install check + pipeline checklist |
+| `pmh-train shifts` | Plain English shift types (`nuisance=` keys) |
+| `pmh-train evaluate --demo` | G2 Step 5 smoke test |
+| `pmh-train route --task ID` | Your task walkthrough |
+| `pmh-train recipe` | Full five-step recipe text |
+
+---
+
+## How it works
 
 ```mermaid
 flowchart LR
   A[Site A data] --> E[Estimate shift geometry once]
   B[Site B data] --> E
   E --> T[Train your model]
-  T --> H[Representation hook h]
-  H --> L[Task loss + robustness penalty]
+  T --> H[Hook h]
+  H --> L[Task loss + capped PMH]
 ```
 
-Same hook layer for estimate and train. [Docs home](docs/index.md) · [First hour](docs/FIRST_HOUR.md) · [Troubleshooting glossary](docs/TROUBLESHOOTING.md#plain-language-glossary)
+Same hook for estimate and train. Optional depth: [vs CORAL](docs/COMPARE_TO_CORAL.md) · [Theory](docs/THEORY.md).
 
 ---
 
-## How it relates to CORAL / domain adaptation
+## API tiers
 
-PMH keeps your task loss and penalizes sensitivity in representation space along directions that differ between train and deploy environments. See [vs CORAL](docs/COMPARE_TO_CORAL.md).
+| Tier | Who | Import |
+|------|-----|--------|
+| **0 — Adopt** | First integration | `from pmh import robust_fit, PMHMatcher, evaluate_baseline_vs_pmh, …` — see `pmh.__all__` |
+| **1 — Integrate** | Wiring + ship | `PMHLoss`, `estimate_from_config`, `compare_arms`, … |
+| **2 — Evidence** | Paper replication | `pmh.evidence`, benchmarks, walkthroughs |
 
-Under the hood: estimate deployment geometry once, train with an extra matched penalty on hook `h`. Details are optional: [Theory](docs/THEORY.md).
+Map: [META_STRUCTURE.md](docs/META_STRUCTURE.md).
 
 ---
 
 ## Documentation
 
-**Start:** [docs/index.md](docs/index.md) (reading order) → [D1–D7 subtypes](docs/NUISANCE_SUBTYPES.md) → [Golden paths](docs/GOLDEN_PATHS.md)
-
 | I want to… | Read |
 |------------|------|
+| Plain English (“nuisance”?) | [WHAT_IS_DEPLOYMENT_SHIFT.md](docs/WHAT_IS_DEPLOYMENT_SHIFT.md) |
+| Product spine | [FIVE_STEP_RECIPE.md](docs/FIVE_STEP_RECIPE.md) |
+| My task | [APPLICATIONS.md](docs/APPLICATIONS.md) |
+| Code to copy | [GOLDEN_PATHS.md](docs/GOLDEN_PATHS.md) |
+| Install / CLI / folders | [INTEGRATE.md](docs/INTEGRATE.md) |
+| Parameters | [PARAMETERS_CHEATSHEET.md](docs/PARAMETERS_CHEATSHEET.md) |
 | Will it help? | [WHEN_PMH_HELPS.md](docs/WHEN_PMH_HELPS.md) |
-| Integrate my repo | [GETTING_STARTED.md](docs/GETTING_STARTED.md) |
-| Paper / benchmarks | [PAPER_ALIGNMENT.md](docs/PAPER_ALIGNMENT.md) · [walkthroughs](docs/walkthroughs/index.md) |
+| Paper / benchmarks | [walkthroughs](docs/walkthroughs/index.md) (optional) |
 
 ---
 
-## Install
+## Appendix (not for day one)
 
-```bash
-pip install matching-pmh
-pip install "matching-pmh[sklearn]"   # classical ML path
-pip install "matching-pmh[vision]"    # ResNet / timm examples
-pip install "matching-pmh[hf]"        # LLM style shift
-```
+**D1–D7** — estimator IDs for the same geometry under different shift assumptions. Use `suggest_nuisance` or `pmh-train list-methods`; details in [NUISANCE_SUBTYPES.md](docs/NUISANCE_SUBTYPES.md).
 
----
-
-## Advanced (estimators D1–D7, research)
-
-The Grand Unification paper unifies many nuisance estimators (subspace, domain Gram, augmentations, style, …). The library exposes them when your shift story is not plain cross-domain:
-
-```bash
-pmh-train list-methods
-pmh-train list-presets
-```
-
-| Research / benchmark | Doc |
-|----------------------|-----|
-| Paper block presets | [paper-presets-by-block.md](docs/walkthroughs/paper-presets-by-block.md) |
-| Office-31 reference table | [BENCHMARKS.md](docs/BENCHMARKS.md) |
-| Lemma-level math | [THEORY.md](docs/THEORY.md) |
+**T1–T7** — paper replication presets: `pmh-train list-presets` · [PAPER_ALIGNMENT.md](docs/PAPER_ALIGNMENT.md).
 
 ---
 

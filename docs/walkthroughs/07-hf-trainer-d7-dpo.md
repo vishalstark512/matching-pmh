@@ -1,5 +1,13 @@
 # Walkthrough 7: Hugging Face Trainer + DPO (D7) — full guide
 
+
+!!! tip "Adopt PMH first"
+    **Start:** [ADOPT.md](../../ADOPT.md) → [Golden path G1–G4](../GOLDEN_PATHS.md#g3b) · **Route:** `pmh-train route --task llm_style_or_format` · **Step 5:** HF eval holdout + walkthrough 08
+    This walkthrough is **evidence / depth** — not your first page.
+
+> **API note:** `nuisance=` is the **deployment shift type** (D1–D7 API key), not “bad data.” [What is deployment shift?](../WHAT_IS_DEPLOYMENT_SHIFT.md)
+
+
 **At a glance**
 
 | | |
@@ -15,6 +23,12 @@
 ## Who this is for
 
 You fine-tune LMs with **HF Trainer** (or similar) and already have **preference pairs** or **style JSONL** from Walkthrough 6.
+
+---
+
+## Your deployment shift sentence
+
+*Same task, different writing style or template at deploy.* -> **D7** + HF Trainer.
 
 ---
 
@@ -60,5 +74,5 @@ Use bundled `examples/data/preference_pairs_sample.jsonl` for wiring — replace
 
 ## Next steps
 
-- [integrations-hf-trainer.md](../integrations-hf-trainer.md)
+- [integrations-hf-trainer.md](../GOLDEN_PATHS.md#g3b)
 - [6 — Style JSONL](06-llm-style-d7.md)

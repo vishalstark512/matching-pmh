@@ -1,12 +1,26 @@
 # Walkthrough 19: Office-31 real data (download → features → T1 table)
 
+
+!!! tip "Adopt PMH first"
+    **Start:** [ADOPT.md](../../ADOPT.md) → [Golden path G1–G4](../GOLDEN_PATHS.md#g2) · **Route:** `pmh-train route --task frozen_embeddings_sklearn` · **Step 5:** compare_arms_sklearn preset t1
+    This walkthrough is **evidence / depth** — not your first page.
+
+> **API note:** `nuisance=` is the **deployment shift type** (D1–D7 API key), not “bad data.” [What is deployment shift?](../WHAT_IS_DEPLOYMENT_SHIFT.md)
+
+
 **Public dataset:** Office-31 (amazon, dslr, webcam). **Nothing is stored in git** — you download to a folder outside the repo.
 
 | | |
 |---|---|
 | **Preset** | `t1_office31_sklearn` |
-| **Recipe** | [T1 Office-31 D1](../recipes/t1-office31-d1.md) |
+| **Recipe** | [T1 Office-31 D1](../PAPER_ALIGNMENT.md) |
 | **Script** | `scripts/download_office31.py` · `examples/21_benchmark_sklearn_table.py` |
+
+---
+
+## Your deployment shift sentence
+
+*"Amazon vs DSLR vs webcam - same 31 classes, different imaging domain."* -> **D1** subspace on frozen features.
 
 ---
 
@@ -73,7 +87,7 @@ This extracts **ResNet-18** 512-d features at runtime (not saved to git) and run
 | Metric | Where |
 |--------|--------|
 | Markdown table | `--report` folder or stdout |
-| Reference (metrics only in git) | [office31_amazon_to_dslr.md](../benchmarks/office31_amazon_to_dslr.md) |
+| Reference (metrics only in git) | [office31_amazon_to_dslr.md](../walkthroughs/19-office31-real-data.md) |
 | Expectations | [When PMH helps](../WHEN_PMH_HELPS.md) |
 
 **Do not** expect matched PMH to beat CORAL on this linear frozen-feature setup. Use the table for **protocol + falsification**, not marketing accuracy.
@@ -87,7 +101,7 @@ Writes metrics-only markdown (no `.npy`):
 ```bash
 python scripts/generate_reference_benchmark.py \
   --office31-root D:/datasets/office31 \
-  --output docs/benchmarks/office31_amazon_to_dslr.md
+  --output docs/walkthroughs/19-office31-real-data.md
 ```
 
 ---
@@ -105,6 +119,6 @@ python scripts/generate_reference_benchmark.py \
 
 ## Related
 
-- [DATA_POLICY.md](../DATA_POLICY.md)
+- [DATA_POLICY.md](../DOCS_GUIDE.md)
 - [Walkthrough 3 — sklearn D1](03-office31-sklearn-d1.md)
 - [examples/06_office31_sklearn.py](https://github.com/vishalstark512/matching-pmh/blob/main/examples/06_office31_sklearn.py)

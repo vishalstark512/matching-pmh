@@ -1,5 +1,13 @@
 # Walkthrough 6: LLM style / format (D7) — full guide
 
+
+!!! tip "Adopt PMH first"
+    **Start:** [ADOPT.md](../../ADOPT.md) → [Golden path G1–G4](../GOLDEN_PATHS.md#g3) · **Route:** `pmh-train route --task llm_style_or_format` · **Step 5:** geometry + task metric separately
+    This walkthrough is **evidence / depth** — not your first page.
+
+> **API note:** `nuisance=` is the **deployment shift type** (D1–D7 API key), not “bad data.” [What is deployment shift?](../WHAT_IS_DEPLOYMENT_SHIFT.md)
+
+
 **At a glance**
 
 | | |
@@ -8,9 +16,9 @@
 | **Script** | `examples/08_hf_style_d7.py` |
 | **Sample data** | `examples/data/style_pairs_sample.jsonl` (tiny, OK in git) |
 
-[Walkthrough 7](07-hf-trainer-d7-dpo.md) · [gallery/nlp.md](../gallery/nlp.md) · [Paper presets](paper-presets-by-block.md)
+[Walkthrough 7](07-hf-trainer-d7-dpo.md) · [Golden path G3](../GOLDEN_PATHS.md#g3) · [Paper presets](paper-presets-by-block.md)
 
-**Paper preset:** `t7a_style_d7` — D7 rank 128, shrinkage 0.1, `PMHConfig(weight=0.7, cap_ratio=0.3, warmup_epochs=5)`. **Recipe:** [T7A one-pager](../recipes/t7a-style-d7.md).
+**Paper preset:** `t7a_style_d7` — D7 rank 128, shrinkage 0.1, `PMHConfig(weight=0.7, cap_ratio=0.3, warmup_epochs=5)`. **Recipe:** [T7A one-pager](../PAPER_ALIGNMENT.md).
 
 ---
 
@@ -20,7 +28,7 @@ LLM deployment shift is **formatting / tone / template**, not factual content �
 
 ---
 
-## Your nuisance sentence
+## Your deployment shift sentence
 
 *“Bullets vs paragraphs vs JSON wrapper; semantic answer unchanged.”*
 
@@ -119,4 +127,4 @@ Uses `HashEncoder` when no GPU — wiring check only.
 ## Next steps
 
 - [7 — HF Trainer + DPO](07-hf-trainer-d7-dpo.md)
-- [hooks.md](../hooks.md) — `encoder_hf_hidden_states`
+- [hooks.md](../INTEGRATE.md) — `encoder_hf_hidden_states`

@@ -67,7 +67,7 @@ print(check_applicability(
 
 ### Office-31 (T1, frozen ResNet-18 features, Amazon → DSLR)
 
-Protocol: `paper_protocol=True`, preset `t1_office31_sklearn`, rank 32. **Recipe:** [T1 card](recipes/t1-office31-d1.md) · Full table: [benchmarks/office31_amazon_to_dslr.md](benchmarks/office31_amazon_to_dslr.md).
+Protocol: `paper_protocol=True`, preset `t1_office31_sklearn`, rank 32. **Paper:** [PAPER_ALIGNMENT](PAPER_ALIGNMENT.md) · Office-31 walkthrough: [19-office31-real-data](walkthroughs/19-office31-real-data.md).
 
 | Arm | Target accuracy (holdout) | Comment |
 |-----|---------------------------|---------|
@@ -143,7 +143,7 @@ print(report.summary())
 
 | Goal | Doc |
 |------|-----|
-| Install and first run | [FIRST_HOUR.md](FIRST_HOUR.md) |
+| Install and first run | [INTEGRATE.md](INTEGRATE.md) |
 | Pick PyTorch / sklearn / HF | [GOLDEN_PATHS.md](GOLDEN_PATHS.md) |
 | Paper-faithful benchmarks | [CORRECT_USAGE.md](CORRECT_USAGE.md) · [PAPER_ALIGNMENT.md](PAPER_ALIGNMENT.md) |
 | Errors | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) |

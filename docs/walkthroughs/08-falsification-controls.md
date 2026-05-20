@@ -1,5 +1,13 @@
 # Walkthrough 8: Falsification controls — full guide
 
+
+!!! tip "Adopt PMH first"
+    **Start:** [ADOPT.md](../../ADOPT.md) → [Golden paths](../GOLDEN_PATHS.md) · **Step 5:** evaluate_* / compare_arms — required before claims
+    This walkthrough is **evidence / depth** — not your first page.
+
+> **API note:** `nuisance=` is the **deployment shift type** (D1–D7 API key), not “bad data.” [What is deployment shift?](../WHAT_IS_DEPLOYMENT_SHIFT.md)
+
+
 **At a glance**
 
 | | |
@@ -9,7 +17,7 @@
 | **Scripts** | `examples/04_falsification_controls.py` · `06_office31_sklearn.py` · `20_compare_training_arms.py` |
 | **Required** | Before any paper/blog claim “PMH improved our model” |
 
-[Correct usage](../CORRECT_USAGE.md) · [Adaptation workbook](../ADAPTATION_WORKBOOK.md) · [BENCHMARKS.md](../BENCHMARKS.md)
+[Correct usage](../PAPER_ALIGNMENT.md) · [Adaptation workbook](../FIVE_STEP_RECIPE.md) · [BENCHMARKS.md](../PAPER_ALIGNMENT.md)
 
 ---
 
@@ -17,8 +25,14 @@
 
 **Everyone.** If you skip this walkthrough, reviewers and you cannot tell whether:
 
-- matched PMH helped because you estimated the **right** nuisance geometry, or
+- matched PMH helped because you estimated the **right** deployment-shift geometry, or
 - **any** Jacobian penalty would have helped.
+
+---
+
+## Your deployment shift sentence
+
+*We fixed site/camera/style shift; gains must beat wrong-W and isotropic controls.* -> Step 5 on **deploy holdout**.
 
 ---
 
@@ -33,7 +47,7 @@
 | **Sklearn iso** | — | `isotropic` | Project out **D4** domain Gram (unmatched) |
 | **CORAL** | — | `coral` | Alignment baseline (sklearn only) |
 
-See [Correct usage — three isotropics](../CORRECT_USAGE.md#2-three-different-isotropic-names).
+See [Correct usage — three isotropics](../PAPER_ALIGNMENT.md#2-three-different-isotropic-names).
 
 **Strong claim:** matched > B0 **and** matched > wrong-W on **both** target metric and geometry (when reported).
 
@@ -163,7 +177,7 @@ Do **not** reuse the same weights across arms — train from the same init per a
 | Tune hyperparams separately per arm | Same grid / same defaults except `mode` |
 | Source-domain validation | Use target-domain val |
 | Single seed | `seeds=[...]` on sklearn or 3+ PyTorch runs |
-| Office-31 ~70% accuracy | Use `preset='t1_office31_sklearn'` — see [Correct usage](../CORRECT_USAGE.md) |
+| Office-31 ~70% accuracy | Use `preset='t1_office31_sklearn'` — see [Correct usage](../PAPER_ALIGNMENT.md) |
 | `estimate(D1, h_src, h_tgt)` only | D1 needs **labels**; unlabeled → D4 |
 
 ---

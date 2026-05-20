@@ -1,5 +1,13 @@
 # Walkthrough 11: Temporal sequences (D6) — full guide
 
+
+!!! tip "Adopt PMH first"
+    **Start:** [ADOPT.md](../../ADOPT.md) → [Golden path G1–G4](../GOLDEN_PATHS.md#g1) · **Route:** `pmh-train route --task temporal_drift` · **Step 5:** compare_arms on sequence holdout
+    This walkthrough is **evidence / depth** — not your first page.
+
+> **API note:** `nuisance=` is the **deployment shift type** (D1–D7 API key), not “bad data.” [What is deployment shift?](../WHAT_IS_DEPLOYMENT_SHIFT.md)
+
+
 **At a glance**
 
 | | |
@@ -18,7 +26,7 @@ Label **constant within a window**, but sensor / market / physiology **drifts ov
 
 ---
 
-## Your nuisance sentence
+## Your deployment shift sentence
 
 *“Activity class fixed in this window; sensor bias drifts across timesteps.”*
 

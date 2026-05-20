@@ -1,5 +1,13 @@
 # Walkthrough 18: PMHTrainer quickstart — full guide
 
+
+!!! tip "Adopt PMH first"
+    **Start:** [ADOPT.md](../../ADOPT.md) → [Golden path G1–G4](../GOLDEN_PATHS.md#g1) · **Step 5:** evaluate_robust_fit after fit
+    This walkthrough is **evidence / depth** — not your first page.
+
+> **API note:** `nuisance=` is the **deployment shift type** (D1–D7 API key), not “bad data.” [What is deployment shift?](../WHAT_IS_DEPLOYMENT_SHIFT.md)
+
+
 **At a glance**
 
 | | |
@@ -11,7 +19,7 @@
 
 Start here if [Walkthrough 1](01-pytorch-domain-d4.md) feels long — this page is the **shortest** complete path; WT1 has more D4 detail.
 
-[Adaptation workbook](../ADAPTATION_WORKBOOK.md)
+[Adaptation workbook](../FIVE_STEP_RECIPE.md)
 
 ---
 
@@ -20,6 +28,12 @@ Start here if [Walkthrough 1](01-pytorch-domain-d4.md) feels long — this page 
 - You have a **PyTorch** model and dataloaders.
 - You want **one object** instead of manual `collect_features` + `PMHLoss`.
 - You will run [Walkthrough 8](08-falsification-controls.md) before claiming results.
+
+---
+
+## Your deployment shift sentence
+
+*Quick PMHTrainer loop: name shift with `nuisance=` or `auto`, then falsify on target.* -> see Step 2 below.
 
 ---
 
@@ -60,7 +74,7 @@ Replace `YOUR_*` — see [Walkthrough 1 worksheet](01-pytorch-domain-d4.md#adapt
 
 ---
 
-## Step 2 — `nuisance="auto"`
+## Step 2 — Pick shift type (`nuisance="auto"`)
 
 ```python
 trainer = PMHTrainer(
@@ -73,7 +87,7 @@ trainer = PMHTrainer(
 )
 ```
 
-Or call `suggest_nuisance()` first ([nuisance_types.md](../nuisance_types.md)).
+Or call `suggest_nuisance()` first ([shift types D1–D7](../nuisance_types.md) · [plain language](../WHAT_IS_DEPLOYMENT_SHIFT.md)).
 
 ---
 
@@ -88,7 +102,7 @@ Or call `suggest_nuisance()` first ([nuisance_types.md](../nuisance_types.md)).
 | D6 temporal | `sequences_batches=` |
 | D7 style | `style_jsonl="pairs.jsonl"` + HF model |
 
-Full table: [ADAPT_YOUR_PIPELINE.md](../ADAPT_YOUR_PIPELINE.md)
+Full table: [ADAPT_YOUR_PIPELINE.md](../INTEGRATE.md)
 
 ---
 
@@ -101,7 +115,7 @@ Full table: [ADAPT_YOUR_PIPELINE.md](../ADAPT_YOUR_PIPELINE.md)
 | timm ViT | `encoder_timm(model, layer="blocks")` |
 | HF LM | `encoder_hf_hidden_states(model)` |
 
-Details: [hooks.md](../hooks.md) · [Walkthrough 2](02-resnet-vision-d4.md)
+Details: [hooks.md](../INTEGRATE.md) · [Walkthrough 2](02-resnet-vision-d4.md)
 
 ---
 
@@ -139,7 +153,7 @@ metrics = trainer.measure_trajectory_tdi(val_loader, sigma=0.01, max_batches=20)
 print(metrics["trajectory_tdi"], metrics["tdi_per_layer"])
 ```
 
-For per-layer ViT stacks, call `pmh.trajectory_tdi_layerwise(clean_layers, pert_layers)` from your own hooks. See [Benchmarks & TDI](../BENCHMARKS.md).
+For per-layer ViT stacks, call `pmh.trajectory_tdi_layerwise(clean_layers, pert_layers)` from your own hooks. See [Benchmarks & TDI](../PAPER_ALIGNMENT.md).
 
 ---
 

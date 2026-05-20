@@ -1,5 +1,13 @@
 # Walkthrough 5: Compositional coordinates (D5) — full guide
 
+
+!!! tip "Adopt PMH first"
+    **Start:** [ADOPT.md](../../ADOPT.md) → [Golden path G1–G4](../GOLDEN_PATHS.md#g4) · **Route:** `pmh-train route --task compositional_coordinates` · **Step 5:** compare_arms
+    This walkthrough is **evidence / depth** — not your first page.
+
+> **API note:** `nuisance=` is the **deployment shift type** (D1–D7 API key), not “bad data.” [What is deployment shift?](../WHAT_IS_DEPLOYMENT_SHIFT.md)
+
+
 **At a glance**
 
 | | |
@@ -14,11 +22,11 @@
 
 ## Who this is for
 
-Input has **known nuisance coordinates** (e.g. sensor axes, token groups, molecular descriptors) separate from task coordinates.
+Input has **known nuisance coordinates** (e.g. sensor axes, token groups, molecular descriptors) separate from task coordinates (D5) (D5) (D5).
 
 ---
 
-## Your nuisance sentence
+## Your deployment shift sentence
 
 *“Channels 0–2 are site metadata; channels 3–end are biology — label depends only on biology.”*
 
@@ -56,7 +64,7 @@ python examples/13_compositional_train_d5.py
 
 | Mistake | Fix |
 |---------|-----|
-| Wrong index split | Task coords must not include pure nuisance |
+| Wrong index split | Task coords must not include pure shift-related coords |
 | Using D4 when coords known | D5 is more precise |
 
 ---

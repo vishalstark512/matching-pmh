@@ -13,8 +13,6 @@ theme:
       accent: indigo
   features:
     - navigation.tabs
-    - navigation.sections
-    - navigation.expand
     - content.code.copy
     - search.suggest
 
@@ -22,79 +20,103 @@ nav:
   - Home: index.md
 
   - Adopt:
-      - "★ Find your application": APPLICATIONS.md
-      - Three gates: START_HERE.md
-      - Site map: MAP.md
+      - "★ Start here (60s)": ../ADOPT.md
+      - "★ Five-step recipe": FIVE_STEP_RECIPE.md
+      - What is deployment shift?: WHAT_IS_DEPLOYMENT_SHIFT.md
+      - Applications + route: APPLICATIONS.md
       - Golden paths (G1–G4): GOLDEN_PATHS.md
+      - Integrate (install & CLI): INTEGRATE.md
       - Will PMH help?: WHEN_PMH_HELPS.md
       - Troubleshooting: TROUBLESHOOTING.md
-      - What is PMH? (background): WHAT_IS_PMH.md
 
-  - Integrate:
-      - Onboarding:
-          - First hour: FIRST_HOUR.md
-          - Your project: GETTING_STARTED.md
-      - CLI & tools:
-          - CLI (route, wizard, doctor): cli.md
-          - Colab: COLAB.md
-          - Demo output: DEMO_OUTPUT.md
-      - Shift & compare:
-          - Subtypes D1–D7: NUISANCE_SUBTYPES.md
-          - vs CORAL: COMPARE_TO_CORAL.md
-      - Data & deployment:
-          - Data layout: DATA_LAYOUT.md
-          - Deployment bundle: DEPLOYMENT.md
-          - Custom geometry: CUSTOM_GEOMETRY.md
-      - By stack:
-          - Hooks: hooks.md
-          - sklearn: sklearn.md
-          - PyTorch (low-level): integrations.md
-          - Lightning (G1b): integrations-lightning.md
-          - HF Trainer (G3b): integrations-hf-trainer.md
-          - HF (low-level): integrations-hf.md
-      - API:
-          - Overview: api/index.md
-          - Developer API: api/developer.md
-          - PMHTrainer: api/pmh-trainer.md
-          - Subtypes: api/subtypes.md
-          - Custom geometry: api/custom.md
-          - Deployment: api/deployment.md
-          - Training primitives: training.md
-
-  - Gallery:
-      - Overview: gallery/README.md
-      - Vision: gallery/vision.md
-      - Tabular: gallery/tabular.md
-      - NLP: gallery/nlp.md
-
-  - Research:
+  - Evidence:
+      - Walkthroughs (index): walkthroughs/index.md
+      - Daily AI job map: walkthroughs/DAILY_AI_USE.md
+      - Falsification (required): walkthroughs/08-falsification-controls.md
       - Paper alignment: PAPER_ALIGNMENT.md
-      - Fidelity by subtype: FIDELITY_BY_SUBTYPE.md
-      - Recipe cards: recipes/README.md
-      - Walkthroughs (tiered index): walkthroughs/index.md
-      - Falsification controls: walkthroughs/08-falsification-controls.md
-      - Office-31 real data: walkthroughs/19-office31-real-data.md
-      - Benchmarks: BENCHMARKS.md
-      - Correct usage: CORRECT_USAGE.md
-      - Adaptation workbook: ADAPTATION_WORKBOOK.md
 
   - Reference:
-      - Estimators D1–D7: estimators/index.md
+      - PMH parameters (tunable): PMH_PARAMETERS.md
+      - Parameters cheat sheet: PARAMETERS_CHEATSHEET.md
+      - 60s pipeline script: PIPELINE_60S.md
+      - Estimators (D1–D7 appendix): estimators/index.md
+      - Shift types D1–D7 (appendix): NUISANCE_SUBTYPES.md
+      - Custom geometry: CUSTOM_GEOMETRY.md
+      - vs CORAL: COMPARE_TO_CORAL.md
+      - API reference: api/index.md
       - Theory: THEORY.md
-      - Datasets: datasets.md
 
   - Contributors:
-      - GitHub Pages setup: GITHUB_PAGES_SETUP.md
-      - Doc maintenance: DOCS_GUIDE.md
-      - Subtype plan: NUISANCE_SUBTYPE_PLAN.md
-      - Developer onboarding plan: DEVELOPER_ONBOARDING_PLAN.md
-      - Roadmap: ROADMAP.md
-      - Philosophy: PHILOSOPHY.md
-      - Architecture patterns: ARCHITECTURES.md
-      - Hybrid nuisances: HYBRID_NUISANCE.md
+      - Doc guide: DOCS_GUIDE.md
+      - Meta-structure: META_STRUCTURE.md
 
 plugins:
   - search
+  - redirects:
+      redirect_maps:
+        START_HERE.md: FIVE_STEP_RECIPE.md
+        MAP.md: FIVE_STEP_RECIPE.md
+        WHAT_IS_PMH.md: WHAT_IS_DEPLOYMENT_SHIFT.md
+        MODES.md: FIVE_STEP_RECIPE.md
+        FIRST_HOUR.md: INTEGRATE.md
+        GETTING_STARTED.md: INTEGRATE.md
+        COLAB.md: INTEGRATE.md
+        DEMO_OUTPUT.md: INTEGRATE.md
+        QUICKSTART.md: APPLICATIONS.md
+        getting-started.md: APPLICATIONS.md
+        CHOOSE_YOUR_SETUP.md: APPLICATIONS.md
+        ADAPT_YOUR_PIPELINE.md: INTEGRATE.md
+        ARCHITECTURES.md: FIVE_STEP_RECIPE.md
+        ARCHITECTURE.md: META_STRUCTURE.md
+        hooks.md: INTEGRATE.md
+        sklearn.md: GOLDEN_PATHS.md
+        integrations.md: GOLDEN_PATHS.md
+        integrations-lightning.md: GOLDEN_PATHS.md
+        integrations-hf.md: GOLDEN_PATHS.md
+        integrations-hf-trainer.md: GOLDEN_PATHS.md
+        gallery/README.md: GOLDEN_PATHS.md
+        gallery/vision.md: GOLDEN_PATHS.md
+        gallery/tabular.md: GOLDEN_PATHS.md
+        gallery/nlp.md: GOLDEN_PATHS.md
+        ADAPTATION_WORKBOOK.md: walkthroughs/index.md
+        FIDELITY_BY_SUBTYPE.md: PAPER_ALIGNMENT.md
+        BENCHMARKS.md: walkthroughs/index.md
+        CORRECT_USAGE.md: PAPER_ALIGNMENT.md
+        training.md: api/index.md
+        api/tier0.md: api/index.md
+        api/recipe.md: api/index.md
+        api/protocol.md: api/index.md
+        api/developer.md: api/index.md
+        api/pmh-trainer.md: api/index.md
+        api/subtypes.md: api/index.md
+        api/custom.md: api/index.md
+        api/deployment.md: api/index.md
+        DEVELOPER_ONBOARDING_PLAN.md: DOCS_GUIDE.md
+        NUISANCE_SUBTYPE_PLAN.md: DOCS_GUIDE.md
+        ROADMAP.md: DOCS_GUIDE.md
+        PHILOSOPHY.md: META_STRUCTURE.md
+        HYBRID_NUISANCE.md: estimators/index.md
+        datasets.md: INTEGRATE.md
+        DATA_POLICY.md: DOCS_GUIDE.md
+        DATA_LAYOUT.md: INTEGRATE.md
+        DEPLOYMENT.md: INTEGRATE.md
+        cli.md: INTEGRATE.md
+        GITHUB_PAGES_SETUP.md: DOCS_GUIDE.md
+        nuisance_types.md: NUISANCE_SUBTYPES.md
+        estimators/d1.md: estimators/index.md
+        estimators/d2.md: estimators/index.md
+        estimators/d3.md: estimators/index.md
+        estimators/d4.md: estimators/index.md
+        estimators/d5.md: estimators/index.md
+        estimators/d6.md: estimators/index.md
+        estimators/d7.md: estimators/index.md
+        recipes/README.md: walkthroughs/index.md
+        recipes/t1-office31-d1.md: PAPER_ALIGNMENT.md
+        recipes/t2a-vit-isotropic.md: PAPER_ALIGNMENT.md
+        recipes/t4-domain-d4.md: PAPER_ALIGNMENT.md
+        recipes/t7a-style-d7.md: PAPER_ALIGNMENT.md
+        benchmarks/office31_amazon_to_dslr.md: walkthroughs/index.md
+        benchmarks/office31_synthetic_reference.md: walkthroughs/index.md
   - mkdocstrings:
       handlers:
         python:

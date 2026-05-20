@@ -39,6 +39,13 @@ def test_run_doctor_pytorch():
     rep = run_doctor(stack="pytorch")
     assert rep.ok
     assert "torch" in " ".join(rep.checks).lower()
+    assert "Step 5" in rep.summary()
+
+
+def test_run_doctor_sklearn_demo():
+    rep = run_doctor(stack="sklearn")
+    assert rep.ok
+    assert any("G2 demo" in c for c in rep.checks)
 
 
 def test_load_domain_dirs(tmp_path: Path):

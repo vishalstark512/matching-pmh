@@ -1,29 +1,27 @@
-# Estimators overview (D1–D7)
+# Estimators (D1–D7)
 
-!!! tip "Adoption path"
-    Pick nuisance in plain English: [Find your application](../APPLICATIONS.md).  
-    Read lemma pages here when you need formulas or factory kwargs.
-
-| Lemma | Page | Plain nuisance |
-|-------|------|----------------|
-| D1 | [d1.md](d1.md) | Cross-site class geometry |
-| D2 | [d2.md](d2.md) | Isotropic |
-| D3 | [d3.md](d3.md) | Named augmentations |
-| D4 | [d4.md](d4.md) | Site / sensor appearance |
-| D5 | [d5.md](d5.md) | Indexed coordinates |
-| D6 | [d6.md](d6.md) | Temporal drift |
-| D7 | [d7.md](d7.md) | Style / alignment |
+One \(\hat\Sigma_{\mathrm{task}}\) per lemma. Pick subtype via [NUISANCE_SUBTYPES.md](../NUISANCE_SUBTYPES.md) or `suggest_subtype`.
 
 ```python
 from pmh import SigmaTaskConfig, estimate_from_config
 
-SigmaTaskConfig.for_subspace(rank=16)       # D1
-SigmaTaskConfig.for_isotropic(dim, 0.1)    # D2
-SigmaTaskConfig.for_augmentation()         # D3
-SigmaTaskConfig.for_domain(rank=64)        # D4
-SigmaTaskConfig.for_compositional([...])   # D5
-SigmaTaskConfig.for_temporal()             # D6
-SigmaTaskConfig.for_alignment(rank=128)    # D7
+SigmaTaskConfig.for_subspace(rank=16)           # D1 — labels on A and B
+SigmaTaskConfig.for_isotropic(dim=768, noise_level=0.1)  # D2
+SigmaTaskConfig.for_augmentation()               # D3 — aug_deltas
+SigmaTaskConfig.for_domain(rank=32)              # D4 — default product path
+SigmaTaskConfig.for_compositional(nuisance_indices=[...])  # D5
+SigmaTaskConfig.for_temporal()                   # D6 — sequences
+SigmaTaskConfig.for_alignment(rank=128)          # D7 — style / PGD deltas
 ```
 
-[NUISANCE_SUBTYPES.md](../NUISANCE_SUBTYPES.md) · [FIDELITY_BY_SUBTYPE.md](../FIDELITY_BY_SUBTYPE.md)
+| Dk | Name | Config factory | Main inputs |
+|----|------|----------------|-------------|
+| D1 | Subspace SVD | `for_subspace` | `x_src, y_src, x_tgt, y_tgt` |
+| D2 | Isotropic | `for_isotropic` | `dim`, `noise_level` |
+| D3 | Aug modes | `for_augmentation` | `aug_deltas` |
+| D4 | Domain Gram | `for_domain` | source + target features |
+| D5 | Compositional | `for_compositional` | features + `nuisance_indices` |
+| D6 | Temporal | `for_temporal` | `sequences` |
+| D7 | Alignment | `for_alignment` | `style_jsonl` or deltas |
+
+`pmh-train list-methods` · optional calibrators: `pmh.calibrate.*` · paper detail: [PAPER_ALIGNMENT.md](../PAPER_ALIGNMENT.md)

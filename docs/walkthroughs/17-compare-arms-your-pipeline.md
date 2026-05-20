@@ -1,5 +1,13 @@
 # Walkthrough 17: Compare arms on **your** pipeline — full guide
 
+
+!!! tip "Adopt PMH first"
+    **Start:** [ADOPT.md](../../ADOPT.md) → [Golden paths](../GOLDEN_PATHS.md) · **Step 5:** examples/20_compare_training_arms.py
+    This walkthrough is **evidence / depth** — not your first page.
+
+> **API note:** `nuisance=` is the **deployment shift type** (D1–D7 API key), not “bad data.” [What is deployment shift?](../WHAT_IS_DEPLOYMENT_SHIFT.md)
+
+
 **At a glance**
 
 | | |
@@ -9,7 +17,7 @@
 | **Script** | `examples/20_compare_training_arms.py` |
 | **Required** | After PMH integrates; before publication claims |
 
-[Walkthrough 8](08-falsification-controls.md) · [BENCHMARKS.md](../BENCHMARKS.md)
+[Walkthrough 8](08-falsification-controls.md) · [BENCHMARKS.md](../PAPER_ALIGNMENT.md)
 
 ---
 
@@ -21,6 +29,12 @@ Also use when:
 
 - Writing a report section “matched vs controls”.
 - Debugging “PMH helped” vs “any penalty helped”.
+
+---
+
+## Your deployment shift sentence
+
+*Before we ship, matched PMH must beat B0, wrong-W, and isotropic on our deploy split.* -> required evidence.
 
 ---
 
@@ -116,8 +130,8 @@ compare_arms_sklearn(x_src, y_src, x_tgt, y_tgt, report_dir="results/run1")
 |---------|---------|
 | matched > b0, wrong_w ≈ isotropic | Strong matched-geometry story |
 | matched > b0, wrong_w also > b0 | Generic regularization — lower `weight`, check hook |
-| matched ≈ b0 | Weak ID — check `preflight`, nuisance, Dk |
-| All similar | Val metric may not reflect nuisance |
+| matched ≈ b0 | Weak ID — check `preflight`, shift type (`nuisance=`), Dk |
+| All similar | Val metric may not reflect deployment shift |
 
 ---
 

@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset
 
-from pmh import check_applicability, robust_fit
+from pmh import PMHConfig, check_applicability, evaluate_robust_fit, robust_fit
 
 # --- YOUR model ---
 class Model(nn.Module):
@@ -28,9 +28,11 @@ def main() -> None:
     train_loader = _loader(200, 0.2)
     source_loader = _loader(150, 0.0)
     target_loader = _loader(150, 0.8)
+    val_loader = _loader(80, 0.8)
 
     print(check_applicability(stack="pytorch", n_source=150, n_target=150).summary())
 
+    # Tunable: PMHConfig.balanced(), rank=16, nuisance="domain_shift"
     out = robust_fit(
         model,
         train_loader,
@@ -38,10 +40,25 @@ def main() -> None:
         target_batches=target_loader,
         hook="auto",
         head=model.head,
+        rank=16,
+        pmh_config=PMHConfig.balanced(),
         epochs=5,
     )
-    print(out.summary() if hasattr(out, "summary") else out.stats)
-    print(out.preflight_message)
+    print(out.summary())
+
+    report = evaluate_robust_fit(
+        model,
+        train_loader,
+        val_loader,
+        source_batches=source_loader,
+        target_batches=target_loader,
+        hook="auto",
+        head=model.head,
+        epochs=5,
+        pmh_result=out,
+        include_falsification=True,
+    )
+    print(report.summary())
 
 
 if __name__ == "__main__":

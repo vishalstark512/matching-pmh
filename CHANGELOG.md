@@ -2,6 +2,29 @@
 
 ## Unreleased
 
+## 1.6.0 (2026-05-20)
+
+### Product spine (adoption-first)
+
+- **Five-step recipe** — [FIVE_STEP_RECIPE.md](docs/FIVE_STEP_RECIPE.md), `pmh.recipe`, `pmh-train recipe`
+- **Tier 0 API** — `robust_fit`, `evaluate_baseline_vs_pmh`, `evaluate_robust_fit`, `explain_task`, `explain_nuisance_key`, `format_shift_types` (`pmh._api` / `pmh.__all__`)
+- **Plain language** — [WHAT_IS_DEPLOYMENT_SHIFT.md](docs/WHAT_IS_DEPLOYMENT_SHIFT.md), `pmh-train shifts` (deployment shift vs `nuisance=` API key)
+- **Step 5 by default** — falsification arms on deploy holdout in `evaluate_*`; `include_falsification` on PyTorch path
+- **CLI** — `pmh-train evaluate` (sklearn + `--stack pytorch`), `pmh-train doctor` checklist, `--artifact` preflight
+- **G2 demo** — `load_g2_demo_arrays()`, `examples/02_g2_office31_style_demo.py`
+- **Docs diet** — ~43 user-facing pages; redirects in `mkdocs.yml` only; Adopt / Reference / Evidence nav
+- **Subpackages** — `pmh.scope`, `identify`, `apply`, `protocol`, `evidence`, `guide` (flat imports unchanged)
+
+### Parameters & integration
+
+- [PMH_PARAMETERS.md](docs/PMH_PARAMETERS.md), [PARAMETERS_CHEATSHEET.md](docs/PARAMETERS_CHEATSHEET.md)
+- `PMHTrainer` default `PMHConfig.balanced()`; `pmh-train evaluate --pmh-preset`, `--weight`, `--cap-ratio`
+- Starter templates + Colab notebooks updated (cheat sheet cells)
+
+### Tests
+
+- 217 tests; consolidated adoption/CLI tests; `test_public_api` Tier 0 contract
+
 ## 1.5.3 (2026-05-19)
 
 ### Documentation (adoption-first)

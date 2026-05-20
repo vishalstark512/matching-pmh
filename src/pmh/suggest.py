@@ -10,11 +10,21 @@ from pmh.config import Method
 
 @dataclass(frozen=True)
 class NuisanceSuggestion:
-    """Recommended nuisance name and Lemma method."""
+    """Recommended shift type (``nuisance=`` API key) and Lemma method."""
 
     nuisance: str
     method: Method
     reason: str
+
+    def plain_summary(self) -> str:
+        """One block for CLI / notebooks (includes shift-type hint)."""
+        from pmh.applications import explain_nuisance_key
+
+        try:
+            detail = explain_nuisance_key(self.nuisance)
+        except Exception:
+            detail = f"nuisance={self.nuisance!r} ({self.method})"
+        return f"{self.reason}\n{detail}"
 
 
 def suggest_nuisance(
@@ -28,9 +38,9 @@ def suggest_nuisance(
     has_nuisance_indices: bool = False,
     noise_level_known: bool = False,
 ) -> NuisanceSuggestion:
-    """Rule-based nuisance recommendation (does not inspect arrays).
+    """Rule-based **deployment shift type** (``nuisance=`` key) from data you have.
 
-    Use before ``PMHMatcher`` / ``PMHTrainer`` when unsure which Dk applies.
+    Prefer ``pmh-train shifts`` or :func:`explain_nuisance_key` for plain English.
     """
     if has_style_pairs:
         return NuisanceSuggestion("style", "D7", "Style/content-fixed pairs -> D7 alignment Gram.")

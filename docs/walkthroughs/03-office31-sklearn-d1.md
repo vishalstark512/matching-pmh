@@ -1,5 +1,13 @@
 # Walkthrough 3: Frozen features + sklearn (D1) — full guide
 
+
+!!! tip "Adopt PMH first"
+    **Start:** [ADOPT.md](../../ADOPT.md) → [Golden path G1–G4](../GOLDEN_PATHS.md#g2) · **Route:** `pmh-train route --task frozen_embeddings_sklearn` · **Step 5:** evaluate_baseline_vs_pmh (default Step 5)
+    This walkthrough is **evidence / depth** — not your first page.
+
+> **API note:** `nuisance=` is the **deployment shift type** (D1–D7 API key), not “bad data.” [What is deployment shift?](../WHAT_IS_DEPLOYMENT_SHIFT.md)
+
+
 **At a glance**
 
 | | |
@@ -10,9 +18,9 @@
 | **Time** | ~1 min synthetic; ~15 min with ResNet feature extraction on real images |
 | **API** | `PMHMatcher`, `compare_arms_sklearn`, optional `Pipeline` / `GridSearchCV` |
 
-[Adaptation workbook](../ADAPTATION_WORKBOOK.md) · [sklearn.md](../sklearn.md) · [BENCHMARKS.md](../BENCHMARKS.md) · [Paper presets](paper-presets-by-block.md)
+[Adaptation workbook](../FIVE_STEP_RECIPE.md) · [sklearn.md](../GOLDEN_PATHS.md#g2) · [BENCHMARKS.md](../PAPER_ALIGNMENT.md) · [Paper presets](paper-presets-by-block.md)
 
-**Paper preset:** `t1_office31_sklearn` (rank **32**, pool=200, test=250, T1 D1 protocol). **Recipe card:** [T1 one-pager](../recipes/t1-office31-d1.md) · List all: `pmh-train list-presets`.
+**Paper preset:** `t1_office31_sklearn` (rank **32**, pool=200, test=250, T1 D1 protocol). **Recipe card:** [T1 one-pager](../PAPER_ALIGNMENT.md) · List all: `pmh-train list-presets`.
 
 ---
 
@@ -42,11 +50,11 @@ pip install "matching-pmh[sklearn,vision]"
 | `x_target`, `y_target` | same `d`, aligned label semantics |
 | Classifier | LogisticRegression (default) or SVM |
 
-**Data policy:** do not commit Office-31 or `.npy` files — keep data outside the repo ([DATA_POLICY.md](../DATA_POLICY.md)).
+**Data policy:** do not commit Office-31 or `.npy` files — keep data outside the repo ([DATA_POLICY.md](../DOCS_GUIDE.md)).
 
 ---
 
-## Your nuisance sentence
+## Your deployment shift sentence
 
 Examples for **D1** / Office-31 style:
 
@@ -138,7 +146,7 @@ pipe.fit(x_source, y_source)
 grid_search_pmh_pipeline(x_source, y_source, x_target, y_target, cv=5)
 ```
 
-Details: [sklearn.md](../sklearn.md)
+Details: [sklearn.md](../GOLDEN_PATHS.md#g2)
 
 ---
 
@@ -163,7 +171,7 @@ python examples/21_benchmark_sklearn_table.py --office31-root YOUR_OFFICE31_ROOT
 
 Copy **only** the markdown summary into docs if publishing reference numbers — not raw features.
 
-Bundled reference (metrics only): [office31_amazon_to_dslr.md](../benchmarks/office31_amazon_to_dslr.md) — regenerate with `scripts/generate_reference_benchmark.py --office31-root YOUR_PATH`.
+Bundled reference (metrics only): [office31_amazon_to_dslr.md](../walkthroughs/19-office31-real-data.md) — regenerate with `scripts/generate_reference_benchmark.py --office31-root YOUR_PATH`.
 
 ---
 
@@ -182,8 +190,8 @@ Bundled reference (metrics only): [office31_amazon_to_dslr.md](../benchmarks/off
 
 - [ ] `compare_arms_sklearn` completes; `benchmark.md` written.
 - [ ] **wrong_w** / **isotropic** do not beat **matched** on both accuracy and geometry (Lemma C).
-- [ ] On Office-31 linear head, **matched** may be near **b0**; CORAL can lead — see [BENCHMARKS.md](../BENCHMARKS.md).
-- [ ] **TDI_cls** lower for matched than b0 (geometry; see [BENCHMARKS.md](../BENCHMARKS.md)).
+- [ ] On Office-31 linear head, **matched** may be near **b0**; CORAL can lead — see [BENCHMARKS.md](../PAPER_ALIGNMENT.md).
+- [ ] **TDI_cls** lower for matched than b0 (geometry; see [BENCHMARKS.md](../PAPER_ALIGNMENT.md)).
 - [ ] Honest comparison to **coral** if claiming SOTA.
 
 ---
@@ -195,7 +203,7 @@ Bundled reference (metrics only): [office31_amazon_to_dslr.md](../benchmarks/off
 | Labels not aligned across domains | D1 needs same class semantics |
 | Test on source only | Report **target-domain** accuracy |
 | `marginal` preflight | More samples or higher `rank`; still run controls |
-| Committing `.npy` / images | [DATA_POLICY.md](../DATA_POLICY.md) |
+| Committing `.npy` / images | [DATA_POLICY.md](../DOCS_GUIDE.md) |
 
 ---
 

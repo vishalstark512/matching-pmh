@@ -1,5 +1,13 @@
 # Walkthrough 1: PyTorch domain shift (D4) — full guide
 
+
+!!! tip "Adopt PMH first"
+    **Start:** [ADOPT.md](../../ADOPT.md) → [Golden path G1–G4](../GOLDEN_PATHS.md#g1) · **Route:** `pmh-train route --task vision_classification` · **Step 5:** evaluate_robust_fit or compare_arms
+    This walkthrough is **evidence / depth** — not your first page.
+
+> **API note:** `nuisance=` is the **deployment shift type** (D1–D7 API key), not “bad data.” [What is deployment shift?](../WHAT_IS_DEPLOYMENT_SHIFT.md)
+
+
 **At a glance**
 
 | | |
@@ -10,9 +18,9 @@
 | **Time** | ~2 min CPU (quick), ~10 min default |
 | **API** | `PMHTrainer` (recommended) or manual `collect_features` + `PMHLoss` |
 
-[Adaptation workbook](../ADAPTATION_WORKBOOK.md) · [Choose setup](../CHOOSE_YOUR_SETUP.md) · [Paper presets](paper-presets-by-block.md)
+[Adaptation workbook](../FIVE_STEP_RECIPE.md) · [Choose setup](../APPLICATIONS.md) · [Paper presets](paper-presets-by-block.md)
 
-**Paper preset:** `t4_domain_d4` (D4, rank 64, weight 0.5 / cap 0.3, warmup 2). **Recipe card:** [T4 one-pager](../recipes/t4-domain-d4.md) · `pmh-train list-presets`.
+**Paper preset:** `t4_domain_d4` (D4, rank 64, weight 0.5 / cap 0.3, warmup 2). **Recipe card:** [T4 one-pager](../PAPER_ALIGNMENT.md) · `pmh-train list-presets`.
 
 ---
 
@@ -50,7 +58,7 @@ You need:
 
 ---
 
-## Your nuisance sentence (write this first)
+## Your deployment shift sentence (write this first)
 
 Examples that fit **D4**:
 
@@ -60,7 +68,7 @@ Examples that fit **D4**:
 
 Counter-examples (do **not** use D4 without reframing):
 
-- *“New classes appear at test time.”* → label shift, not PMH nuisance geometry.
+- *“New classes appear at test time.”* → label shift, not PMH deployment-shift geometry.
 - *“I want robustness to any perturbation.”* → name the perturbation (D2/D3) or use controls to test claims.
 
 ---

@@ -1,6 +1,6 @@
 # Golden paths (G1–G4 + framework variants)
 
-**Prerequisite:** [Find your application](APPLICATIONS.md) (nuisance + walkthrough). **Not first:** [walkthrough grid](walkthroughs/index.md).
+**Prerequisite:** [Five-step recipe](FIVE_STEP_RECIPE.md) → [Applications](APPLICATIONS.md) → [Integrate](INTEGRATE.md) for install/CLI.
 
 Pick **one** section below. Your application → nuisance mapping lives in [APPLICATIONS](APPLICATIONS.md).
 
@@ -28,6 +28,8 @@ print(rec.method, rec.nuisance, rec.reason)  # e.g. D4 domain_shift
 
 ## G1 — PyTorch, two domains
 
+**Mode A (Jacobian)** · **Step 5:** compare deploy holdout + [falsification controls](walkthroughs/08-falsification-controls.md) (`compare_arms` or `evaluate_robust_fit` + wrong-W / isotropic).
+
 **You have:** `model`, train loader, source + target loaders (target labels optional).
 
 ```python
@@ -53,11 +55,14 @@ report = evaluate_robust_fit(
     model, train_loader, val_loader,
     source_batches=source_loader, target_batches=target_loader,
     hook="auto", head=classifier, epochs=20, pmh_result=out,
+    include_falsification=True,  # default — Step 5 on hook embeddings
 )
 print(report.summary())
 ```
 
 - Colab: [domain_shift_first_run.ipynb](https://colab.research.google.com/github/vishalstark512/matching-pmh/blob/main/notebooks/domain_shift_first_run.ipynb)
+- CLI Step 5: `pmh-train evaluate --demo --stack pytorch` or `--source-dir A/ --target-dir B/`
+- Parameters: [PARAMETERS_CHEATSHEET.md](PARAMETERS_CHEATSHEET.md)
 - Already on Lightning? → **G1b** below
 
 ---
@@ -65,6 +70,8 @@ print(report.summary())
 <a id="g1b"></a>
 
 ## G1b — PyTorch Lightning
+
+**Mode A** · **Step 5:** [falsification controls](walkthroughs/08-falsification-controls.md) before production claims.
 
 **You have:** a `LightningModule`, task loss in `training_step`, and hook features `h = backbone(x)` from source vs target for Phase A.
 
@@ -107,29 +114,42 @@ trainer = pl.Trainer(callbacks=[PMHLightningCallback.from_artifact(artifact, pmh
 
 ## G2 — Frozen features + sklearn
 
-**You have:** `x_source`, `y_source`, `x_target` (embeddings).
+**Mode B (projection)** · **Step 5:** `evaluate_baseline_vs_pmh` (falsification arms **on by default**).
+
+**You have:** `x_source`, `y_source`, `x_target` (embeddings). Start with the **Office-31-style synthetic** demo (no download), then swap your `.npy` files.
 
 ```python
-from pmh import check_applicability, evaluate_baseline_vs_pmh
+from pmh import check_applicability, evaluate_baseline_vs_pmh, load_g2_demo_arrays
+
+# Same spirit as T1 Office-31 (amazon -> dslr) — synthetic, runs in seconds
+x_source, y_source, x_target, y_target = load_g2_demo_arrays(n=500, seed=0)
 
 print(check_applicability(stack="sklearn", n_source=len(x_source), n_target=len(x_target)).summary())
 
 report = evaluate_baseline_vs_pmh(
     x_source=x_source, y_source=y_source,
     x_target=x_target, y_target=y_target,
-    compare_to=("coral",),
+    compare_to=("coral",),  # optional baseline; Step 5 arms always included
 )
-print(report.summary())
+print(report.summary())  # matched / wrong-W / isotropic on deploy holdout
+```
+
+**Real Office-31** (after basics work):
+
+```bash
+python examples/06_office31_sklearn.py --office31-root /path/to/office31
 ```
 
 - Colab: [sklearn_frozen_features_first_run.ipynb](https://colab.research.google.com/github/vishalstark512/matching-pmh/blob/main/notebooks/sklearn_frozen_features_first_run.ipynb)
-- Pipeline: [gallery/tabular.md](gallery/tabular.md)
+- Quick script: `examples/02_g2_office31_style_demo.py`
 
 ---
 
 <a id="g3"></a>
 
 ## G3 — LLM / two text corpora (`HFPMHTrainer`)
+
+**Mode A** · **Step 5:** style/geometry checks — [falsification controls](walkthroughs/08-falsification-controls.md); report task and geometry separately ([§7.2](THEORY.md)).
 
 **You have:** texts from corpus A and B, same labels; you want **pmh** to estimate and train (no subclass of `transformers.Trainer` required).
 
@@ -161,6 +181,8 @@ print(out.preflight_message)
 <a id="g3b"></a>
 
 ## G3b — Hugging Face `Trainer` (keep your training stack)
+
+**Mode A** · **Step 5:** [falsification controls](walkthroughs/08-falsification-controls.md) (matched / wrong-Σ / isotropic for D7).
 
 **You have:** an existing `transformers.Trainer` setup (PEFT, DPO, custom callbacks). Add PMH in `compute_loss` via **`get_pmh_trainer()`**.
 
@@ -203,6 +225,8 @@ trainer.train()
 <a id="g4"></a>
 
 ## G4 — Custom geometry (your deltas or \(W\))
+
+**Mode A or B** (depends on hook) · **Step 5:** [falsification controls](walkthroughs/08-falsification-controls.md).
 
 **You have:** precomputed deltas, external \(W\), or a saved `.pt` artifact — same PMH train step.
 

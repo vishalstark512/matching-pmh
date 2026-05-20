@@ -44,7 +44,7 @@ class ApplicabilityReport:
     def summary(self) -> str:
         lines = [f"Verdict: {self.verdict.upper()}", *self.reasons]
         if self.suggested_nuisance:
-            lines.append(f"Suggested nuisance={self.suggested_nuisance!r}")
+            lines.append(f"Suggested shift type: nuisance={self.suggested_nuisance!r}  (pmh-train shifts)")
         return "\n".join(lines)
 
 
@@ -108,7 +108,10 @@ class RobustFitResult:
         return preflight_plain_english(self.preflight)
 
     def summary(self) -> str:
+        from pmh.adoption import RECIPE_ONE_LINER
+
         return (
+            f"{RECIPE_ONE_LINER}\n"
             f"train task_loss={self.stats.get('task_loss', 0):.4f}  "
             f"pmh_loss={self.stats.get('pmh_loss', 0):.4f}  "
             f"preflight={self.preflight} ({self.preflight_message})"
@@ -117,7 +120,11 @@ class RobustFitResult:
 
 @dataclass
 class EvaluationReport:
-    """Baseline vs PMH on a target holdout (developer-friendly)."""
+    """Baseline vs PMH on a target holdout (developer-friendly).
+
+    When ``falsification_arms`` is populated (default sklearn path), ``summary()`` includes
+    Step 5 controls: matched, wrong-W, isotropic on the same deploy holdout.
+    """
 
     baseline_metric: float
     pmh_metric: float
@@ -125,18 +132,33 @@ class EvaluationReport:
     preflight: str | None = None
     preflight_message: str = ""
     compare_baselines: dict[str, float] = field(default_factory=dict)
+    falsification_arms: dict[str, float] = field(default_factory=dict)
     notes: list[str] = field(default_factory=list)
 
+    def step5_ok(self) -> bool | None:
+        """Whether matched beat wrong-W and isotropic (None if arms missing)."""
+        from pmh.adoption import falsification_step5_ok
+
+        return falsification_step5_ok(self.falsification_arms)
+
     def summary(self) -> str:
+        from pmh.adoption import RECIPE_ONE_LINER, format_falsification_block
+
         lines = [
-            f"Target {self.metric_name}: baseline={self.baseline_metric:.3f}  pmh={self.pmh_metric:.3f}",
+            RECIPE_ONE_LINER,
+            "",
+            f"Quick compare — target {self.metric_name}: "
+            f"baseline={self.baseline_metric:.3f}  pmh={self.pmh_metric:.3f}",
         ]
         if self.preflight:
-            lines.append(f"Preflight: {self.preflight} - {self.preflight_message}")
+            lines.append(f"Preflight: {self.preflight} — {self.preflight_message}")
+        lines.extend(format_falsification_block(self.falsification_arms, metric_name=self.metric_name))
         for k, v in self.compare_baselines.items():
-            lines.append(f"  {k}: {v:.3f}")
+            if k not in self.falsification_arms:
+                lines.append(f"  {k}: {v:.3f}")
         for n in self.notes:
-            lines.append(f"Note: {n}")
+            if n:
+                lines.append(n)
         return "\n".join(lines)
 
 
@@ -190,7 +212,7 @@ def check_applicability(
         has_target_domain=has_target_domain,
         has_style_pairs=has_style_pairs,
     )
-    reasons.append(f"Suggested subtype {sug.method} ({sug.nuisance}): {sug.reason}")
+    reasons.append(f"Suggested shift type {sug.nuisance!r} ({sug.method}): {sug.reason}")
     rank = 16
     if feature_dim is not None:
         rank = max(4, min(32, feature_dim // 2))
@@ -320,16 +342,22 @@ def evaluate_baseline_vs_pmh(
     test_size: float = 0.35,
     rank: int = 16,
     seed: int = 0,
+    nuisance: str | None = None,
     compare_to: tuple[str, ...] = ("coral",),
+    include_falsification: bool = True,
 ) -> EvaluationReport:
-    """Sklearn path: source train vs PMH adapt + clf; score on target holdout."""
+    """Sklearn path: source train vs PMH adapt + clf; score on target holdout.
+
+    By default runs Step 5 falsification arms (matched / wrong-W / isotropic) on the same
+    deploy holdout via :func:`compare_arms_sklearn`. Set ``include_falsification=False`` for
+    a faster smoke test.
+    """
     try:
         from sklearn.linear_model import LogisticRegression
         from sklearn.metrics import accuracy_score
         from sklearn.model_selection import train_test_split
     except ImportError as exc:
         raise ImportError('evaluate_baseline_vs_pmh requires sklearn: pip install "matching-pmh[sklearn]"') from exc
-    from pmh import PMHMatcher
 
     pair = DomainPair.from_arrays(x_source, x_target, y_source, y_target)
     app = check_applicability(
@@ -339,26 +367,14 @@ def evaluate_baseline_vs_pmh(
         feature_dim=pair.feature_dim,
         has_target_labels=True,
     )
-
-    x_pool, x_te, y_pool, y_te = train_test_split(
-        x_target, y_target, test_size=test_size, random_state=seed, stratify=y_target
-    )
-
-    clf0 = LogisticRegression(max_iter=500)
-    clf0.fit(x_source, y_source)
-    acc_b0 = float(accuracy_score(y_te, clf0.predict(x_te)))
-
-    matcher = PMHMatcher(nuisance="domain_shift", rank=rank, seed=seed)
-    matcher.fit(x_source, y_source, x_pool, y_pool)
-    x_ad = matcher.transform(x_source)
-    clf1 = LogisticRegression(max_iter=500)
-    clf1.fit(x_ad, y_source)
-    acc_pmh = float(accuracy_score(y_te, clf1.predict(matcher.transform(x_te))))
-
-    pf = matcher.artifact_.preflight
+    nui = nuisance or app.suggested_nuisance or "domain_shift"
     extras: dict[str, float] = {}
-    notes = [app.reasons[0] if app.reasons else ""]
-    if compare_to:
+    falsification_arms: dict[str, float] = {}
+    notes: list[str] = []
+    if app.reasons:
+        notes.append(app.reasons[0])
+
+    if include_falsification or compare_to:
         from pmh import compare_arms_sklearn
 
         res = compare_arms_sklearn(
@@ -368,12 +384,35 @@ def evaluate_baseline_vs_pmh(
             y_target,
             rank=rank,
             include_coral="coral" in compare_to,
+            include_geometry=False,
             seed=seed,
+            paper_protocol=False,
+            test_size=test_size,
         )
+        for arm in ("b0", "matched", "wrong_w", "isotropic"):
+            if arm in res.arms and res.arms[arm].val_metric is not None:
+                falsification_arms[arm] = float(res.arms[arm].val_metric)
         for arm in compare_to:
             if arm in res.arms and res.arms[arm].val_metric is not None:
                 extras[arm] = float(res.arms[arm].val_metric)
-        notes.append("For falsification arms see compare_arms_sklearn (advanced).")
+        acc_b0 = falsification_arms.get("b0", 0.0)
+        acc_pmh = falsification_arms.get("matched", 0.0)
+        pf = res.artifact_preflight
+    else:
+        from pmh import PMHMatcher
+
+        x_pool, x_te, y_pool, y_te = train_test_split(
+            x_target, y_target, test_size=test_size, random_state=seed, stratify=y_target
+        )
+        clf0 = LogisticRegression(max_iter=500)
+        clf0.fit(x_source, y_source)
+        acc_b0 = float(accuracy_score(y_te, clf0.predict(x_te)))
+        matcher = PMHMatcher(nuisance=nui, rank=rank, seed=seed)
+        matcher.fit(x_source, y_source, x_pool, y_pool)
+        clf1 = LogisticRegression(max_iter=500)
+        clf1.fit(matcher.transform(x_source), y_source)
+        acc_pmh = float(accuracy_score(y_te, clf1.predict(matcher.transform(x_te))))
+        pf = matcher.artifact_.preflight
 
     return EvaluationReport(
         baseline_metric=acc_b0,
@@ -381,6 +420,7 @@ def evaluate_baseline_vs_pmh(
         preflight=pf,
         preflight_message=preflight_plain_english(pf),
         compare_baselines=extras,
+        falsification_arms=falsification_arms,
         notes=[n for n in notes if n],
     )
 
@@ -470,6 +510,175 @@ def _train_erm_epochs(
             opt.step()
 
 
+def load_g2_demo_arrays(
+    *,
+    n: int = 500,
+    seed: int = 0,
+    office31_style: bool = True,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Synthetic Office-31-style features for G2 / sklearn first run.
+
+    Returns ``(x_source, y_source, x_target, y_target)`` — same layout as
+    ``examples/06_office31_sklearn.py`` without downloading data.
+    """
+    if office31_style:
+        from pmh.benchmark.sklearn_protocol import synthetic_office31_features
+
+        return synthetic_office31_features(n, seed=seed)
+    rng = np.random.default_rng(seed)
+    d = 64
+    q, _ = np.linalg.qr(rng.standard_normal((d, 12)).astype(np.float32))
+    x_a = rng.standard_normal((n, d)).astype(np.float32)
+    y = rng.integers(0, 10, n)
+    nuisance = (x_a @ q) @ q.T
+    x_d = x_a + 1.5 * nuisance + 0.05 * rng.standard_normal((n, d)).astype(np.float32)
+    return x_a, y, x_d, y.copy()
+
+
+def _collect_labeled_embeddings(
+    encoder: Any,
+    loader: Any,
+    *,
+    device: Any = None,
+    max_batches: int | None = 32,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Stack hook embeddings and labels from a labeled ``DataLoader``."""
+    import torch
+    import torch.nn as nn
+
+    if isinstance(encoder, nn.Module):
+        device = device or next(encoder.parameters()).device
+        encoder.eval()
+
+        def _embed(x: torch.Tensor) -> torch.Tensor:
+            return encoder(x)
+
+    elif callable(encoder):
+        if device is None:
+            raise ValueError("device required when encoder is a callable hook")
+        _embed = encoder
+    else:
+        raise TypeError("encoder must be nn.Module or callable")
+
+    xs: list[np.ndarray] = []
+    ys: list[np.ndarray] = []
+    with torch.no_grad():
+        for i, batch in enumerate(loader):
+            if max_batches is not None and i >= max_batches:
+                break
+            if isinstance(batch, (tuple, list)):
+                if len(batch) < 2:
+                    raise ValueError("include_falsification requires labeled loaders (x, y)")
+                xb, yb = batch[0], batch[1]
+            elif isinstance(batch, dict):
+                xb = batch.get("input_ids", batch.get("x"))
+                yb = batch["labels"]
+                if xb is None or yb is None:
+                    raise ValueError("dict batch needs input_ids/x and labels")
+            else:
+                raise TypeError("batch must be tuple or dict")
+            xb = xb.to(device)
+            emb = _embed(xb).detach().float().cpu().numpy()
+            xs.append(emb)
+            ys.append(
+                yb.detach().cpu().numpy()
+                if isinstance(yb, torch.Tensor)
+                else np.asarray(yb, dtype=np.int64)
+            )
+    if not xs:
+        raise ValueError("loader produced no batches")
+    return np.vstack(xs).astype(np.float32), np.concatenate(ys).reshape(-1)
+
+
+def evaluate_falsification_arms(
+    encoder: Any,
+    *,
+    source_batches: Any,
+    target_batches: Any | None,
+    val_loader: Any,
+    rank: int = 16,
+    seed: int = 0,
+    test_size: float = 0.35,
+    max_batches: int | None = 32,
+    device: Any = None,
+) -> dict[str, float]:
+    """Step 5 only — matched / wrong-W / isotropic on hook embeddings (no re-training).
+
+    Use after ``PMHTrainer.fit`` when you already have baseline vs PMH accuracies.
+    """
+    if device is None:
+        import torch.nn as nn
+
+        if isinstance(encoder, nn.Module):
+            device = next(encoder.parameters()).device
+        else:
+            raise ValueError("device required when encoder is a callable hook")
+    return _falsification_arms_from_pytorch_loaders(
+        encoder,
+        source_batches=source_batches,
+        target_batches=target_batches,
+        val_loader=val_loader,
+        device=device,
+        rank=rank,
+        seed=seed,
+        test_size=test_size,
+        max_batches=max_batches,
+    )
+
+
+def _falsification_arms_from_pytorch_loaders(
+    encoder: Any,
+    *,
+    source_batches: Any,
+    target_batches: Any | None,
+    val_loader: Any,
+    device: Any,
+    rank: int,
+    seed: int,
+    test_size: float = 0.35,
+    max_batches: int | None = 32,
+) -> dict[str, float]:
+    """Step 5 on hook embeddings (same arms as sklearn frozen-feature protocol)."""
+    xs, ys = _collect_labeled_embeddings(
+        encoder, source_batches, device=device, max_batches=max_batches
+    )
+    xt_parts: list[np.ndarray] = []
+    yt_parts: list[np.ndarray] = []
+    if target_batches is not None:
+        xt, yt = _collect_labeled_embeddings(
+            encoder, target_batches, device=device, max_batches=max_batches
+        )
+        xt_parts.append(xt)
+        yt_parts.append(yt)
+    xv, yv = _collect_labeled_embeddings(
+        encoder, val_loader, device=device, max_batches=max_batches
+    )
+    xt_parts.append(xv)
+    yt_parts.append(yv)
+    xt = np.vstack(xt_parts)
+    yt = np.concatenate(yt_parts)
+
+    from pmh import compare_arms_sklearn
+
+    res = compare_arms_sklearn(
+        xs,
+        ys,
+        xt,
+        yt,
+        rank=rank,
+        seed=seed,
+        include_coral=False,
+        include_geometry=False,
+        paper_protocol=False,
+        test_size=test_size,
+    )
+    arms: dict[str, float] = {}
+    for arm in ("b0", "matched", "wrong_w", "isotropic"):
+        if arm in res.arms and res.arms[arm].val_metric is not None:
+            arms[arm] = float(res.arms[arm].val_metric)
+    return arms
+
+
 def evaluate_robust_fit(
     model: Any,
     train_loader: Any,
@@ -482,14 +691,21 @@ def evaluate_robust_fit(
     epochs: int = 5,
     rank: int | None = None,
     nuisance: str | None = None,
+    pmh_config: PMHConfig | None = None,
     pmh_result: RobustFitResult | None = None,
     seed: int = 0,
+    include_falsification: bool = True,
+    falsification_test_size: float = 0.35,
+    falsification_max_batches: int | None = 32,
 ) -> EvaluationReport:
     """PyTorch path: ERM baseline vs PMH on a labeled target ``val_loader``.
 
     Trains two copies of ``model`` (ERM-only, then PMH via :func:`robust_fit`) unless
     ``pmh_result`` is already available. Returns the same :class:`EvaluationReport` shape
     as :func:`evaluate_baseline_vs_pmh`.
+
+    With ``include_falsification=True`` (default), runs matched / wrong-W / isotropic on
+    hook embeddings from your loaders (same Step 5 story as sklearn).
     """
     import copy
 
@@ -523,6 +739,7 @@ def evaluate_robust_fit(
             head=head,
             nuisance=nuisance,
             rank=rank,
+            pmh_config=pmh_config,
             epochs=epochs,
             applicability=app,
         )
@@ -535,15 +752,38 @@ def evaluate_robust_fit(
         val_loader,
     )
 
+    device = next(pmh_out.trainer.model.parameters()).device
+    enc_step5 = resolve_hook(pmh_out.trainer.model, hook_used)
+    falsification_arms: dict[str, float] = {}
     notes = list(app.reasons[:1]) if app.reasons else []
-    notes.append("Run compare_arms for matched / wrong_w / isotropic controls (advanced).")
-    notes.append("See docs/WHEN_PMH_HELPS.md for when to expect gains.")
+    if include_falsification:
+        try:
+            falsification_arms = _falsification_arms_from_pytorch_loaders(
+                enc_step5,
+                source_batches=source_batches,
+                target_batches=target_batches,
+                val_loader=val_loader,
+                device=device,
+                rank=rank or 16,
+                seed=seed,
+                test_size=falsification_test_size,
+                max_batches=falsification_max_batches,
+            )
+        except (ValueError, TypeError) as exc:
+            from pmh.adoption import STEP5_PYTORCH_HINT
+
+            notes.append(f"Step 5 skipped ({exc}). {STEP5_PYTORCH_HINT}")
+    elif notes:
+        from pmh.adoption import STEP5_PYTORCH_HINT
+
+        notes.append(STEP5_PYTORCH_HINT)
 
     return EvaluationReport(
         baseline_metric=acc_b0,
         pmh_metric=acc_pmh,
         preflight=pmh_out.preflight,
         preflight_message=preflight_plain_english(pmh_out.preflight),
+        falsification_arms=falsification_arms,
         notes=[n for n in notes if n],
     )
 

@@ -1,20 +1,29 @@
 # Documentation guide (contributors)
 
-## Information architecture (v2)
+## Slim site (v3)
 
-**Rule:** one adoption ladder. Never add a second “start here.”
+**Users see ~12 nav pages.** Everything else stays in the repo for search / deep links but is a **redirect stub** or unlisted.
 
-| Layer | Tab | Audience |
-|-------|-----|----------|
-| L0 | Home `index.md` | 10-line pointer to APPLICATIONS |
-| L1 | **Adopt** | All new developers |
-| L2 | **Integrate** | Wiring PMH into a stack |
-| L3 | **Gallery** | Copy-paste by domain |
-| L4 | **Research** | Paper / benchmarks / walkthroughs |
-| L5 | **Reference** | Lemmas, theory, primitives |
-| L6 | **Contributors** | Plans, roadmap |
+| Nav tab | Pages |
+|---------|--------|
+| **Adopt** | `FIVE_STEP_RECIPE`, `APPLICATIONS`, `GOLDEN_PATHS`, `INTEGRATE`, `WHEN_PMH_HELPS`, `TROUBLESHOOTING` |
+| **Reference** | `WHAT_IS_DEPLOYMENT_SHIFT` (linked from Adopt), `PMH_PARAMETERS`, `NUISANCE_SUBTYPES` (appendix), `api/index` |
+| **Evidence** | `walkthroughs/index`, `08-falsification`, `PAPER_ALIGNMENT` |
+| **Reference** | `estimators/index`, `THEORY` |
+| **Contributors** | `DOCS_GUIDE`, `META_STRUCTURE` |
 
-**Source of truth for applications:** `src/pmh/task_router.py` + [APPLICATIONS.md](APPLICATIONS.md) (keep in sync).
+Regenerate compact pages:
+
+```bash
+python scripts/gen_compact_applications.py
+python scripts/gen_compact_nuisance_subtypes.py
+```
+
+Removed pages redirect via `mkdocs.yml` only (no stub files). To delete more consolidated files:
+
+```bash
+python scripts/delete_consolidated_docs.py
+```
 
 ---
 
@@ -22,51 +31,26 @@
 
 | Change | Edit |
 |--------|------|
-| New user-facing task | `task_router.py` + `APPLICATIONS.md` section + optional `gallery/` |
-| New integration pattern | `GOLDEN_PATHS.md` only |
-| New subtype / estimator | `NUISANCE_SUBTYPES.md` + `estimators/dk.md` |
-| Paper block | `PAPER_ALIGNMENT.md` + `recipes/` |
-| CLI command | `cli.md` + `src/pmh/cli/main.py` |
+| New user task | `task_router.py` → run `gen_compact_applications.py` |
+| Five-step / product story | `FIVE_STEP_RECIPE.md`, `recipe.py` |
+| Stack integration | `INTEGRATE.md`, `GOLDEN_PATHS.md` (one section) |
+| New estimator | `estimators/dk.md` + `estimators/index.md` (not Adopt tab) |
+| Paper block | `walkthroughs/` + `PAPER_ALIGNMENT.md` (Evidence only) |
+| CLI | `cli/main.py`, one line in `INTEGRATE.md` |
 
-**Do not** add top-level Adopt pages without updating this guide.
-
----
-
-## Redirect stubs
-
-Keep these files **short** (redirect only). Do not expand them.
-
-| Stub | Target |
-|------|--------|
-| `QUICKSTART.md`, `getting-started.md`, `CHOOSE_YOUR_SETUP.md` | `APPLICATIONS.md` |
-| `ADAPT_YOUR_PIPELINE.md` | `GETTING_STARTED.md` |
-| `nuisance_types.md` | `NUISANCE_SUBTYPES.md` |
+**Do not** add new top-level Adopt pages without removing one or folding into `INTEGRATE.md`.
 
 ---
 
-## Adoption banner (optional on long pages)
-
-```markdown
-!!! tip "Adoption path"
-    New here? [Find your application](APPLICATIONS.md) → [Golden paths](GOLDEN_PATHS.md) (one section).
-```
-
-Use on Research / Reference pages, not on APPLICATIONS or GOLDEN_PATHS.
-
----
-
-## mkdocs nav
-
-Edit `mkdocs.yml` only when adding a **new Integrate or Research** page. Adopt tab should stay ≤6 entries.
-
----
-
-## Pre-release check
+## Sync tests
 
 ```bash
+python -m pytest tests/test_applications_doc_sync.py tests/test_task_router.py -q
 python -m mkdocs build
-python -m pytest tests/test_task_router.py -q
-pmh-train route --list
 ```
 
-Fix broken links to `GOLDEN_PATHS.md#g1` … `#g4` (use HTML `<a id="g1"></a>` anchors).
+---
+
+## Code layout
+
+[META_STRUCTURE.md](META_STRUCTURE.md)

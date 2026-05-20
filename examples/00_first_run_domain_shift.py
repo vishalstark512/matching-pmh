@@ -16,6 +16,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset
 
 from pmh import PMHConfig, PMHTrainer
+from pmh.adoption import RECIPE_ONE_LINER, STEP5_PYTORCH_HINT
 from pmh.onboarding import preflight_plain_english
 
 _QUICK = os.environ.get("PMH_QUICK", "").lower() in ("1", "true", "yes")
@@ -129,13 +130,16 @@ def main() -> None:
 
     print()
     print("matching-pmh first run (synthetic domain shift)")
+    print(RECIPE_ONE_LINER)
     print("-" * 48)
     print(f"Target accuracy (baseline ERM):  {acc_b0:.3f}")
     print(f"Target accuracy (with PMH):      {acc_pmh:.3f}")
     pf = trainer.artifact_.preflight
     print(f"Preflight: {pf} — {preflight_plain_english(pf)}")
     print()
-    print("Next: docs/FIRST_HOUR.md  |  pmh-train wizard")
+    print(STEP5_PYTORCH_HINT)
+    print()
+    print("Next: docs/FIVE_STEP_RECIPE.md  |  pmh-train recipe  |  pmh-train wizard")
     print("      python examples/01_domain_shift_d4.py")
 
 

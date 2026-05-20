@@ -1,6 +1,8 @@
 # Paper block presets (T1–T7)
 
-Use these when you want **library defaults** aligned with `Paper2/T1`–`T7` scripts — nuisance type, rank, PMH weights, and (for sklearn) the T1 pool/test protocol.
+Use these when you want **library defaults** aligned with `Paper2/T1`–`T7` scripts — shift type (`nuisance=`), rank, PMH weights, and (for sklearn) the T1 pool/test protocol.
+
+> **API note:** `nuisance=` names the **deployment shift type** (D1–D7), not bad data. [What is deployment shift?](../WHAT_IS_DEPLOYMENT_SHIFT.md)
 
 ```bash
 pmh-train list-presets
@@ -12,19 +14,19 @@ See also [CORRECT_USAGE.md](../CORRECT_USAGE.md) and [PAPER_ALIGNMENT.md](../PAP
 
 ## Quick map
 
-**One-page recipes:** [T1](../recipes/t1-office31-d1.md) · [T2A](../recipes/t2a-vit-isotropic.md) · [T4](../recipes/t4-domain-d4.md) · [T7A](../recipes/t7a-style-d7.md)
+**One-page recipes:** [T1](../PAPER_ALIGNMENT.md) · [T2A](../PAPER_ALIGNMENT.md) · [T4](../PAPER_ALIGNMENT.md) · [T7A](../PAPER_ALIGNMENT.md)
 
 | Preset | Block | Estimator | Walkthrough |
 |--------|-------|-----------|-------------|
-| `t1_office31_sklearn` | T1 | D1 | [Recipe card](../recipes/t1-office31-d1.md) · [3 — Office-31 sklearn](03-office31-sklearn-d1.md) |
+| `t1_office31_sklearn` | T1 | D1 | [Recipe card](../PAPER_ALIGNMENT.md) · [3 — Office-31 sklearn](03-office31-sklearn-d1.md) |
 | `t1_synthetic_sklearn` | T1 | D1 | [3](03-office31-sklearn-d1.md) (Path A) |
-| `t2a_vit_isotropic` | T2A | D2 | [Recipe](../recipes/t2a-vit-isotropic.md) · [12 — ViT CLS](12-vit-cls-d4.md) |
+| `t2a_vit_isotropic` | T2A | D2 | [Recipe](../PAPER_ALIGNMENT.md) · [12 — ViT CLS](12-vit-cls-d4.md) |
 | `t2b_chexpert_isotropic` | T2B | D2 | gallery / chest X-ray |
 | `t3b_depth_d3` | T3B | D3 | [16 — Augmentations](16-augmentation-d3.md) |
-| `t4_domain_d4` | T4 | D4 | [Recipe card](../recipes/t4-domain-d4.md) · [1 — PyTorch D4](01-pytorch-domain-d4.md) |
+| `t4_domain_d4` | T4 | D4 | [Recipe card](../PAPER_ALIGNMENT.md) · [1 — PyTorch D4](01-pytorch-domain-d4.md) |
 | `t5_compositional_d5` | T5 | D5 | [5 — Compositional](05-compositional-d5.md) |
 | `t6_temporal_d6` | T6 | D6 | [11 — Temporal](11-temporal-d6.md) |
-| `t7a_style_d7` | T7A | D7 | [Recipe](../recipes/t7a-style-d7.md) · [6 — LLM style](06-llm-style-d7.md) |
+| `t7a_style_d7` | T7A | D7 | [Recipe](../PAPER_ALIGNMENT.md) · [6 — LLM style](06-llm-style-d7.md) |
 | `t7b_pgd_d7` | T7B | D7 | PGD / adversarial δ |
 
 ---

@@ -1,5 +1,6 @@
 """matching-pmh: estimate Sigma_task and apply matched PMH penalties."""
 
+from pmh._api import TIER_0 as __tier0__
 from pmh.artifact import SigmaTaskEstimate
 from pmh.compare import compare_arms, compare_arms_sklearn
 from pmh.config import PMHConfig, PreflightConfig, SigmaTaskConfig
@@ -46,8 +47,10 @@ from pmh.developer import (
     RobustFitResult,
     check_applicability,
     evaluate_baseline_vs_pmh,
+    evaluate_falsification_arms,
     evaluate_robust_fit,
     evaluate_trainer_on_loader,
+    load_g2_demo_arrays,
     robust_fit,
     robust_fit_text_domains,
     suggest_hook,
@@ -67,6 +70,7 @@ from pmh.applications import (
     explain_application,
     format_application_finder,
     format_search_results,
+    explain_nuisance_key,
     format_shift_types,
     search_applications,
 )
@@ -114,123 +118,19 @@ from pmh.sklearn_pipeline import (
     tune_result_from_grid_search,
 )
 from pmh.tune import TuneResult, tune_pmh_config, tune_sklearn_matcher
+from pmh.recipe import (
+    RecipePlan,
+    ShiftIdentification,
+    format_five_step_guide,
+    plan_recipe,
+    step_identify,
+    step_scope,
+)
 
-__all__ = [
-    "PMHMatcher",
-    "PMHTrainer",
-    "build_hybrid_trainer",
-    "HFPMHTrainer",
-    "MultiPMHLoss",
-    "DataContext",
-    "PMHConfig",
-    "PMHLoss",
-    "SigmaTaskConfig",
-    "SigmaTaskEstimate",
-    "PreflightConfig",
-    "estimate_sigma_task",
-    "estimate_from_config",
-    "collect_features",
-    "collect_labeled_features",
-    "collect_augmentation_deltas",
-    "collect_sequence_features",
-    "paired_batches",
-    "pmh_penalty",
-    "pmh_penalty_on_rep",
-    "pmh_penalty_feature_diff",
-    "cap_pmh_term",
-    "wrong_W_projector",
-    "signal_W_projector",
-    "eigengap_ratio",
-    "preflight_eigengap",
-    "tdi_cls",
-    "tdi_layout",
-    "tdi_feature_isotropic",
-    "trajectory_tdi_layerwise",
-    "trajectory_tdi_encoder",
-    "directional_drift_numpy",
-    "geometry_report",
-    "TDIReport",
-    "PreflightStatus",
-    "config_from_nuisance",
-    "list_nuisance_names",
-    "resolve_method",
-    "suggest_nuisance",
-    "NuisanceSuggestion",
-    "suggest_subtype",
-    "SubtypeRecommendation",
-    "TaskRoute",
-    "ShiftTypePlain",
-    "SHIFT_TYPES",
-    "explain_task",
-    "explain_application",
-    "format_shift_types",
-    "format_application_finder",
-    "format_search_results",
-    "search_applications",
-    "search_tasks",
-    "format_task_menu",
-    "get_task",
-    "list_tasks",
-    "list_subtypes",
-    "get_subtype",
-    "format_subtype_line",
-    "print_subtype_guide",
-    "estimate_custom",
-    "artifact_from_deltas",
-    "artifact_from_w",
-    "load_w_numpy",
-    "load_domain_arrays",
-    "load_domain_dirs",
-    "resolve_feature_npy",
-    "batch_iterators",
-    "batch_iterators_labeled",
-    "validate_falsification",
-    "ValidationReport",
-    "get_subtype_preset",
-    "export_deployment",
-    "load_deployment_bundle",
-    "DeploymentBundle",
-    "run_doctor",
-    "DoctorReport",
-    "recommend_setup",
-    "print_setup_guide",
-    "format_setup_guide",
-    "SetupRecommendation",
-    "run_wizard",
-    "preflight_plain_english",
-    "check_applicability",
-    "ApplicabilityReport",
-    "DomainPair",
-    "robust_fit",
-    "robust_fit_text_domains",
-    "RobustFitResult",
-    "suggest_hook",
-    "HookSuggestion",
-    "evaluate_baseline_vs_pmh",
-    "evaluate_robust_fit",
-    "evaluate_trainer_on_loader",
-    "EvaluationReport",
-    "resolve_hook",
-    "validate_representation",
-    "detect_model_family",
-    "list_hook_families",
-    "register_hook_family",
-    "encoder_timm",
-    "encoder_torchvision_resnet",
-    "encoder_hf_hidden_states",
-    "encoder_gnn_mean_pool",
-    "compare_arms",
-    "compare_arms_sklearn",
-    "tune_sklearn_matcher",
-    "tune_pmh_config",
-    "TuneResult",
-    "make_pmh_pipeline",
-    "default_pmh_param_grid",
-    "grid_search_pmh_pipeline",
-    "tune_result_from_grid_search",
-]
+# Tier 0 = semver-stable adoption API (see docs/ARCHITECTURE.md and pmh._api).
+__all__ = list(__tier0__)
 
-__version__ = "1.5.3"
+__version__ = "1.6.0"
 
 
 def __getattr__(name: str):
@@ -263,9 +163,9 @@ def __getattr__(name: str):
         "run_sklearn_benchmark",
         "STANDARD_ARMS",
     ):
-        from pmh import benchmark as _b
+        from pmh import research as _r
 
-        return getattr(_b, name)
+        return getattr(_r, name)
     if name in ("estimate_sigma_task_numpy", "gram_from_diff_numpy"):
         from pmh import numpy_api
 

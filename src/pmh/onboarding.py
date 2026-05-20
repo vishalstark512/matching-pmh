@@ -229,9 +229,10 @@ def run_wizard(
         _apply_task(selected_task)
 
     if interactive and stack is None and selected_task is None:
+        from pmh.adoption import format_recipe_banner
+
         print("matching-pmh setup wizard")
-        print("Train on one environment, deploy on another — same labels.")
-        print("One-page guide: docs/START_HERE.md\n")
+        print(format_recipe_banner(trailing="Guide: docs/FIVE_STEP_RECIPE.md\n"))
         print(format_task_menu())
         from pmh.task_router import TASK_IDS
 

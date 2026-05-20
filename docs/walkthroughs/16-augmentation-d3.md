@@ -1,5 +1,13 @@
 # Walkthrough 16: Known augmentations (D3) — full guide
 
+
+!!! tip "Adopt PMH first"
+    **Start:** [ADOPT.md](../../ADOPT.md) → [Golden path G1–G4](../GOLDEN_PATHS.md#g1) · **Route:** `pmh-train route --task augmentation_robustness` · **Step 5:** wrong-W vs matched on aug holdout
+    This walkthrough is **evidence / depth** — not your first page.
+
+> **API note:** `nuisance=` is the **deployment shift type** (D1–D7 API key), not “bad data.” [What is deployment shift?](../WHAT_IS_DEPLOYMENT_SHIFT.md)
+
+
 **At a glance**
 
 | | |
@@ -18,7 +26,7 @@ You know deployment shift equals **specific transforms** (blur, JPEG, color jitt
 
 ---
 
-## Your nuisance sentence
+## Your deployment shift sentence
 
 *“Deploy sees stronger blur and compression; label unchanged.”*
 
