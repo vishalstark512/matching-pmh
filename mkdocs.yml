@@ -84,6 +84,7 @@ nav:
       - Datasets: datasets.md
 
   - Contributors:
+      - GitHub Pages setup: GITHUB_PAGES_SETUP.md
       - Doc maintenance: DOCS_GUIDE.md
       - Subtype plan: NUISANCE_SUBTYPE_PLAN.md
       - Developer onboarding plan: DEVELOPER_ONBOARDING_PLAN.md

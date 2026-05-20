@@ -111,6 +111,21 @@ If trusted publishing is not set up, add repo secret `PYPI_API_TOKEN` and the pu
 
 ---
 
+## GitHub Pages (docs site)
+
+**URL:** https://vishalstark512.github.io/matching-pmh/
+
+Workflow: `.github/workflows/docs.yml` (build on PR; deploy on `main` push).
+
+If deploy fails with `Not Found`, Pages is not enabled for Actions yet:
+
+1. Repo **Settings → Pages → Build and deployment → Source: GitHub Actions**
+2. Re-run the **docs** workflow
+
+Details: [docs/GITHUB_PAGES_SETUP.md](docs/GITHUB_PAGES_SETUP.md)
+
+---
+
 ## Paper cross-link
 
 Set in `submission_grand_unification/macros.tex`:
