@@ -1,9 +1,11 @@
 # When PMH helps (and when it does not)
 
 !!! tip "Adoption path"
-    First: [Find your application](APPLICATIONS.md) (does your task fit?). This page: honest expectations.
+    First: [Pick a task](tasks/index.md) (does your setup fit?). This page: honest expectations.
 
-Honest expectations before you invest integration time. PMH is **not** a guarantee of higher accuracy; it is a **structured** way to reduce sensitivity along estimated deployment nuisance directions, with **falsification controls** so you can see whether gains are specific or generic.
+PMH is a **matching principle** for the training loss ([`main.pdf`](../main.pdf)): estimate $\Sigma_{\text{task}}$ for label-preserving deploy change, penalize the encoder Jacobian along a **matched** $\Sigma'$, and falsify with **wrong-direction** and **isotropic** arms before you trust a deploy metric. Pick your situation from the [T1–T7 table in the README](../README.md#find-your-deployment-story-t1-through-t7).
+
+This page is the honesty layer: the theory does **not** guarantee higher accuracy on every benchmark. It gives named failure modes (e.g. Lemma D1 eigengap on Office-31, label-changing shifts out of scope) and requires Step 5 controls so gains are tied to the estimated nuisance geometry — not generic training noise.
 
 ---
 
@@ -42,11 +44,11 @@ print(check_applicability(
 | **Clear domain shift** (camera, site, corpus style) with **same semantics** | PMH estimates directions that vary between A and B but should not change the label |
 | **Enough target data to estimate geometry** | Rule of thumb: **50+** unlabeled target samples; **200+** for stable D1/D4; more for high rank |
 | **ERM underperforms on target** but source training looks fine | Room to move the representation without destroying source fit |
-| **Preflight passes** (`pass` or strong eigengap) | Estimated nuisance subspace is identifiable — see [TROUBLESHOOTING](TROUBLESHOOTING.md) |
+| **Preflight passes** (`pass` or strong eigengap) | Estimated nuisance subspace is identifiable — `pmh-train doctor` |
 | **Matched beats wrong-W and isotropic** in your control table | Gain is tied to the estimated nuisance story, not arbitrary regularization |
 | **End-to-end fine-tuning** (Mode A) with a hook on `h` | Jacobian penalty can change what ERM alone cannot on frozen linear probes |
 
-**Toy sanity check:** `python examples/00_first_run_domain_shift.py` — synthetic shift where PMH often **beats** ERM on target accuracy in one minute on CPU.
+**Toy sanity check:** `PMH_QUICK=1 python scripts/demos/first_run_domain_shift.py` — synthetic shift where PMH often **beats** ERM on target accuracy in one minute on CPU.
 
 ---
 
@@ -55,7 +57,7 @@ print(check_applicability(
 | Situation | What usually happens | Better approach |
 |-----------|----------------------|-----------------|
 | **Frozen features + linear head** on an easy DA benchmark | Small or **no** accuracy gain; CORAL may match or beat projection | See Office-31 table below; try Mode A fine-tuning if possible |
-| **Very small target pool** (< ~30) | Unstable \(\hat W\), marginal preflight | More target data, lower rank, or simpler nuisance (D2/D4) |
+| **Very small target pool** (< ~30) | Unstable $\hat{W}$, marginal preflight | More target data, lower rank, or simpler nuisance (D2/D4) |
 | **Target already near source accuracy** | Little headroom | ERM + report that PMH was unnecessary |
 | **Label shift / new classes** | PMH is the wrong tool | Open-set, class-balanced reweighting, separate heads |
 | **Only generic noise robustness** | Isotropic arm may look similar to matched | Augmentation, adversarial training |
@@ -67,7 +69,7 @@ print(check_applicability(
 
 ### Office-31 (T1, frozen ResNet-18 features, Amazon → DSLR)
 
-Protocol: `paper_protocol=True`, preset `t1_office31_sklearn`, rank 32. **Paper:** [PAPER_ALIGNMENT](PAPER_ALIGNMENT.md) · Office-31 walkthrough: [19-office31-real-data](walkthroughs/19-office31-real-data.md).
+Protocol: `paper_protocol=True`, preset `t1_office31_sklearn`, rank 32. **Runbook:** [T1 classical](tasks/t01-classical.md) · `scripts/demos/office31_sklearn.py`
 
 | Arm | Target accuracy (holdout) | Comment |
 |-----|---------------------------|---------|
@@ -76,9 +78,9 @@ Protocol: `paper_protocol=True`, preset `t1_office31_sklearn`, rank 32. **Paper:
 | CORAL | **0.268** | Strong on this **linear** frozen-feature setup |
 | Isotropic control | 0.184 | Different objective — not “free accuracy” |
 
-**Takeaway:** On this benchmark, **matched projection does not beat ERM accuracy**; CORAL is competitive. PMH is still useful here for **replication**, **geometry metrics** (TDI, \(D_N/D_S\)), and **falsification** (wrong-W should not beat matched on both accuracy and geometry). Do **not** use this table as a marketing headline.
+**Takeaway:** On this benchmark, **matched projection does not beat ERM accuracy**; CORAL is competitive. PMH is still useful here for **replication**, **geometry metrics** (TDI, $D_N/D_S$), and **falsification** (wrong-W should not beat matched on both accuracy and geometry). Do **not** use this table as a marketing headline.
 
-### Synthetic domain shift (example 00)
+### Synthetic domain shift (first-run demo)
 
 Controlled shift in input space + trainable backbone — PMH often shows **higher target accuracy than ERM** because the representation can move. This is the right mental model for **Mode A** end-to-end training.
 
@@ -92,18 +94,18 @@ Controlled shift in input space + trainable backbone — PMH often shows **highe
 | **Fine-tune on target** | All weights on labeled B | — | Many target labels available |
 | **CORAL / moment match** | Feature covariance toward target | Optional baseline arm | Frozen features + linear classifier |
 | **DANN / domain adversary** | Encoder vs domain classifier | External | Unlabeled target, classic DA setup |
-| **matching-pmh (matched)** | Penalize sensitivity along \(\hat\Sigma_{\mathrm{task}}\) | **wrong-W, isotropic** arms | Same labels, target signal, hook on `h`, need credible claim |
+| **matching-pmh (matched)** | Penalize sensitivity along $\hat\Sigma_{\text{task}}$ | **wrong-W, isotropic** arms | Same labels, target signal, hook on `h`, need credible claim |
 
-See [COMPARE_TO_CORAL.md](COMPARE_TO_CORAL.md) for migration notes.
+On frozen features, compare PMH arms with CORAL in `compare_arms_sklearn(..., include_coral=True)` — see [T1 classical](tasks/t01-classical.md).
 
 ---
 
 ## How to know it “worked” (beyond accuracy)
 
-1. **Preflight** — `pass` before large training runs ([glossary](TROUBLESHOOTING.md#plain-language-glossary)).
+1. **Preflight** — `pass` before large training runs (`artifact.preflight` / `pmh-train doctor`).
 2. **Target metric** — accuracy / AUROC on held-out **target**, not source only.
-3. **Falsification** — [Walkthrough 8](walkthroughs/08-falsification-controls.md): matched > wrong-W on deployment metric; isotropic should not beat matched on **both** accuracy and geometry.
-4. **Geometry (optional)** — `tdi_cls`, \(D_N/D_S\) from `pmh.tdi` / benchmarks ([BENCHMARKS.md](BENCHMARKS.md)).
+3. **Falsification** — matched > wrong-W on deployment metric; isotropic should not beat matched on **both** accuracy and geometry (`evaluate_baseline_vs_pmh` / `evaluate_robust_fit`).
+4. **Geometry (optional)** — `tdi_cls`, $D_N/D_S$ from `pmh.tdi` / `compare_arms_sklearn(..., include_geometry=True)`.
 
 ```python
 # sklearn (frozen features)
@@ -143,7 +145,7 @@ print(report.summary())
 
 | Goal | Doc |
 |------|-----|
-| Install and first run | [INTEGRATE.md](INTEGRATE.md) |
-| Pick PyTorch / sklearn / HF | [GOLDEN_PATHS.md](GOLDEN_PATHS.md) |
-| Paper-faithful benchmarks | [CORRECT_USAGE.md](CORRECT_USAGE.md) · [PAPER_ALIGNMENT.md](PAPER_ALIGNMENT.md) |
-| Errors | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) |
+| Install and first run | [QUICKSTART.md](QUICKSTART.md) |
+| Pick a paper task | [13 tasks](tasks/index.md) |
+| T1 Office-31 + sklearn | [t01-classical.md](tasks/t01-classical.md) |
+| API reference | [api/index.md](api/index.md) |

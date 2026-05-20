@@ -46,4 +46,4 @@ def test_recommend_setup_carries_lemma():
     )
     assert rec.lemma == "D3"
     assert rec.nuisance == "augmentation"
-    assert "NUISANCE_SUBTYPES" in rec.subtype_doc
+    assert "docs/tasks/t03a-pose-gradient.md" in rec.subtype_doc

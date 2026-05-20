@@ -1,20 +1,27 @@
-"""Benchmark protocol and reports."""
+"""Benchmark protocol, presets, calibrators, and reports."""
 
 from __future__ import annotations
 
 import json
 
+import numpy as np
 import pytest
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset
 
-from pmh import PMHConfig, SigmaTaskConfig, estimate_from_config
+from pmh import PMHConfig, SigmaTaskConfig, compare_arms_sklearn, estimate_from_config
 from pmh.benchmark import (
     benchmark_to_markdown,
     run_benchmark_protocol,
     run_sklearn_benchmark,
     write_benchmark_report,
+)
+from pmh.benchmark.presets import get_preset, list_presets
+from pmh.calibrate import (
+    content_residual_subspace,
+    gradient_subspace_numpy,
+    subspace_artifact_from_deltas,
 )
 
 
@@ -66,7 +73,6 @@ def test_benchmark_protocol_runs_four_arms():
 
 
 def test_sklearn_benchmark_high_d():
-    """Isotropic arm uses Vt (feature directions); must work when n < d."""
     pytest.importorskip("sklearn")
     from pmh.benchmark.sklearn_protocol import run_sklearn_benchmark, synthetic_office31_features
 
@@ -77,7 +83,6 @@ def test_sklearn_benchmark_high_d():
 
 def test_sklearn_benchmark_synthetic():
     pytest.importorskip("sklearn")
-    import numpy as np
 
     rng = np.random.default_rng(0)
     n, d = 120, 20
@@ -91,12 +96,55 @@ def test_sklearn_benchmark_synthetic():
 
 
 def test_write_benchmark_report(tmp_path):
-    torch.manual_seed(1)
-    art = estimate_from_config(SigmaTaskConfig.for_isotropic(6, 0.1))
-    from pmh.benchmark.protocol import BenchmarkResult, ArmRunResult
+    from pmh.benchmark.protocol import ArmRunResult, BenchmarkResult
 
+    art = estimate_from_config(SigmaTaskConfig.for_isotropic(6, 0.1))
     res = BenchmarkResult("D2", "pass", None)
     res.arms["b0"] = ArmRunResult("b0", val_metric=0.5)
     paths = write_benchmark_report(res, tmp_path)
     data = json.loads(paths["json"].read_text(encoding="utf-8"))
     assert "b0" in data["arms"]
+
+
+def test_list_presets():
+    names = list_presets()
+    assert "t1_office31_sklearn" in names
+    assert "t4_domain_d4" in names
+
+
+def test_office31_preset_sklearn_kwargs():
+    p = get_preset("t1_office31_sklearn")
+    assert p.sklearn_benchmark["paper_protocol"] is True
+    assert p.default_rank == 32
+
+
+def test_subspace_from_deltas():
+    rng = np.random.default_rng(0)
+    d, r, n = 20, 4, 50
+    w_true = rng.standard_normal((d, r)).astype(np.float32)
+    g = rng.standard_normal((n, r)) @ w_true.T
+    art = subspace_artifact_from_deltas(g, rank=r)
+    assert art.sigma.shape == (d, d)
+    assert "w" in art.metadata
+
+
+def test_content_residual_temporal():
+    x = np.random.randn(10, 5, 8).astype(np.float32)
+    w, art = content_residual_subspace(x, rank=3, source="temporal")
+    assert w.shape[0] == 8
+
+
+def test_gradient_subspace():
+    g = np.random.randn(30, 12).astype(np.float32)
+    w, art = gradient_subspace_numpy(g, rank=4)
+    assert w.shape == (12, 4)
+
+
+def test_compare_sklearn_with_preset():
+    pytest.importorskip("sklearn")
+    from pmh.benchmark.sklearn_protocol import synthetic_office31_features
+
+    xs, y, xt, yt = synthetic_office31_features(n=100, d=24, seed=0)
+    res = compare_arms_sklearn(xs, y, xt, yt, preset="t1_synthetic_sklearn")
+    assert "matched" in res.arms
+    assert any("Preset:" in n for n in res.notes)

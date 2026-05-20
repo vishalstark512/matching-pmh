@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>PMH paper — block findings</title>
+  <style>
+:root {
+  --bg: #f8f9fb;
+  --card: #fff;
+  --text: #1a1d26;
+  --muted: #5c6370;
+  --accent: #2563eb;
+  --pass: #059669;
+  --fail: #dc2626;
+  --warn: #d97706;
+  --border: #e2e8f0;
+}
+* { box-sizing: border-box; }
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.55;
+  margin: 0;
+  padding: 1.5rem;
+  max-width: 52rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+h1 { font-size: 1.65rem; margin: 0 0 0.5rem; }
+h2 { font-size: 1.2rem; margin: 2rem 0 0.75rem; border-bottom: 1px solid var(--border); padding-bottom: 0.35rem; }
+.meta { color: var(--muted); font-size: 0.92rem; margin-bottom: 1.5rem; }
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  margin: 1rem 0;
+  box-shadow: 0 1px 3px rgba(0,0,0,.04);
+}
+.badge {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  margin: 0.25rem 0;
+}
+.badge-pass { background: #d1fae5; color: #065f46; }
+.badge-fail { background: #fee2e2; color: #991b1b; }
+.badge-warn { background: #fef3c7; color: #92400e; }
+.badge-partial { background: #e0e7ff; color: #3730a3; }
+table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+th, td { text-align: left; padding: 0.55rem 0.65rem; border-bottom: 1px solid var(--border); }
+th { color: var(--muted); font-weight: 600; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.03em; }
+.metric-row td:first-child { color: var(--muted); width: 42%; }
+.bar-wrap { background: #eef2f7; border-radius: 4px; height: 8px; margin-top: 4px; overflow: hidden; }
+.bar { height: 100%; background: var(--accent); border-radius: 4px; }
+.verdict { font-size: 1.05rem; font-weight: 600; margin-top: 1rem; }
+.note {
+  background: #fffbeb;
+  border-left: 4px solid var(--warn);
+  padding: 0.85rem 1rem;
+  margin: 1.25rem 0;
+  font-size: 0.92rem;
+}
+.note-lib {
+  background: #eff6ff;
+  border-left: 4px solid var(--accent);
+}
+ul { padding-left: 1.2rem; }
+a { color: var(--accent); }
+footer { margin-top: 2.5rem; color: var(--muted); font-size: 0.85rem; }
+</style>
+</head>
+<body>
+
+<h1>PMH paper — block findings</h1>
+<p class="meta">Synthesized from <code>paper_code/T*/**/FINAL.md</code> · Train on A, deploy on B, same labels</p>
+
+<div class="note note-lib">
+  <strong>Library vs paper:</strong> These numbers come from block-specific reproduction code in
+  <code>paper_code/</code>, not from <code>pip install matching-pmh</code> on demo loaders.
+  The library implements the same recipe for <em>your</em> stack; expect iteration until Step 5 passes
+  on your deploy holdout. See <a href="https://github.com/vishalstark512/matching-pmh/blob/main/docs/START.md">docs/START.md</a>.
+</div>
+
+<div class="card">
+  <p><strong>Summary:</strong> <span class="badge badge-pass">12 blocks pass</span>
+  <span class="badge badge-partial">1 partial / limit</span> (pre-registered criteria)</p>
+  <p>The Perturbation Matching Hypothesis (PMH) treats label-preserving deploy change as one estimation problem: learn the geometry of nuisance variation, train with a matched penalty, and falsify with wrong-direction and isotropic controls before claiming deploy gains.</p><p>**12 of 13** pre-registered blocks meet their pass criteria in block-specific `paper_code` reproduction scripts (see each `FINAL.md`). Wins span classical projection, ViT noise robustness, pose and depth, domain adaptation (DomainNet, Cityscapes), molecules, code renames, speech, HAR, LLM style, and PGD robustness.</p><p>**T1 / Office-31** is the honest partial case: on frozen ResNet-18 features, CORAL can beat projection-only PMH on accuracy; PMH still beats ERM and wrong-W controls — illustrating Lemma D1 eigengap limits, not a silent library bug.</p><p>Falsification arms (matched vs wrong-W vs isotropic) recur across blocks: gains tied to estimated nuisance geometry, not generic regularization.</p>
+</div>
+
+<h2>Thirteen blocks (T1–T7)</h2>
+<div class="card" style="overflow-x:auto">
+  <table>
+    <thead>
+      <tr><th>Block</th><th>Task</th><th>Headline result (paper code)</th><th>Status</th><th>FINAL.md</th></tr>
+    </thead>
+    <tbody><tr><td><strong>T1</strong><br/><span style='color:var(--muted);font-size:0.88rem'>t01-classical</span></td><td>Classical ML + matched projection (ridge, SVM, k-NN, logistic)<br/>Lemma D1 · sklearn</td><td>Ridge theorem + oracle-W on MNIST/Fashion/SVHN; Office-31: CORAL &gt; PMH on frozen ResNet, PMH &gt; B0 on SVM — **documented D1 eigengap** case.</td><td><span class="badge badge-partial">Partial / honest limit</span></td><td><code style='font-size:0.8rem'>paper_code/T1/classical_pmh/FINAL.md</code></td></tr><tr><td><strong>T2A</strong><br/><span style='color:var(--muted);font-size:0.88rem'>t02a-vit-isotropic</span></td><td>ViT / image classifier — isotropic sensor noise<br/>Lemma D2 · pytorch</td><td>ViT-B/16 isotropic PMH: **+4.29 pp** mean ImageNet-C; TDI **−58%** at σ=0.10.</td><td><span class="badge badge-pass">Pass</span></td><td><code style='font-size:0.8rem'>paper_code/T2/Task2A/FINAL.md</code></td></tr><tr><td><strong>T2B</strong><br/><span style='color:var(--muted);font-size:0.88rem'>t02b-chexpert-isotropic</span></td><td>Medical imaging — hospital / scanner embedding shift<br/>Lemma D2 · pytorch</td><td>CheXpert E1: best saliency **0.723**; ~**9×** lower embedding drift vs baseline.</td><td><span class="badge badge-pass">Pass</span></td><td><code style='font-size:0.8rem'>paper_code/T2/Task2B/FINAL.md</code></td></tr><tr><td><strong>T3A</strong><br/><span style='color:var(--muted);font-size:0.88rem'>t03a-pose-gradient</span></td><td>Pose / keypoints — camera &amp; studio shift<br/>Lemma D3 · pytorch</td><td>COCO pose E1_aniso: **54.49%** PCK@0.05 (+22.4 pp vs baseline 32.07%).</td><td><span class="badge badge-pass">Pass</span></td><td><code style='font-size:0.8rem'>paper_code/T3/Task3A/FINAL.md</code></td></tr><tr><td><strong>T3B</strong><br/><span style='color:var(--muted);font-size:0.88rem'>t03b-depth-augmentation</span></td><td>Depth estimation — photometric shift<br/>Lemma D3 · pytorch</td><td>Depth photometric hard stress: E1_aniso AbsRel **0.2152** (wins on combined_hard).</td><td><span class="badge badge-pass">Pass</span></td><td><code style='font-size:0.8rem'>paper_code/T3/Task3B/FINAL.md</code></td></tr><tr><td><strong>T4A</strong><br/><span style='color:var(--muted);font-size:0.88rem'>t04a-vision-domain</span></td><td>Vision domain shift (single-layer / ResNet)<br/>Lemma D4 · pytorch</td><td>DomainNet real→sketch E1_multiscale: **42.15%** acc (+3.31 pp vs B0 38.84%).</td><td><span class="badge badge-pass">Pass</span></td><td><code style='font-size:0.8rem'>paper_code/T4/Task4A/FINAL.md</code></td></tr><tr><td><strong>T4B</strong><br/><span style='color:var(--muted);font-size:0.88rem'>t04b-multilayer-vision</span></td><td>Vision domain shift (multilayer FPN / U-Net)<br/>Lemma D4 · pytorch</td><td>GTA5→Cityscapes rare-5 mIoU **30.75%** (+11.1 pp vs B0 19.68%).</td><td><span class="badge badge-pass">Pass</span></td><td><code style='font-size:0.8rem'>paper_code/T4/Task4B/FINAL.md</code></td></tr><tr><td><strong>T5A</strong><br/><span style='color:var(--muted);font-size:0.88rem'>t05a-qm9-molecule</span></td><td>Molecules / graphs (QM9-style)<br/>Lemma D5 · pytorch</td><td>QM9 position PMH: clean MAE **24.921**; robust under σ=0.2 Å noise.</td><td><span class="badge badge-pass">Pass</span></td><td><code style='font-size:0.8rem'>paper_code/T5/Task5A/FINAL.md</code></td></tr><tr><td><strong>T5B</strong><br/><span style='color:var(--muted);font-size:0.88rem'>t05b-code-tokens</span></td><td>Code models — token-group shift<br/>Lemma D5 · pytorch</td><td>Code rename stress: E1 rename_bacc_ratio **0.9383** vs B0 **0.8297**; wrong blocks fail.</td><td><span class="badge badge-pass">Pass</span></td><td><code style='font-size:0.8rem'>paper_code/T5/Task5B/FINAL.md</code></td></tr><tr><td><strong>T6A</strong><br/><span style='color:var(--muted);font-size:0.88rem'>t06a-speech-whisper</span></td><td>Speech / ASR — mic &amp; room shift<br/>Lemma D6 · pytorch</td><td>Whisper/Libri content-residual: other-WER **14.63%** (−8.6 pp vs 23.26%).</td><td><span class="badge badge-pass">Pass</span></td><td><code style='font-size:0.8rem'>paper_code/T6/task6A/FINAL.md</code></td></tr><tr><td><strong>T6B</strong><br/><span style='color:var(--muted);font-size:0.88rem'>t06b-temporal-har</span></td><td>Time-series / HAR — sensor drift<br/>Lemma D6 · pytorch</td><td>HAR stress 3.0: balanced acc **0.4099** vs baseline **0.2794** (3 seeds).</td><td><span class="badge badge-pass">Pass</span></td><td><code style='font-size:0.8rem'>paper_code/T6/task6B/FINAL.md</code></td></tr><tr><td><strong>T7A</strong><br/><span style='color:var(--muted);font-size:0.88rem'>t07a-llm-style</span></td><td>LLM — format / tone / template<br/>Lemma D7 · hf</td><td>Style RM + DPO: sycophancy **38.5%→13.5%**; margin_pmh Style TDI **1.836**.</td><td><span class="badge badge-pass">Pass</span></td><td><code style='font-size:0.8rem'>paper_code/T7/task7A/FINAL.md</code></td></tr><tr><td><strong>T7B</strong><br/><span style='color:var(--muted);font-size:0.88rem'>t07b-adversarial-pgd</span></td><td>Adversarial / PGD perturbations<br/>Lemma D7 · pytorch</td><td>CIFAR PGD-W pmh_aniso: TDI **0.878** (−19% vs 1.090); clean **80.9%**.</td><td><span class="badge badge-pass">Pass</span></td><td><code style='font-size:0.8rem'>paper_code/T7/task7B/FINAL.md</code></td></tr></tbody>
+  </table>
+</div>
+
+<h2>Use the library</h2>
+<div class="card">
+  <ul>
+    <li><strong>Golden path:</strong> <code>pmh-train try --quick</code> or <code>try_pmh(...)</code> → ship verdict</li>
+    <li><strong>Your metrics:</strong> <code>report.save_html("deploy_report.html")</code> after <code>evaluate_robust_fit</code></li>
+    <li><strong>Reproduce a block:</strong> run scripts under <code>paper_code/</code> for that task's FINAL.md</li>
+  </ul>
+</div>
+
+<footer>matching-pmh · generated report</footer>
+</body>
+</html>

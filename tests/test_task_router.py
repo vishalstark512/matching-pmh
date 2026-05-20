@@ -13,12 +13,12 @@ def test_list_tasks_nonempty():
     assert any(t.task_id == "pose_or_keypoints" for t in tasks)
 
 
-def test_pose_task_mentions_hook_and_g1():
+def test_pose_task_mentions_hook_and_task_doc():
     text = explain_task("pose_or_keypoints")
     assert "pose" in text.lower() or "keypoint" in text.lower()
     assert "WHAT CHANGES" in text
-    assert "WALKTHROUGH" in text
-    assert "G1" in text
+    assert "STEPS:" in text
+    assert "t03a-pose-gradient" in text
     assert "backbone" in text.lower()
     assert "robust_fit" in text
 
@@ -53,4 +53,4 @@ def test_cli_route_pose(capsys):
     assert main(["route", "--task", "pose_or_keypoints", "--quiet"]) == 0
     out = capsys.readouterr().out
     assert "WHAT CHANGES" in out
-    assert "WALKTHROUGH" in out
+    assert "STEPS:" in out

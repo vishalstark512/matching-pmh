@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "matching-pmh"
-version = "1.6.2"
-description = "Domain-robust PyTorch and sklearn: train on site A, deploy on site B with the same labels."
+version = "2.0.0"
+description = "Perturbation Matching Hypothesis (PMH): estimate Sigma_task, matched PMH training, falsification controls — PyTorch, sklearn, HF."
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
@@ -62,6 +62,7 @@ exclude = [
   "/.github",
   "/artifacts",
   "/data",
+  "/paper_code",
   "/results",
   "/tmp_trainer",
   "/tmp_pmh_trainer",
@@ -73,7 +74,9 @@ exclude = [
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
-markers = ["slow: optional long-running smoke tests"]
+norecursedirs = ["paper_code", "site", "tmp_notebook_out", ".git"]
+markers = ["slow: optional long-running smoke tests (nbconvert, long smoke)"]
+addopts = "-m 'not slow'"
 
 [tool.ruff]
 line-length = 100

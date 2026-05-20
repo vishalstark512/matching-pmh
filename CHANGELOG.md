@@ -1,6 +1,17 @@
 # Changelog
 
-## Unreleased
+## 2.0.0 (2026-05-20)
+
+### Breaking / product
+
+- **Golden path** — `try_pmh`, `pmh-train try`, `infer_applicability`, `EvaluationReport.deploy_summary()` / `ship_verdict()` / HTML reports.
+- **Loss budget** — PMH capped at ~5--30% of task loss (`PMHConfig.golden_path()`, `loss_budget.py`).
+- **Track B library** — class-aligned D4, multilayer vision trainer, PGD subspace estimate, T6 content residual on trainer.
+- **CLI (Track B)** — only `pmh-train doctor`, `evaluate`, `route`, `try`. Removed: `recipe`, `shifts`, `list-methods`, `list-presets`, `wizard`, `estimate`, `benchmark`, `validate`, `run`, `preflight`.
+- **Namespace** — removed subpackages `guide/`, `core/`, `adapt/`, `train/`, `apply/`, `evidence/`, `research/`, `scope/`, `identify/`, `protocol/`; flat `from pmh import …`.
+- **Examples** — deleted `examples/`; demos under `scripts/demos/`, configs under `scripts/configs/`.
+- **Docs** — `docs/START.md`, `MIGRATE.md`, `GLOSSARY.md`, task hub + notebooks; `docs/findings.html` (paper synthesis; numbers from local `paper_code/`, not shipped).
+- **Repo policy** — `main.pdf` and `paper_code/` are gitignored (reproduce locally; not on GitHub/PyPI wheel).
 
 ## 1.6.2 (2026-05-20)
 

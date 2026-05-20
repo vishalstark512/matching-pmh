@@ -1,8 +1,7 @@
-"""pmh-train CLI smoke tests."""
+"""Thin pmh-train CLI: try, doctor, evaluate, route."""
 
 from __future__ import annotations
 
-import json
 import subprocess
 import sys
 from pathlib import Path
@@ -11,85 +10,136 @@ import numpy as np
 import pytest
 
 
-def test_list_methods():
+def test_cli_doctor(capsys):
     from pmh.cli.main import main
 
-    assert main(["list-methods"]) == 0
+    assert main(["doctor", "--stack", "pytorch"]) == 0
+    assert "doctor" in capsys.readouterr().out.lower()
 
 
-def test_list_presets(capsys):
+def test_cli_route_menu(capsys):
     from pmh.cli.main import main
 
-    assert main(["list-presets"]) == 0
+    assert main(["route"]) == 0
+    assert "pose" in capsys.readouterr().out.lower() or "vision" in capsys.readouterr().out.lower()
+
+
+def test_cli_route_task(capsys):
+    from pmh.cli.main import main
+
+    assert main(["route", "--task", "vision_classification", "--quiet"]) == 0
+    assert "WHAT CHANGES" in capsys.readouterr().out
+
+
+def test_cli_route_wizard_non_interactive(capsys):
+    from pmh.cli.main import main
+
+    assert main(["route", "--wizard", "--non-interactive", "--stack", "pytorch"]) == 0
+    assert "PMHTrainer" in capsys.readouterr().out
+
+
+def test_cli_route_wizard_requires_stack_when_non_interactive():
+    from pmh.cli.main import main
+
+    assert main(["route", "--wizard", "--non-interactive"]) == 2
+
+
+def test_cli_try_quick(capsys):
+    from pmh.cli.main import main
+
+    code = main(["try", "--quick", "--no-falsification"])
     out = capsys.readouterr().out
-    assert "t1_office31_sklearn" in out
-    assert "t4_domain_d4" in out
+    assert code in (0, 2)
+    assert "Deploy holdout" in out or "deploy holdout" in out.lower()
+    assert "SHIP" in out or "ship" in out.lower()
 
 
-def test_estimate_d2(tmp_path: Path):
+def test_cli_try_sklearn(capsys):
     from pmh.cli.main import main
 
-    job = {
-        "estimator": {"method": "D2", "dim": 8, "noise_level": 0.2},
-        "data": {"dim": 8},
-        "output": str(tmp_path / "d2"),
-    }
-    cfg = tmp_path / "job.json"
-    cfg.write_text(json.dumps(job), encoding="utf-8")
-    assert main(["estimate", "--config", str(cfg)]) == 0
-    assert (tmp_path / "d2.pt").exists()
+    code = main([
+        "try",
+        "--stack",
+        "sklearn",
+        "--quick",
+        "--n-per-domain",
+        "60",
+        "--no-falsification",
+        "--no-coral",
+    ])
+    out = capsys.readouterr().out
+    assert code in (0, 2)
+    assert "Suggested" in out or "domain_shift" in out or "subspace" in out
 
 
-def test_estimate_d4_npy(tmp_path: Path):
+def test_cli_evaluate_demo(capsys):
     from pmh.cli.main import main
 
-    src = tmp_path / "src.npy"
-    tgt = tmp_path / "tgt.npy"
-    rng = np.random.default_rng(0)
-    np.save(src, rng.standard_normal((40, 16)).astype(np.float32))
-    np.save(tgt, rng.standard_normal((40, 16)).astype(np.float32) + 0.5)
-    job = {
-        "estimator": {"method": "D4", "rank": 4},
-        "data": {"source_npy": str(src), "target_npy": str(tgt)},
-        "output": str(tmp_path / "d4"),
-    }
-    cfg = tmp_path / "d4.json"
-    cfg.write_text(json.dumps(job), encoding="utf-8")
-    assert main(["estimate", "--config", str(cfg)]) == 0
+    code = main(["evaluate", "--demo", "--n-per-domain", "80", "--no-coral"])
+    out = capsys.readouterr().out
+    assert code in (0, 2)
+    assert "Step 5" in out or "matched" in out
+    assert "deploy holdout" in out.lower() or "baseline=" in out
 
 
-def test_run_dry_run(tmp_path: Path):
+def test_cli_evaluate_npy(tmp_path):
     from pmh.cli.main import main
 
-    a = torch_rand_artifact(tmp_path)
-    job = {
-        "artifact": str(a),
-        "pmh": {"weight": 0.3},
-        "training": {"backend": "hf_trainer"},
-    }
-    cfg = tmp_path / "run.json"
-    cfg.write_text(json.dumps(job), encoding="utf-8")
-    assert main(["run", "--config", str(cfg)]) == 0
+    n, d = 60, 12
+    rng = np.random.default_rng(1)
+    xs = rng.standard_normal((n, d)).astype(np.float32)
+    xt = xs + 0.1
+    y = rng.integers(0, 3, n)
+    sp = tmp_path / "s.npy"
+    tp = tmp_path / "t.npy"
+    yp = tmp_path / "y.npy"
+    np.save(sp, xs)
+    np.save(tp, xt)
+    np.save(yp, y)
+    code = main([
+        "evaluate",
+        "--source-npy",
+        str(sp),
+        "--target-npy",
+        str(tp),
+        "--source-labels",
+        str(yp),
+        "--target-labels",
+        str(yp),
+        "--no-coral",
+        "--no-falsification",
+    ])
+    assert code == 0
 
 
-def torch_rand_artifact(tmp_path: Path) -> Path:
-    import torch
+def test_cli_evaluate_pytorch_demo(capsys):
+    from pmh.cli.main import main
 
-    from pmh import SigmaTaskConfig, estimate_from_config
-
-    h0 = torch.randn(32, 8)
-    h1 = h0 + 0.2
-    art = estimate_from_config(SigmaTaskConfig.for_domain(rank=2), h0, h1)
-    return art.save(tmp_path / "sigma")
-
-
-def test_catalog_validate():
-    from pmh.catalog import validate_job_data
-
-    assert "rank" in validate_job_data("D1", {"source_npy": "a.npy"})
-    assert validate_job_data("D2", {"dim": 4}) == []
+    code = main([
+        "evaluate",
+        "--stack",
+        "pytorch",
+        "--demo",
+        "--n-per-domain",
+        "80",
+        "--epochs",
+        "1",
+        "--no-falsification",
+    ])
+    out = capsys.readouterr().out
+    assert code == 0
+    assert "Deploy holdout" in out or "ERM baseline" in out
 
 
 @pytest.mark.skipif(sys.platform.startswith("win"), reason="console script may be uninstalled in editable-only env")
-def test_console_script_list():
-    subprocess.run([sys.executable, "-m", "pmh.cli.main", "list-methods"], check=True)
+def test_console_script_doctor():
+    subprocess.run([sys.executable, "-m", "pmh.cli.main", "doctor"], check=True)
+
+
+def test_removed_commands_fail():
+    from pmh.cli.main import main
+
+    for argv in (["list-methods"], ["estimate"], ["benchmark"]):
+        with pytest.raises(SystemExit) as exc:
+            main(argv)
+        assert exc.value.code == 2

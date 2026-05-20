@@ -1,5 +1,5 @@
 site_name: matching-pmh
-site_description: Domain-robust training for PyTorch and sklearn — train on site A, deploy on site B
+site_description: Domain-robust training — 13 tasks, one page + one notebook each
 site_url: https://vishalstark512.github.io/matching-pmh/
 repo_url: https://github.com/vishalstark512/matching-pmh
 repo_name: vishalstark512/matching-pmh
@@ -17,71 +17,57 @@ theme:
     - search.suggest
 
 nav:
-  - Start:
-      - What problem PMH solves: index.md
-      - Adopt PMH: ../ADOPT.md
-      - Five-step workflow: FIVE_STEP_RECIPE.md
-      - Will PMH help?: WHEN_PMH_HELPS.md
-
-  - Use PMH:
-      - Find my task: APPLICATIONS.md
-      - 13 task patterns: TASK_PATTERNS.md
-      - Recipes to copy: GOLDEN_PATHS.md
-      - Integrate (install & CLI): INTEGRATE.md
-      - Troubleshooting: TROUBLESHOOTING.md
-      - Parameters cheat sheet: PARAMETERS_CHEATSHEET.md
-
-  - Evidence:
-      - Prove it worked: walkthroughs/08-falsification-controls.md
-      - Examples by task: walkthroughs/index.md
-      - Daily AI job map: walkthroughs/DAILY_AI_USE.md
-      - Published evidence map: PAPER_ALIGNMENT.md
-      - vs CORAL: COMPARE_TO_CORAL.md
-
-  - Reference:
-      - What is deployment shift?: WHAT_IS_DEPLOYMENT_SHIFT.md
-      - PMH parameters: PMH_PARAMETERS.md
-      - Advanced shift types: NUISANCE_SUBTYPES.md
-      - Advanced estimators: estimators/index.md
-      - Custom change directions: CUSTOM_GEOMETRY.md
-      - API reference: api/index.md
-      - Theory: THEORY.md
-      - 60s pipeline script: PIPELINE_60S.md
-      - Contributor doc guide: DOCS_GUIDE.md
-      - Meta-structure: META_STRUCTURE.md
+  - Home: QUICKSTART.md
+  - 13 tasks: tasks/index.md
+  - Will PMH help?: WHEN_PMH_HELPS.md
+  - API: api/index.md
+  - Notebooks: ../notebooks/README.md
 
 plugins:
   - search
   - redirects:
       redirect_maps:
-        START_HERE.md: FIVE_STEP_RECIPE.md
-        MAP.md: FIVE_STEP_RECIPE.md
-        WHAT_IS_PMH.md: WHAT_IS_DEPLOYMENT_SHIFT.md
-        MODES.md: FIVE_STEP_RECIPE.md
-        FIRST_HOUR.md: INTEGRATE.md
-        GETTING_STARTED.md: INTEGRATE.md
-        COLAB.md: INTEGRATE.md
-        DEMO_OUTPUT.md: INTEGRATE.md
-        QUICKSTART.md: APPLICATIONS.md
-        getting-started.md: APPLICATIONS.md
-        CHOOSE_YOUR_SETUP.md: APPLICATIONS.md
-        ADAPT_YOUR_PIPELINE.md: INTEGRATE.md
-        ARCHITECTURES.md: FIVE_STEP_RECIPE.md
-        ARCHITECTURE.md: META_STRUCTURE.md
-        hooks.md: INTEGRATE.md
-        sklearn.md: GOLDEN_PATHS.md
-        integrations.md: GOLDEN_PATHS.md
-        integrations-lightning.md: GOLDEN_PATHS.md
-        integrations-hf.md: GOLDEN_PATHS.md
-        integrations-hf-trainer.md: GOLDEN_PATHS.md
-        gallery/README.md: GOLDEN_PATHS.md
-        gallery/vision.md: GOLDEN_PATHS.md
-        gallery/tabular.md: GOLDEN_PATHS.md
-        gallery/nlp.md: GOLDEN_PATHS.md
-        ADAPTATION_WORKBOOK.md: walkthroughs/index.md
-        FIDELITY_BY_SUBTYPE.md: PAPER_ALIGNMENT.md
-        BENCHMARKS.md: walkthroughs/index.md
-        CORRECT_USAGE.md: PAPER_ALIGNMENT.md
+        index.md: QUICKSTART.md
+        ADOPT.md: QUICKSTART.md
+        START_HERE.md: tasks/index.md
+        MAP.md: tasks/index.md
+        APPLICATIONS.md: tasks/index.md
+        TASK_PATTERNS.md: tasks/index.md
+        GOLDEN_PATHS.md: QUICKSTART.md
+        FIVE_STEP_RECIPE.md: QUICKSTART.md
+        INTEGRATE.md: api/index.md
+        TROUBLESHOOTING.md: WHEN_PMH_HELPS.md
+        PARAMETERS_CHEATSHEET.md: api/index.md
+        PAPER_ALIGNMENT.md: tasks/index.md
+        WHAT_IS_PMH.md: WHEN_PMH_HELPS.md
+        WHAT_IS_DEPLOYMENT_SHIFT.md: WHEN_PMH_HELPS.md
+        PMH_PARAMETERS.md: api/index.md
+        NUISANCE_SUBTYPES.md: api/index.md
+        CUSTOM_GEOMETRY.md: api/index.md
+        THEORY.md: api/index.md
+        META_STRUCTURE.md: api/index.md
+        DOCS_GUIDE.md: api/index.md
+        PIPELINE_60S.md: tasks/t04a-vision-domain.md
+        COMPARE_TO_CORAL.md: tasks/t01-classical.md
+        getting-started.md: QUICKSTART.md
+        CHOOSE_YOUR_SETUP.md: tasks/index.md
+        ADAPT_YOUR_PIPELINE.md: api/index.md
+        ARCHITECTURES.md: tasks/index.md
+        ARCHITECTURE.md: api/index.md
+        hooks.md: api/index.md
+        sklearn.md: tasks/t01-classical.md
+        integrations.md: api/index.md
+        integrations-lightning.md: tasks/t04-vision-domain.md
+        integrations-hf.md: tasks/t07a-llm-style.md
+        integrations-hf-trainer.md: tasks/t07a-llm-style.md
+        gallery/README.md: tasks/index.md
+        gallery/vision.md: tasks/t04a-vision-domain.md
+        gallery/tabular.md: tasks/t01-classical.md
+        gallery/nlp.md: tasks/t07a-llm-style.md
+        ADAPTATION_WORKBOOK.md: tasks/index.md
+        FIDELITY_BY_SUBTYPE.md: tasks/index.md
+        BENCHMARKS.md: tasks/t01-classical.md
+        CORRECT_USAGE.md: tasks/t01-classical.md
         training.md: api/index.md
         api/tier0.md: api/index.md
         api/recipe.md: api/index.md
@@ -91,32 +77,61 @@ plugins:
         api/subtypes.md: api/index.md
         api/custom.md: api/index.md
         api/deployment.md: api/index.md
-        DEVELOPER_ONBOARDING_PLAN.md: DOCS_GUIDE.md
-        NUISANCE_SUBTYPE_PLAN.md: DOCS_GUIDE.md
-        ROADMAP.md: DOCS_GUIDE.md
-        PHILOSOPHY.md: META_STRUCTURE.md
-        HYBRID_NUISANCE.md: estimators/index.md
-        datasets.md: INTEGRATE.md
-        DATA_POLICY.md: DOCS_GUIDE.md
-        DATA_LAYOUT.md: INTEGRATE.md
-        DEPLOYMENT.md: INTEGRATE.md
-        cli.md: INTEGRATE.md
-        GITHUB_PAGES_SETUP.md: DOCS_GUIDE.md
-        nuisance_types.md: NUISANCE_SUBTYPES.md
-        estimators/d1.md: estimators/index.md
-        estimators/d2.md: estimators/index.md
-        estimators/d3.md: estimators/index.md
-        estimators/d4.md: estimators/index.md
-        estimators/d5.md: estimators/index.md
-        estimators/d6.md: estimators/index.md
-        estimators/d7.md: estimators/index.md
-        recipes/README.md: walkthroughs/index.md
-        recipes/t1-office31-d1.md: PAPER_ALIGNMENT.md
-        recipes/t2a-vit-isotropic.md: PAPER_ALIGNMENT.md
-        recipes/t4-domain-d4.md: PAPER_ALIGNMENT.md
-        recipes/t7a-style-d7.md: PAPER_ALIGNMENT.md
-        benchmarks/office31_amazon_to_dslr.md: walkthroughs/index.md
-        benchmarks/office31_synthetic_reference.md: walkthroughs/index.md
+        DEVELOPER_ONBOARDING_PLAN.md: api/index.md
+        NUISANCE_SUBTYPE_PLAN.md: api/index.md
+        ROADMAP.md: api/index.md
+        PHILOSOPHY.md: api/index.md
+        HYBRID_NUISANCE.md: api/index.md
+        datasets.md: api/index.md
+        DATA_POLICY.md: api/index.md
+        DATA_LAYOUT.md: api/index.md
+        DEPLOYMENT.md: api/index.md
+        cli.md: api/index.md
+        GITHUB_PAGES_SETUP.md: api/index.md
+        nuisance_types.md: api/index.md
+        estimators/d1.md: api/index.md
+        estimators/d2.md: api/index.md
+        estimators/d3.md: api/index.md
+        estimators/d4.md: api/index.md
+        estimators/d5.md: api/index.md
+        estimators/d6.md: api/index.md
+        estimators/d7.md: api/index.md
+        estimators/index.md: api/index.md
+        recipes/README.md: tasks/index.md
+        recipes/t1-office31-d1.md: tasks/t01-classical.md
+        recipes/t2a-vit-isotropic.md: tasks/t02a-vit-isotropic.md
+        recipes/t4-domain-d4.md: tasks/t04a-vision-domain.md
+        recipes/t7a-style-d7.md: tasks/t07a-llm-style.md
+        benchmarks/office31_amazon_to_dslr.md: tasks/t01-classical.md
+        benchmarks/office31_synthetic_reference.md: tasks/t01-classical.md
+        walkthroughs/index.md: tasks/index.md
+        walkthroughs/01-pytorch-domain-d4.md: tasks/t04a-vision-domain.md
+        walkthroughs/02-resnet-vision-d4.md: tasks/t04a-vision-domain.md
+        walkthroughs/03-office31-sklearn-d1.md: tasks/t01-classical.md
+        walkthroughs/04-multilayer-convnet.md: tasks/t04b-multilayer-vision.md
+        walkthroughs/05-compositional-d5.md: tasks/t05a-qm9-molecule.md
+        walkthroughs/06-llm-style-d7.md: tasks/t07a-llm-style.md
+        walkthroughs/07-hf-trainer-d7-dpo.md: tasks/t07a-llm-style.md
+        walkthroughs/08-falsification-controls.md: tasks/t04a-vision-domain.md
+        walkthroughs/09-cli-json-jobs.md: api/index.md
+        walkthroughs/10-lightning.md: tasks/t04a-vision-domain.md
+        walkthroughs/11-temporal-d6.md: tasks/t06b-temporal-har.md
+        walkthroughs/12-vit-cls-d4.md: tasks/t02a-vit-isotropic.md
+        walkthroughs/13-speech-whisper-d4.md: tasks/t06a-speech-whisper.md
+        walkthroughs/14-qm9-molecule-d5.md: tasks/t05a-qm9-molecule.md
+        walkthroughs/15-codebert-tokens-d5.md: tasks/t05b-code-tokens.md
+        walkthroughs/16-augmentation-d3.md: tasks/t03b-depth-augmentation.md
+        walkthroughs/17-compare-arms-your-pipeline.md: tasks/t04a-vision-domain.md
+        walkthroughs/18-pmh-trainer-quickstart.md: tasks/t04a-vision-domain.md
+        walkthroughs/19-office31-real-data.md: tasks/t01-classical.md
+        walkthroughs/DAILY_AI_USE.md: tasks/index.md
+        walkthroughs/GUIDE_FORMAT.md: tasks/index.md
+        walkthroughs/paper-presets-by-block.md: tasks/index.md
+        FIRST_HOUR.md: QUICKSTART.md
+        GETTING_STARTED.md: QUICKSTART.md
+        COLAB.md: QUICKSTART.md
+        DEMO_OUTPUT.md: QUICKSTART.md
+        MODES.md: QUICKSTART.md
   - mkdocstrings:
       handlers:
         python:
@@ -130,18 +145,6 @@ plugins:
 markdown_extensions:
   - admonition
   - pymdownx.details
-  - pymdownx.superfences:
-      custom_fences:
-        - name: mermaid
-          class: mermaid
-          format: !!python/name:pymdownx.superfences.fence_div_format
-  - pymdownx.arithmatex:
-      generic: true
+  - pymdownx.superfences
   - toc:
       permalink: true
-
-extra_javascript:
-  - https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js
-  - javascripts/mermaid-init.js
-  - https://polyfill.io/v3/polyfill.min.js?features=es6
-  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js

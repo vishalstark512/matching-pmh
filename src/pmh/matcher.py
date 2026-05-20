@@ -56,7 +56,7 @@ class PMHMatcher(_SklearnMixin, _SklearnBase):
     """Estimate **deployment shift** geometry and optionally project features.
 
     The ``nuisance=`` argument is the **shift type** (e.g. ``domain_shift`` = site A vs B,
-    same labels). See ``pmh-train shifts`` or docs/WHAT_IS_DEPLOYMENT_SHIFT.md — not
+    same labels). See :func:`format_shift_types` or docs/WHAT_IS_DEPLOYMENT_SHIFT.md — not
     “nuisance” in the everyday sense.
 
     sklearn contract

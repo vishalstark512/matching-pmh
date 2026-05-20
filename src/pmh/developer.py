@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, Literal, TYPE_CHECKING
 
 import numpy as np
 
 from pmh.config import PMHConfig
 from pmh.hooks import HOOK_REGISTRY, detect_model_family, resolve_hook
+from pmh.applications import explain_nuisance_key
 from pmh.onboarding import preflight_plain_english
 from pmh.suggest import suggest_nuisance
 
@@ -44,7 +46,10 @@ class ApplicabilityReport:
     def summary(self) -> str:
         lines = [f"Verdict: {self.verdict.upper()}", *self.reasons]
         if self.suggested_nuisance:
-            lines.append(f"Suggested shift type: nuisance={self.suggested_nuisance!r}  (pmh-train shifts)")
+            plain = explain_nuisance_key(self.suggested_nuisance)
+            lines.append(f"Suggested for your data: nuisance={self.suggested_nuisance!r}")
+            lines.append(f"  ({plain})")
+            lines.append("  You do not need to guess — robust_fit() uses this when nuisance=None.")
         return "\n".join(lines)
 
 
@@ -110,12 +115,19 @@ class RobustFitResult:
     def summary(self) -> str:
         from pmh.adoption import RECIPE_ONE_LINER
 
-        return (
-            f"{RECIPE_ONE_LINER}\n"
+        lines = [
+            RECIPE_ONE_LINER,
             f"train task_loss={self.stats.get('task_loss', 0):.4f}  "
-            f"pmh_loss={self.stats.get('pmh_loss', 0):.4f}  "
-            f"preflight={self.preflight} ({self.preflight_message})"
-        )
+            f"pmh_loss={self.stats.get('pmh_loss', 0):.4f}",
+        ]
+        if "pmh_task_ratio" in self.stats:
+            pct = 100.0 * self.stats["pmh_task_ratio"]
+            lines.append(
+                f"PMH/task ratio (epoch avg): {pct:.1f}%  "
+                f"(target 5--30%; capped by PMHConfig.pmh_max_task_ratio)"
+            )
+        lines.append(f"preflight={self.preflight} ({self.preflight_message})")
+        return "\n".join(lines)
 
 
 @dataclass
@@ -141,23 +153,64 @@ class EvaluationReport:
 
         return falsification_step5_ok(self.falsification_arms)
 
-    def summary(self) -> str:
-        from pmh.adoption import RECIPE_ONE_LINER, format_falsification_block
+    def ship_verdict(self) -> str:
+        """Plain ship / don't ship / inconclusive (Step 5)."""
+        from pmh.adoption import ship_verdict_label
 
+        return ship_verdict_label(self.falsification_arms)
+
+    def deploy_summary(self) -> str:
+        """Human report: deploy metrics + controls + ship verdict (no paper vocabulary)."""
+        from pmh.adoption import (
+            ARM_PLAIN_NAMES,
+            format_falsification_block,
+            ship_verdict_label,
+        )
+
+        b0 = self.baseline_metric
+        pmh = self.pmh_metric
         lines = [
-            RECIPE_ONE_LINER,
-            "",
-            f"Quick compare — target {self.metric_name}: "
-            f"baseline={self.baseline_metric:.3f}  pmh={self.pmh_metric:.3f}",
+            "Deploy holdout (site B)",
+            f"  {ARM_PLAIN_NAMES.get('b0', 'baseline')}: {b0:.3f} {self.metric_name}",
+            f"  {ARM_PLAIN_NAMES.get('matched', 'matched')}: {pmh:.3f} {self.metric_name}",
         ]
+        if pmh > b0:
+            lines.append(f"  Δ vs baseline: +{pmh - b0:.3f}")
+        elif pmh < b0:
+            lines.append(f"  Δ vs baseline: {pmh - b0:.3f}")
         if self.preflight:
-            lines.append(f"Preflight: {self.preflight} — {self.preflight_message}")
+            lines.append(f"Geometry check: {self.preflight} — {self.preflight_message}")
+        lines.append("")
         lines.extend(format_falsification_block(self.falsification_arms, metric_name=self.metric_name))
+        if not self.falsification_arms:
+            lines.append(ship_verdict_label({}))
         for k, v in self.compare_baselines.items():
             if k not in self.falsification_arms:
                 lines.append(f"  {k}: {v:.3f}")
+        return "\n".join(lines)
+
+    def print_summary(self) -> None:
+        """Print deploy report + ship verdict (terminal-friendly)."""
+        print(self.summary())
+
+    def to_html(self, *, title: str = "PMH deploy report") -> str:
+        """HTML one-pager (Step 5 arms + ship verdict)."""
+        from pmh.report_html import evaluation_report_html
+
+        return evaluation_report_html(self, title=title)
+
+    def save_html(self, path: str | Path, *, title: str = "PMH deploy report") -> Path:
+        """Write :meth:`to_html` to ``path`` and return the path."""
+        from pmh.report_html import save_evaluation_report_html
+
+        return save_evaluation_report_html(self, path, title=title)
+
+    def summary(self) -> str:
+        from pmh.adoption import RECIPE_ONE_LINER
+
+        lines = [RECIPE_ONE_LINER, "", self.deploy_summary()]
         for n in self.notes:
-            if n:
+            if n and n not in lines:
                 lines.append(n)
         return "\n".join(lines)
 
@@ -171,6 +224,10 @@ def check_applicability(
     has_target_domain: bool = True,
     has_target_labels: bool = False,
     has_style_pairs: bool = False,
+    has_augmentation_modes: bool = False,
+    has_temporal_sequences: bool = False,
+    has_nuisance_indices: bool = False,
+    noise_level_known: bool = False,
     new_classes_at_deploy: bool = False,
     min_samples: int = 16,
 ) -> ApplicabilityReport:
@@ -211,6 +268,10 @@ def check_applicability(
         has_target_labels=has_target_labels,
         has_target_domain=has_target_domain,
         has_style_pairs=has_style_pairs,
+        has_augmentation_modes=has_augmentation_modes,
+        has_temporal_sequences=has_temporal_sequences,
+        has_nuisance_indices=has_nuisance_indices,
+        noise_level_known=noise_level_known,
     )
     reasons.append(f"Suggested shift type {sug.nuisance!r} ({sug.method}): {sug.reason}")
     rank = 16
@@ -265,6 +326,38 @@ def suggest_hook(
     return HookSuggestion(family=family, hook=hook_spec, path=path, repr_dim=dim, note=note)
 
 
+def infer_applicability(
+    *,
+    stack: Literal["pytorch", "sklearn", "hf"] = "pytorch",
+    has_target_domain: bool = True,
+    has_target_labels: bool = False,
+    has_style_pairs: bool = False,
+    has_augmentation_modes: bool = False,
+    has_temporal_sequences: bool = False,
+    has_nuisance_indices: bool = False,
+    noise_level_known: bool = False,
+    new_classes_at_deploy: bool = False,
+    n_source: int | None = None,
+    n_target: int | None = None,
+    feature_dim: int | None = None,
+) -> ApplicabilityReport:
+    """Infer shift type and go/no-go — use when you do not know nuisance= yet."""
+    return check_applicability(
+        stack=stack,
+        n_source=n_source,
+        n_target=n_target,
+        feature_dim=feature_dim,
+        has_target_domain=has_target_domain,
+        has_target_labels=has_target_labels,
+        has_style_pairs=has_style_pairs,
+        has_augmentation_modes=has_augmentation_modes,
+        has_temporal_sequences=has_temporal_sequences,
+        has_nuisance_indices=has_nuisance_indices,
+        noise_level_known=noise_level_known,
+        new_classes_at_deploy=new_classes_at_deploy,
+    )
+
+
 def robust_fit(
     model: Any,
     train_loader: Any,
@@ -280,14 +373,31 @@ def robust_fit(
     applicability: ApplicabilityReport | None = None,
     strict_applicability: bool = False,
     artifact_path: str | None = None,
+    has_target_labels: bool = False,
+    has_style_pairs: bool = False,
+    has_augmentation_modes: bool = False,
+    has_temporal_sequences: bool = False,
+    has_nuisance_indices: bool = False,
+    noise_level_known: bool = False,
     **trainer_kw: Any,
 ) -> RobustFitResult:
-    """Single entry: check applicability, resolve hook, estimate + train."""
+    """Single entry: check applicability, resolve hook, estimate + train.
+
+    Pass ``nuisance=None`` (default) to auto-pick from your data flags — you do not
+    need to know D1–D7. Set ``has_target_labels=True`` when deploy batches are labeled,
+    ``has_augmentation_modes=True`` when you enumerate deploy transforms, etc.
+    """
     from pmh.trainer import PMHTrainer
 
-    app = applicability or check_applicability(
+    app = applicability or infer_applicability(
         stack="pytorch",
         has_target_domain=target_batches is not None,
+        has_target_labels=has_target_labels,
+        has_style_pairs=has_style_pairs,
+        has_augmentation_modes=has_augmentation_modes,
+        has_temporal_sequences=has_temporal_sequences,
+        has_nuisance_indices=has_nuisance_indices,
+        noise_level_known=noise_level_known,
     )
     if strict_applicability and not app.can_proceed:
         raise ValueError(app.summary())
@@ -304,6 +414,29 @@ def robust_fit(
     nui = nuisance or app.suggested_nuisance
     r = rank if rank is not None else app.suggested_rank
 
+    from pmh.data_context import DataContext
+
+    fit_keys = {
+        "max_batches_estimate",
+        "max_steps_per_epoch",
+        "reestimate",
+        "estimate_kwargs",
+        "optimizer",
+        "val_loader",
+        "sequences_batches",
+        "save",
+    }
+    init_kw = {k: v for k, v in trainer_kw.items() if k not in fit_keys}
+    fit_kw = {k: v for k, v in trainer_kw.items() if k in fit_keys}
+    ctx = DataContext(
+        has_target_labels=has_target_labels,
+        has_target_domain=target_batches is not None,
+        has_style_pairs=has_style_pairs,
+        has_augmentation_modes=has_augmentation_modes,
+        has_temporal_sequences=has_temporal_sequences,
+        has_nuisance_indices=has_nuisance_indices,
+        noise_level_known=noise_level_known,
+    )
     trainer = PMHTrainer(
         model,
         hook=hook_used,
@@ -312,13 +445,20 @@ def robust_fit(
         rank=r,
         pmh_config=pmh_config or PMHConfig.balanced(),
         artifact_path=artifact_path,
-        **trainer_kw,
+        data_context=ctx,
+        has_target_labels=has_target_labels,
+        has_target_domain=target_batches is not None,
+        has_style_pairs=has_style_pairs,
+        has_augmentation_modes=has_augmentation_modes,
+        nuisance_indices=init_kw.pop("nuisance_indices", None),
+        **init_kw,
     )
     stats = trainer.fit(
         train_loader,
         source_batches=source_batches,
         target_batches=target_batches,
         epochs=epochs,
+        **fit_kw,
     )
     pf = trainer.artifact_.preflight if trainer.artifact_ else None
     if pf == "fail" and strict_applicability:
@@ -330,6 +470,32 @@ def robust_fit(
         applicability=app,
         hook_used=hook_used,
         preflight=pf,
+    )
+
+
+def try_pmh(
+    model: Any,
+    train_loader: Any,
+    val_loader: Any,
+    *,
+    source_batches: Any,
+    target_batches: Any,
+    hook: str | Any = "auto",
+    head: Any = None,
+    epochs: int = 5,
+    **kwargs: Any,
+) -> EvaluationReport:
+    """Golden path: train + Step 5 deploy report (ship / don't ship)."""
+    return evaluate_robust_fit(
+        model,
+        train_loader,
+        val_loader,
+        source_batches=source_batches,
+        target_batches=target_batches,
+        hook=hook,
+        head=head,
+        epochs=epochs,
+        **kwargs,
     )
 
 
@@ -519,7 +685,7 @@ def load_g2_demo_arrays(
     """Synthetic Office-31-style features for G2 / sklearn first run.
 
     Returns ``(x_source, y_source, x_target, y_target)`` — same layout as
-    ``examples/06_office31_sklearn.py`` without downloading data.
+    ``scripts/demos/office31_sklearn.py`` without downloading data.
     """
     if office31_style:
         from pmh.benchmark.sklearn_protocol import synthetic_office31_features
@@ -697,6 +863,7 @@ def evaluate_robust_fit(
     include_falsification: bool = True,
     falsification_test_size: float = 0.35,
     falsification_max_batches: int | None = 32,
+    **trainer_kw: Any,
 ) -> EvaluationReport:
     """PyTorch path: ERM baseline vs PMH on a labeled target ``val_loader``.
 
@@ -742,6 +909,7 @@ def evaluate_robust_fit(
             pmh_config=pmh_config,
             epochs=epochs,
             applicability=app,
+            **trainer_kw,
         )
 
     acc_b0 = _accuracy_on_loader(model_erm, encoder_erm, head, val_loader)

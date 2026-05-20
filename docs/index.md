@@ -1,86 +1,50 @@
-# matching-pmh
+# matching-pmh documentation
 
-**PMH helps production models handle the common failure mode where training data and production data look different, but the answer should stay the same.**
+**Train on site A. Deploy on site B. Same labels.**
 
-This is the failure mode behind many "model worked in validation, failed in production" stories: a new hospital, camera, country, sensor, customer segment, microphone, text channel, or prompt format changes the inputs, but the answer is supposed to stay the same.
+This library implements the **Perturbation Matching Hypothesis** from [`main.pdf`](../main.pdf): estimate $\Sigma_{\text{task}}$ (covariance of label-preserving deployment change), train with a **matched** PMH loss on encoder Jacobian $J_\varphi$, then require **Step 5 evidence** on deploy holdout (matched vs wrong-direction vs isotropic).
 
-PMH turns that risk into a concrete workflow:
+The thirteen tasks are **worked examples** of one theory — not thirteen different products.
 
-```
-production changes, answer stays the same
-  -> learn what changed
-  -> train the model to ignore that change
-  -> trust only if it beats wrong controls
-```
+**Paper vs library:** Metrics cited in tasks and the paper come from **`paper_code/`** reproduction scripts. The **`pmh` library** is for your pipeline; expect tuning — it does not guarantee the same numbers as `FINAL.md` without that block-specific setup.
 
 ---
 
-## Find Your Task
+## Start here (practitioners)
 
-| I want to improve... | Production change | Start |
-|----------------------|-------------------|-------|
-| Segmentation | new camera, scanner, city, weather, lighting | [Train/fine-tune recipe](GOLDEN_PATHS.md#train-or-fine-tune-a-model) |
-| Pose / keypoints | new view, studio, camera, room | [Train/fine-tune recipe](GOLDEN_PATHS.md#train-or-fine-tune-a-model) |
-| Image classification / detection | new device, store, geography, sensor | [Train/fine-tune recipe](GOLDEN_PATHS.md#train-or-fine-tune-a-model) |
-| Speech / ASR | new mic, room, codec, accent mix | [Train/fine-tune recipe](GOLDEN_PATHS.md#train-or-fine-tune-a-model) |
-| Time-series / sensors | sensor drift, device aging, session drift | [Train/fine-tune recipe](GOLDEN_PATHS.md#train-or-fine-tune-a-model) |
-| Frozen embeddings / sklearn | features already exist from train and production | [Embeddings recipe](GOLDEN_PATHS.md#use-existing-embeddings-or-sklearn) |
-| LLM / text | same task, new tone, template, JSON wrapper, channel | [LLM/text recipe](GOLDEN_PATHS.md#llm-or-text-style) |
-| Molecules, code, adversarial-style robustness | find closest worked example | [13 task patterns](TASK_PATTERNS.md) |
+1. **[START.md](START.md)** — one function (`try_pmh`), ship verdict, auto shift type (no D1–D7 required).
+2. **[MIGRATE.md](MIGRATE.md)** — if you already use CORAL, augmentation, HF, or PGD.  
+   **[LOSS_SCALING.md](LOSS_SCALING.md)** — PMH must stay ~5--30% of task loss (enforced).  
+   **[GLOSSARY.md](GLOSSARY.md)** — plain words, not D1--D7 first.
+3. **One command:** `pmh-train try --quick` (auto shift type → deploy report → ship verdict).
+4. **Interactive:** `pmh-train doctor` or `python -c "from pmh import run_wizard; run_wizard()"`
 
----
+## Read in this order
 
-## Start Here
-
-```bash
-pip install matching-pmh torch
-pmh-train doctor
-pmh-train evaluate --demo
-```
-
-Then choose one path:
-
-| Your production problem | Use |
-|-------------------------|-----|
-| Training or fine-tuning a PyTorch model across sites, cameras, sensors, cohorts | [Train/fine-tune recipe](GOLDEN_PATHS.md#train-or-fine-tune-a-model) |
-| You already have frozen embeddings, `.npy` files, or sklearn features | [Embeddings recipe](GOLDEN_PATHS.md#use-existing-embeddings-or-sklearn) |
-| LLM/text task is the same, but format, tone, template, or channel changes | [LLM/text recipe](GOLDEN_PATHS.md#llm-or-text-style) |
-| You are not sure what fits | [Find your application](APPLICATIONS.md) |
+5. **[README](../README.md)** — principle, five-step recipe, T1–T7 deploy table.
+6. **[PRINCIPLE.md](PRINCIPLE.md)** — short theory spine (optional before `main.pdf`).
+7. **[Quickstart](QUICKSTART.md)** — install and commands.
+8. **[13 tasks](tasks/index.md)** — examples by deploy change.
+9. **[Will PMH help?](WHEN_PMH_HELPS.md)** — honest expectations + controls.
+10. **[`main.pdf`](../main.pdf)** — full proofs (on demand).
+11. **[API](api/index.md)** — reference.
 
 ---
 
-## The Rule
+## Five steps (same in every stack)
 
-Use PMH when:
+| Step | PyTorch | sklearn | HF |
+|------|---------|---------|-----|
+| Estimate $\hat{\Sigma}_{\text{task}}$ | `PMHTrainer.estimate` | `PMHMatcher.fit` | style pairs / D7 |
+| Apply matched PMH | `trainer.fit` / `robust_fit` | `Pipeline` + head | LM loop + artifact |
+| Evidence (Step 5) | `evaluate_robust_fit` | `evaluate_baseline_vs_pmh` | holdout + report |
 
-- labels mean the same thing in train and deploy;
-- you can collect batches, features, or style pairs from the deploy environment;
-- you can evaluate on a deploy holdout before claiming success.
-
-Do not use PMH for new classes, changed label definitions, or "robust to everything" without a deployment story.
+`nuisance=` selects the estimator row (D1–D7); the step structure does not change.
 
 ---
 
-## The Mental Model
+## Quick links
 
-PMH is not a pile of task-specific examples. It is one production loop:
+[13 tasks](tasks/index.md) · [**Paper findings (HTML)**](findings.html) · [Notebooks](../notebooks/README.md) · [WHEN_PMH_HELPS](WHEN_PMH_HELPS.md) · [API](api/index.md)
 
-1. **Say what changed.** What is different in production?
-2. **Learn the change.** Use examples from training and production.
-3. **Train.** Keep your task loss, add PMH so the model cares less about that change.
-4. **Prove.** PMH must beat wrong controls on production-like data.
-
-## Read Next
-
-| Need | Page |
-|------|------|
-| One-page adoption guide | [Adopt PMH](../ADOPT.md) |
-| The full production workflow | [Five-step recipe](FIVE_STEP_RECIPE.md) |
-| Find your task | [Applications](APPLICATIONS.md) |
-| Map the 13 paper tasks to your own model | [13 task patterns](TASK_PATTERNS.md) |
-| Copy code | [Production recipes](GOLDEN_PATHS.md) |
-| Install, CLI, stack details | [Integrate](INTEGRATE.md) |
-| When PMH will not help | [Will PMH help?](WHEN_PMH_HELPS.md) |
-| Paper evidence | [Evidence walkthroughs](walkthroughs/index.md) |
-
-[PyPI](https://pypi.org/project/matching-pmh/) · [GitHub](https://github.com/vishalstark512/matching-pmh)
+Regenerate findings page: `python scripts/build_findings_html.py`

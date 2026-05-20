@@ -54,6 +54,8 @@ from pmh.developer import (
     robust_fit,
     robust_fit_text_domains,
     suggest_hook,
+    infer_applicability,
+    try_pmh,
 )
 from pmh.onboarding import (
     SetupRecommendation,
@@ -130,7 +132,7 @@ from pmh.recipe import (
 # Tier 0 = semver-stable adoption API (see docs/ARCHITECTURE.md and pmh._api).
 __all__ = list(__tier0__)
 
-__version__ = "1.6.2"
+__version__ = "2.0.0"
 
 
 def __getattr__(name: str):
@@ -163,9 +165,9 @@ def __getattr__(name: str):
         "run_sklearn_benchmark",
         "STANDARD_ARMS",
     ):
-        from pmh import research as _r
+        from pmh import benchmark as _b
 
-        return getattr(_r, name)
+        return getattr(_b, name)
     if name in ("estimate_sigma_task_numpy", "gram_from_diff_numpy"):
         from pmh import numpy_api
 

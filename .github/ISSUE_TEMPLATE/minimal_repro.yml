@@ -6,16 +6,16 @@ body:
   - type: markdown
     attributes:
       value: |
-        Run `pmh-train wizard` and paste the snippet. See [Golden paths](https://github.com/vishalstark512/matching-pmh/blob/main/docs/GOLDEN_PATHS.md).
+        Run `pmh-train route --wizard` and paste the snippet. See [13 tasks](https://github.com/vishalstark512/matching-pmh/blob/main/docs/tasks/index.md).
   - type: dropdown
     id: golden_path
     attributes:
-      label: Golden path
+      label: Paper task
       options:
-        - G1 PyTorch two domains
-        - G2 sklearn frozen features
-        - G3 HF two corpora
-        - Other
+        - T1 classical / sklearn
+        - T4A vision domain
+        - T7A LLM style
+        - Other (see docs/tasks/)
     validations:
       required: true
   - type: input

@@ -51,11 +51,29 @@ class TaskRoute:
     snippet: str
 
 
+_TASK_DOC: dict[str, str] = {
+    "pose_or_keypoints": "docs/tasks/t03a-pose-gradient.md",
+    "vision_classification": "docs/tasks/t04a-vision-domain.md",
+    "vision_detection": "docs/tasks/t04b-multilayer-vision.md",
+    "vision_segmentation": "docs/tasks/t04b-multilayer-vision.md",
+    "nlp_text_classification": "docs/tasks/t07a-llm-style.md",
+    "llm_style_or_format": "docs/tasks/t07a-llm-style.md",
+    "tabular_same_schema": "docs/tasks/t01-classical.md",
+    "speech_or_audio": "docs/tasks/t06a-speech-whisper.md",
+    "frozen_embeddings_sklearn": "docs/tasks/t01-classical.md",
+    "augmentation_robustness": "docs/tasks/t03b-depth-augmentation.md",
+    "temporal_drift": "docs/tasks/t06b-temporal-har.md",
+    "pytorch_lightning": "docs/tasks/t04a-vision-domain.md",
+    "compositional_coordinates": "docs/tasks/t05a-qm9-molecule.md",
+    "generic_pytorch": "docs/tasks/t04a-vision-domain.md",
+}
+
+
 def _catalog() -> dict[str, TaskRoute]:
-    g1 = "G1 — PyTorch (docs/GOLDEN_PATHS.md#g1)"
-    g1b = "G1b — Lightning (docs/GOLDEN_PATHS.md#g1b)"
-    g2 = "G2 — sklearn (docs/GOLDEN_PATHS.md#g2)"
-    g3 = "G3 — HF corpora (docs/GOLDEN_PATHS.md#g3)"
+    g1 = "PyTorch — notebooks/tasks/t04a-vision-domain.ipynb"
+    g1b = "Lightning — templates/matching-pmh-starter/lightning_g1b_minimal.py"
+    g2 = "sklearn — docs/tasks/t01-classical.md"
+    g3 = "HF — notebooks/tasks/t07a-llm-style.ipynb"
 
     _pose_what = (
         "Camera / studio / hospital **look** changes (lighting, viewpoint, sensor) "
@@ -68,7 +86,7 @@ def _catalog() -> dict[str, TaskRoute]:
         "Pick hook on the **backbone** (before heatmap / coordinate head): suggest_hook(model).",
         "Estimate + train: robust_fit(..., source_batches=A, target_batches=B) — **keep your pose loss**.",
         "Read preflight (pass/marginal); evaluate keypoint metric on a **deploy holdout**.",
-        "Before production: falsification controls (matched vs wrong-W) — walkthrough 08.",
+        "Before production: Step 5 falsification (matched > wrong-W on deploy holdout).",
     )
     common_pose = TaskRoute(
         task_id="pose_or_keypoints",
@@ -95,8 +113,8 @@ def _catalog() -> dict[str, TaskRoute]:
         ),
         not_for="Different keypoint sets, new body parts at deploy, or no frames from deploy camera.",
         install="pip install matching-pmh torch",
-        example_script="examples/00_first_run_domain_shift.py",
-        doc_one_pager="docs/APPLICATIONS.md#pose_or_keypoints",
+        example_script="scripts/demos/first_run_domain_shift.py",
+        doc_one_pager=_TASK_DOC["pose_or_keypoints"],
         walkthrough=_pose_walk,
         snippet=(
             "from pmh import check_applicability, robust_fit, suggest_hook\n"
@@ -127,15 +145,15 @@ def _catalog() -> dict[str, TaskRoute]:
             data_you_need="Source train/val; target domain loader (labels optional for D4).",
             not_for="New classes only at test time; different label semantics per site.",
             install="pip install matching-pmh torch",
-            example_script="examples/00_first_run_domain_shift.py",
-            doc_one_pager="docs/APPLICATIONS.md#vision_classification",
+            example_script="scripts/demos/first_run_domain_shift.py",
+            doc_one_pager=_TASK_DOC["vision_classification"],
             walkthrough=(
                 "Same class list on train and deploy (spellings and semantics).",
                 "Collect unlabeled (or labeled) images from deploy domain B.",
                 "hook = backbone / pooler before classifier (suggest_hook).",
                 "robust_fit(model, train_loader, source_batches=A, target_batches=B, hook=hook).",
                 "Compare deploy accuracy ERM vs PMH on a holdout.",
-                "Run controls before claiming PMH helped (walkthrough 08).",
+                "Run Step 5 falsification before claiming PMH helped.",
             ),
             snippet=common_pose.snippet,
         ),
@@ -157,8 +175,8 @@ def _catalog() -> dict[str, TaskRoute]:
             data_you_need="Batches of images from train and deploy domains (same class list).",
             not_for="Different category sets per region without relabeling.",
             install="pip install matching-pmh torch",
-            example_script="examples/00_first_run_domain_shift.py",
-            doc_one_pager="docs/APPLICATIONS.md#vision_detection",
+            example_script="scripts/demos/first_run_domain_shift.py",
+            doc_one_pager=_TASK_DOC["vision_detection"],
             walkthrough=(
                 "Confirm same box class IDs on train and deploy.",
                 "Hook = FPN or backbone tensor (not per-anchor head).",
@@ -185,8 +203,8 @@ def _catalog() -> dict[str, TaskRoute]:
             data_you_need="Paired domain image loaders; same label map.",
             not_for="New stuff classes at deploy only.",
             install="pip install matching-pmh torch",
-            example_script="examples/00_first_run_domain_shift.py",
-            doc_one_pager="docs/APPLICATIONS.md#vision_segmentation",
+            example_script="scripts/demos/first_run_domain_shift.py",
+            doc_one_pager=_TASK_DOC["vision_segmentation"],
             walkthrough=(
                 "Confirm same per-pixel class map on A and B.",
                 "Hook = encoder or U-Net bottleneck (before decoder).",
@@ -213,8 +231,8 @@ def _catalog() -> dict[str, TaskRoute]:
             data_you_need="Labeled source; target corpus (unlabeled OK for D4).",
             not_for="Topic drift that changes label meaning; new intent labels at deploy.",
             install='pip install "matching-pmh[hf]"',
-            example_script="examples/08_hf_style_d7.py",
-            doc_one_pager="docs/APPLICATIONS.md#nlp_text_classification",
+            example_script="notebooks/tasks/t07a-llm-style.ipynb",
+            doc_one_pager=_TASK_DOC["nlp_text_classification"],
             walkthrough=(
                 "Freeze intent/label definitions across corpora A and B.",
                 "pip install matching-pmh[hf]; build text loaders for A and B.",
@@ -245,8 +263,8 @@ def _catalog() -> dict[str, TaskRoute]:
             data_you_need="Style pair JSONL or two corpora with matched content.",
             not_for="Factual drift, new knowledge at deploy, safety policy changes only.",
             install='pip install "matching-pmh[hf]"',
-            example_script="examples/08_hf_style_d7.py",
-            doc_one_pager="docs/APPLICATIONS.md#llm_style_or_format",
+            example_script="notebooks/tasks/t07a-llm-style.ipynb",
+            doc_one_pager=_TASK_DOC["llm_style_or_format"],
             walkthrough=(
                 "Build style-pair JSONL: same content, two surfaces (formal vs chat, etc.).",
                 "pip install matching-pmh[hf]; pmh-train doctor --stack hf",
@@ -281,8 +299,8 @@ def _catalog() -> dict[str, TaskRoute]:
             data_you_need="Feature matrix + labels on source; features from target cohort.",
             not_for="Different schemas, new columns only at deploy, label definition change.",
             install='pip install "matching-pmh[sklearn]"',
-            example_script="examples/06_office31_sklearn.py",
-            doc_one_pager="docs/APPLICATIONS.md#tabular_same_schema",
+            example_script="scripts/demos/office31_sklearn.py",
+            doc_one_pager=_TASK_DOC["tabular_same_schema"],
             walkthrough=(
                 "Verify same column schema and label definitions on A and B.",
                 "Build x_source, y_source (A) and x_target (B); labels on B help for D1.",
@@ -313,8 +331,8 @@ def _catalog() -> dict[str, TaskRoute]:
             data_you_need="Source transcripts/labels; target-domain audio batches.",
             not_for="New vocabulary or language at deploy without relabeling.",
             install="pip install matching-pmh torch",
-            example_script="examples/00_first_run_domain_shift.py",
-            doc_one_pager="docs/APPLICATIONS.md#speech_or_audio",
+            example_script="scripts/demos/first_run_domain_shift.py",
+            doc_one_pager=_TASK_DOC["speech_or_audio"],
             walkthrough=(
                 "Same vocabulary / class labels on A and B.",
                 "Hook = acoustic encoder before CTC or classifier.",
@@ -341,11 +359,11 @@ def _catalog() -> dict[str, TaskRoute]:
             data_you_need="source_features.npy, target_features.npy (+ labels on source).",
             not_for="Need to adapt the neural encoder itself (use G1 instead).",
             install='pip install "matching-pmh[sklearn]"',
-            example_script="examples/06_office31_sklearn.py",
-            doc_one_pager="docs/APPLICATIONS.md#frozen_embeddings_sklearn",
+            example_script="scripts/demos/office31_sklearn.py",
+            doc_one_pager=_TASK_DOC["frozen_embeddings_sklearn"],
             walkthrough=(
                 "One folder per site: features.npy (+ optional labels.npy) — DATA_LAYOUT.md.",
-                "pmh-train estimate --source-dir site_a --target-dir site_b",
+                "estimate_from_config or PMHTrainer.estimate with site A/B loaders",
                 "PMHMatcher(nuisance='domain_shift').fit(x_a, x_b) in Pipeline.",
                 "Train classifier; test on target holdout.",
                 "evaluate_baseline_vs_pmh for ERM vs PMH report.",
@@ -382,8 +400,8 @@ def _catalog() -> dict[str, TaskRoute]:
             data_you_need="Labeled train set + code to apply each aug mode; stack aug deltas [M, d].",
             not_for="Unknown deploy camera with no relation to your aug list; use D4 domain_shift instead.",
             install="pip install matching-pmh torch",
-            example_script="examples/18_augmentation_d3.py",
-            doc_one_pager="docs/APPLICATIONS.md#augmentation_robustness",
+            example_script="notebooks/tasks/t03a-pose-gradient.ipynb",
+            doc_one_pager=_TASK_DOC["augmentation_robustness"],
             walkthrough=(
                 "List aug modes explicitly (e.g. blur, brightness, noise).",
                 "For each mode: delta_h = mean(encoder(x_aug) - encoder(x)) on a reference batch.",
@@ -391,7 +409,7 @@ def _catalog() -> dict[str, TaskRoute]:
                 "PMHLoss(artifact, pmh_config) added to your task loss in the training loop.",
                 "Compare val metric with vs without PMH on **held-out clean** data.",
                 "Different deploy camera not in aug list → use D4 with site B batches instead.",
-                "Example: examples/18_augmentation_d3.py",
+                "Notebook: notebooks/tasks/t03a-pose-gradient.ipynb",
             ),
             snippet=(
                 "from pmh import SigmaTaskConfig, estimate_from_config, PMHConfig, PMHLoss\n"
@@ -420,15 +438,15 @@ def _catalog() -> dict[str, TaskRoute]:
             data_you_need="Batches shaped [N, T, d] with fixed label per sequence; T≥2.",
             not_for="Independent snapshots with no time axis; use D4.",
             install="pip install matching-pmh torch",
-            example_script="examples/00_first_run_domain_shift.py",
-            doc_one_pager="docs/APPLICATIONS.md#temporal_drift",
+            example_script="scripts/demos/first_run_domain_shift.py",
+            doc_one_pager=_TASK_DOC["temporal_drift"],
             walkthrough=(
                 "Organize data as sequences (same label across time index).",
                 "collect_sequence_features(model, seq_loader, hook) or pass [N,T,d].",
                 "estimate_from_config(SigmaTaskConfig.for_temporal(rank=R), sequences).",
                 "Add PMH penalty in training; keep sequence classification loss.",
                 "Evaluate on future-time holdout windows.",
-                "Walkthrough: docs/walkthroughs/11-temporal-d6.md for API detail.",
+                "Notebook: notebooks/tasks/t06b-temporal-har.ipynb",
                 "Controls before claiming drift-specific gain.",
             ),
             snippet=(
@@ -455,8 +473,8 @@ def _catalog() -> dict[str, TaskRoute]:
             data_you_need="source_batches + target_batches for Phase A; task loss in training_step.",
             not_for="Plain script with no Lightning — use G1 robust_fit instead.",
             install='pip install "matching-pmh[lightning]"',
-            example_script="examples/09_lightning_module.py",
-            doc_one_pager="docs/APPLICATIONS.md#pytorch_lightning",
+            example_script="templates/matching-pmh-starter/lightning_g1b_minimal.py",
+            doc_one_pager=_TASK_DOC["pytorch_lightning"],
             walkthrough=(
                 "Pick underlying application above (e.g. vision_classification) for nuisance story.",
                 "pip install matching-pmh[lightning]",
@@ -469,7 +487,7 @@ def _catalog() -> dict[str, TaskRoute]:
             snippet=(
                 'pip install "matching-pmh[lightning]"\n'
                 "from pmh.integrations.lightning import PMHLightningCallback, add_pmh_to_loss\n"
-                "# see docs/GOLDEN_PATHS.md#g1b"
+                "# see templates/matching-pmh-starter/lightning_g1b_minimal.py"
             ),
         ),
         "compositional_coordinates": TaskRoute(
@@ -494,8 +512,8 @@ def _catalog() -> dict[str, TaskRoute]:
             data_you_need="Feature matrix [N,d] + list of nuisance column indices.",
             not_for="Global camera shift with no index structure — use D4.",
             install="pip install matching-pmh torch",
-            example_script="examples/16_qm9_molecule_d5.py",
-            doc_one_pager="docs/APPLICATIONS.md#compositional_coordinates",
+            example_script="notebooks/tasks/t05a-qm9-molecule.ipynb",
+            doc_one_pager=_TASK_DOC["compositional_coordinates"],
             walkthrough=(
                 "Identify nuisance coordinates (e.g. positions 0:3, token blocks 128:256).",
                 "Pass nuisance_indices to SigmaTaskConfig.for_compositional(...) or PMHMatcher.",
@@ -529,8 +547,8 @@ def _catalog() -> dict[str, TaskRoute]:
             data_you_need="source_batches + target_batches from deploy environment.",
             not_for="Pure i.i.d. training with no deploy domain.",
             install="pip install matching-pmh torch",
-            example_script="examples/00_first_run_domain_shift.py",
-            doc_one_pager="docs/APPLICATIONS.md#generic_pytorch",
+            example_script="scripts/demos/first_run_domain_shift.py",
+            doc_one_pager=_TASK_DOC["generic_pytorch"],
             walkthrough=(
                 "One sentence: what changes at deploy without changing the target?",
                 "check_applicability(n_source, n_target).",
@@ -538,7 +556,7 @@ def _catalog() -> dict[str, TaskRoute]:
                 "robust_fit(..., source_batches=A, target_batches=B, hook='auto').",
                 "Deploy metric vs ERM.",
                 "Controls.",
-                "See docs/APPLICATIONS.md#generic_pytorch for examples.",
+                "See docs/tasks/t04a-vision-domain.md and notebooks/tasks/t04a-vision-domain.ipynb.",
             ),
             snippet=common_pose.snippet,
         ),
@@ -583,11 +601,11 @@ def explain_task(task_id: str) -> str:
         f"You need: {r.data_you_need}",
         f"Not for: {r.not_for}",
         "",
-        "WALKTHROUGH:",
+        "STEPS:",
         *[f"  {i}. {s}" for i, s in enumerate(r.walkthrough, 1)],
         "",
         f"Install: {r.install}",
-        f"Example script: {r.example_script}",
+        f"Run: {r.example_script}",
         f"Docs: {r.doc_one_pager}",
         "",
         "Snippet:",
@@ -604,7 +622,7 @@ def format_task_menu(*, short: bool = True) -> str:
         return "\n".join([format_shift_types(), format_application_finder()])
 
     lines = [
-        "Which application is closest? (full table: docs/APPLICATIONS.md)",
+        "Which application is closest? (full table: docs/tasks/index.md)",
         "",
     ]
     for i, r in enumerate(list_tasks(), 1):
@@ -654,5 +672,5 @@ def format_search_results(query: str) -> str:
         tail = "..." if len(r.what_changes) > 80 else ""
         lines.append(f"    {r.what_changes[:80]}{tail}")
     lines.append("")
-    lines.append("Full walkthrough: pmh-train route --task <id>")
+    lines.append("Full plan: pmh-train route --task <id>")
     return "\n".join(lines)

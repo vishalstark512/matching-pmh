@@ -3,10 +3,10 @@
 
 Does not commit data. After download, run:
 
-  python examples/21_benchmark_sklearn_table.py --office31-root YOUR_ROOT
+  python scripts/demos/office31_sklearn.py --office31-root YOUR_ROOT
   python scripts/generate_reference_benchmark.py --office31-root YOUR_ROOT
 
-See docs/walkthroughs/19-office31-real-data.md
+See docs/tasks/t01-classical.md
 """
 
 from __future__ import annotations
@@ -60,7 +60,7 @@ def main() -> None:
     print(f"Done. Archive: {archive}")
     print(f"Domains: {', '.join(list_office31_domains())} under {root}")
     print("\nNext:")
-    print(f"  python examples/21_benchmark_sklearn_table.py --office31-root {root}")
+    print(f"  python scripts/demos/office31_sklearn.py --office31-root {root}")
 
 
 if __name__ == "__main__":

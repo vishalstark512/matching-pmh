@@ -4,7 +4,7 @@ Tier 0 — stable adoption surface (``from pmh import ...`` + ``pmh.__all__``).
 Tier 1 — integrator / training primitives (importable from ``pmh``; documented in ARCHITECTURE.md).
 Tier 2 — research & lazy exports (benchmark protocol, numpy_api, vision multilayer, …).
 
-Physical package moves (Phase 2) will add submodules; names in Tier 0/1 stay importable from ``pmh`` until 2.0.
+Import from ``pmh`` (flat). Layer subpackages (``pmh.guide``, ``pmh.evidence``, …) were removed in 2.0.
 """
 
 from __future__ import annotations
@@ -16,6 +16,8 @@ TIER_0: tuple[str, ...] = (
     "PMHTrainer",
     "PMHConfig",
     "check_applicability",
+    "infer_applicability",
+    "try_pmh",
     "robust_fit",
     "evaluate_baseline_vs_pmh",
     "evaluate_falsification_arms",

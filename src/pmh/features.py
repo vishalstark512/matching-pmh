@@ -14,6 +14,8 @@ __all__ = [
     "collect_labeled_features",
     "collect_sequence_features",
     "collect_augmentation_deltas",
+    "collect_domain_paired_diffs",
+    "align_batch_by_labels",
     "paired_batches",
     "Encoder",
     "AugFn",
@@ -154,6 +156,86 @@ def collect_augmentation_deltas(
     if sums is None or counts == 0:
         raise ValueError("batches yielded no data")
     return (sums / counts).cpu()
+
+
+def align_batch_by_labels(
+    y_src: torch.Tensor,
+    x_tgt: torch.Tensor,
+    y_tgt: torch.Tensor,
+) -> tuple[torch.Tensor, torch.Tensor]:
+    """Reorder target mini-batch so index *i* mostly shares class with ``y_src[i]``.
+
+    Keeps Gram(φ_s − φ_t) dominated by domain/style rather than class change (paper T4).
+    """
+    b = y_src.size(0)
+    device = y_src.device
+    if x_tgt.size(0) != b or y_tgt.size(0) != b:
+        return x_tgt, y_tgt
+    idx_list: list[torch.Tensor] = []
+    for i in range(b):
+        cand = (y_tgt == y_src[i]).nonzero(as_tuple=True)[0]
+        if cand.numel() > 0:
+            j = cand[torch.randint(cand.numel(), (1,), device=device)]
+        else:
+            j = torch.randint(0, b, (1,), device=device)
+        idx_list.append(j)
+    idx = torch.cat(idx_list)
+    return x_tgt[idx], y_tgt[idx]
+
+
+@torch.no_grad()
+def collect_domain_paired_diffs(
+    encoder: Encoder,
+    source_batches: Iterable[torch.Tensor | tuple[torch.Tensor, ...]],
+    target_batches: Iterable[torch.Tensor | tuple[torch.Tensor, ...]],
+    *,
+    align_by_class: bool = True,
+    max_batches: int | None = 50,
+    device: torch.device | str | None = None,
+) -> tuple[torch.Tensor, bool]:
+    """Stack paired domain differences ``[N, d]`` for class-aligned D4 Gram.
+
+    Returns ``(diff_rows, used_class_alignment)``. Falls back to row-wise zip of
+    unlabeled batches when labels are missing.
+    """
+    dev = torch.device(device) if device is not None else None
+    rows: list[torch.Tensor] = []
+    used_align = False
+    n_batches = 0
+    for src, tgt in zip(source_batches, target_batches):
+        labeled = (
+            align_by_class
+            and isinstance(src, (tuple, list))
+            and len(src) >= 2
+            and isinstance(tgt, (tuple, list))
+            and len(tgt) >= 2
+        )
+        if labeled:
+            x_s, y_s = src[0], src[1]
+            x_t, y_t = tgt[0], tgt[1]
+            if dev is not None:
+                x_s, y_s = x_s.to(dev), y_s.to(dev)
+                x_t, y_t = x_t.to(dev), y_t.to(dev)
+            x_t, _ = align_batch_by_labels(y_s, x_t, y_t)
+            h_s = encoder(x_s).detach().float()
+            h_t = encoder(x_t).detach().float()
+            used_align = True
+        else:
+            x_s = _batch_x(src)
+            x_t = _batch_x(tgt)
+            if dev is not None:
+                x_s, x_t = x_s.to(dev), x_t.to(dev)
+            h_s = encoder(x_s).detach().float()
+            h_t = encoder(x_t).detach().float()
+        if h_s.dim() != 2 or h_t.dim() != 2:
+            raise ValueError("encoder must return [B, d]")
+        rows.append((h_s - h_t).cpu())
+        n_batches += 1
+        if max_batches is not None and n_batches >= max_batches:
+            break
+    if not rows:
+        raise ValueError("batches yielded no data")
+    return torch.cat(rows, dim=0), used_align
 
 
 def paired_batches(

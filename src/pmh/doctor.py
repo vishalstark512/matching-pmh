@@ -13,9 +13,9 @@ from pmh.onboarding import preflight_plain_english
 Stack = Literal["pytorch", "sklearn", "hf"]
 
 _SUGGESTED_DOC = {
-    "pytorch": "docs/FIVE_STEP_RECIPE.md",
-    "sklearn": "docs/GOLDEN_PATHS.md#g2",
-    "hf": "docs/GOLDEN_PATHS.md#g3",
+    "pytorch": "docs/tasks/t04a-vision-domain.md",
+    "sklearn": "docs/tasks/t01-classical.md",
+    "hf": "docs/tasks/t07a-llm-style.md",
 }
 
 
@@ -35,7 +35,7 @@ class DoctorReport:
     checks: list[str] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
     errors: list[str] = field(default_factory=list)
-    suggested_path: str = "docs/FIVE_STEP_RECIPE.md"
+    suggested_path: str = "docs/QUICKSTART.md"
     stack: Stack = "pytorch"
     artifact_preflight: str | None = None
     artifact_eigengap: float | None = None
@@ -68,7 +68,7 @@ class DoctorReport:
         lines.extend(["", format_newbie_checklist(self.stack)])
         lines.append("")
         lines.append(f"  next doc: {self.suggested_path}")
-        lines.append(f"  quick try: python examples/00_first_run_domain_shift.py")
+        lines.append("  quick try: PMH_QUICK=1 python scripts/demos/first_run_domain_shift.py")
         if self.stack == "sklearn":
             lines.append("  G2 demo: python -c \"from pmh import load_g2_demo_arrays; print(load_g2_demo_arrays()[0].shape)\"")
         return "\n".join(lines)
@@ -109,7 +109,7 @@ def run_doctor(
     rank: int | None = None,
 ) -> DoctorReport:
     """Check imports, optional extras, and print the newbie pipeline checklist."""
-    rep = DoctorReport(stack=stack, suggested_path=_SUGGESTED_DOC.get(stack, "docs/FIVE_STEP_RECIPE.md"))
+    rep = DoctorReport(stack=stack, suggested_path=_SUGGESTED_DOC.get(stack, "docs/QUICKSTART.md"))
     rep.checks.append(f"Python {sys.version.split()[0]} on {platform.system()}")
     rep.checks.append(RECIPE_ONE_LINER)
 

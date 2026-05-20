@@ -18,6 +18,14 @@ def gram_from_diff(feats_s: torch.Tensor, feats_t: torch.Tensor) -> torch.Tensor
     return (diff.T @ diff) / max(n, 1)
 
 
+def gram_from_paired_diffs(diff: torch.Tensor) -> torch.Tensor:
+    """Sigma from already paired rows ``diff[i] = phi_s[i] - phi_t[i]`` (class-aligned D4)."""
+    d = flatten_features(diff)
+    d = d - d.mean(0, keepdim=True)
+    n = d.shape[0]
+    return (d.T @ d) / max(n, 1)
+
+
 def estimate_d4(
     source: torch.Tensor,
     target: torch.Tensor,
@@ -26,6 +34,19 @@ def estimate_d4(
     shrinkage: float = 1e-6,
 ) -> torch.Tensor:
     sigma = gram_from_diff(source, target)
+    if rank is not None:
+        sigma = _truncate_rank(sigma, rank)
+    return ensure_psd(sigma, shrinkage=shrinkage)
+
+
+def estimate_d4_from_paired_diffs(
+    diff: torch.Tensor,
+    *,
+    rank: int | None = None,
+    shrinkage: float = 1e-6,
+) -> torch.Tensor:
+    """D4 Gram from paired difference rows (class-aligned batches)."""
+    sigma = gram_from_paired_diffs(diff)
     if rank is not None:
         sigma = _truncate_rank(sigma, rank)
     return ensure_psd(sigma, shrinkage=shrinkage)

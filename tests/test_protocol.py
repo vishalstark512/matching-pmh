@@ -1,6 +1,7 @@
-"""Protocol subpackage (step 4 + control modes)."""
+"""Training protocol helpers (Step 4–5 control modes)."""
 
-from pmh.protocol import MultiPMHLoss, control_modes, default_protocol_config
+from pmh import MultiPMHLoss, PMHConfig, PMHLoss
+from pmh.recipe import control_modes, default_protocol_config
 from pmh.recipe import default_protocol_config as recipe_default
 
 
@@ -18,7 +19,6 @@ def test_default_protocol_config():
 
 
 def test_protocol_import_pmh_config():
-    from pmh.protocol import PMHConfig, PMHLoss
-
     assert PMHConfig.balanced() is not None
     assert PMHLoss is not None
+    assert MultiPMHLoss is not None

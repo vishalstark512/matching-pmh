@@ -266,7 +266,9 @@ def validate_representation(h: torch.Tensor, *, pool_spatial: bool = True) -> to
     if h.dim() == 4 and pool_spatial:
         return h.mean(dim=(2, 3))
     if h.dim() == 3:
-        return h.mean(dim=1)
+        if pool_spatial:
+            return h.mean(dim=1)
+        return h
     raise ValueError(
         f"Hook must return [B, d] (or [B,C,H,W] with pool_spatial=True). Got shape {tuple(h.shape)}. "
         "Pick a different layer or set pool_spatial=False and flatten manually."

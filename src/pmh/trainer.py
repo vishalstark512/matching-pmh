@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 import torch
 import torch.nn as nn
@@ -38,6 +38,9 @@ class PMHTrainer:
     Supports D1–D7 on PyTorch batches (see ``estimate()`` kwargs per method).
     For hybrid nuisances pass ``artifacts=`` or call :meth:`add_artifact` and use
   ``multi_loss=True``.
+
+    Set ``train_mode="feature_diff"`` with ``forward_features`` + ``layer_names`` for
+    paper T4B-style per-layer Gram + feature-diff PMH (see :meth:`estimate_multilayer`).
     """
 
     def __init__(
@@ -62,6 +65,12 @@ class PMHTrainer:
         has_target_domain: bool = True,
         has_augmentation_modes: bool = False,
         has_style_pairs: bool = False,
+        train_mode: Literal["jacobian", "feature_diff"] = "jacobian",
+        forward_features: Callable[[torch.Tensor], dict[str, torch.Tensor]] | None = None,
+        layer_names: Sequence[str] | None = None,
+        head_layer: str | None = None,
+        noise_std: float = 0.05,
+        noise_rank: int = 64,
     ) -> None:
         self.model = model
         ctx = data_context or DataContext(
@@ -95,10 +104,24 @@ class PMHTrainer:
         else:
             self.head = head
 
+        self.train_mode = train_mode
+        self.forward_features = forward_features
+        self.layer_names: tuple[str, ...] = tuple(layer_names or ())
+        self.head_layer = head_layer
+        self.noise_std = noise_std
+        self.noise_rank = noise_rank
+        self.layer_sigmas_: dict[str, torch.Tensor] | None = None
+        self._feature_diff_callback: Any = None
+
         self.artifact_: SigmaTaskEstimate | None = None
         self._extra_artifacts: list[SigmaTaskEstimate] = []
         self.pmh_loss_: PMHLoss | MultiPMHLoss | None = None
         self._callback: PMHCallback | None = None
+
+        if train_mode == "feature_diff" and (not forward_features or not layer_names):
+            raise ValueError(
+                "train_mode='feature_diff' requires forward_features= and layer_names="
+            )
 
         if artifacts:
             for a in artifacts:
@@ -198,6 +221,7 @@ class PMHTrainer:
         style_jsonl: str | Path | None = None,
         hf_model: Any = None,
         hf_tokenizer: Any = None,
+        d6_source: str = "content",
     ) -> SigmaTaskEstimate:
         """Phase A: estimate ``Sigma_task`` (D1–D7).
 
@@ -208,9 +232,15 @@ class PMHTrainer:
         D7 : ``style_jsonl`` + ``hf_model`` / ``hf_tokenizer`` (Transformers)
         D5 : set ``nuisance_indices=`` on trainer; ``source_batches`` only
         D1 : labeled ``(x,y)`` in source and target loaders
-        D4 : ``source_batches`` + ``target_batches``
+        D4 : ``source_batches`` + ``target_batches`` (class-aligned Gram when ``(x,y)`` batches)
+        D6 : ``d6_source='content'`` (default, paper 6A) or ``'temporal'`` for consecutive diffs
         D2 : ``source_batches`` only (dim from ``h``)
         """
+        if self.train_mode == "feature_diff":
+            raise ValueError(
+                "train_mode='feature_diff': call estimate_multilayer() instead of estimate()"
+            )
+
         if self.artifact_path and self.artifact_path.exists() and source_batches is None:
             self.artifact_ = SigmaTaskEstimate.load(self.artifact_path)
             self._bind_pmh_loss()
@@ -240,7 +270,17 @@ class PMHTrainer:
                 self.encoder, sequences_batches, max_batches=max_batches, device=dev
             )
             cfg = self._sigma_config(seq.shape[-1], seq.shape[0])
-            self.artifact_ = estimate_from_config(cfg, seq)
+            if d6_source == "content":
+                from pmh.calibrate.content_residual import content_residual_subspace
+
+                _, self.artifact_ = content_residual_subspace(
+                    seq.numpy(),
+                    rank=int(cfg.rank or 32),
+                    source="content",
+                )
+                self.artifact_.config = cfg
+            else:
+                self.artifact_ = estimate_from_config(cfg, seq)
         elif method == "D5":
             if self.nuisance_indices is None:
                 raise ValueError("compositional (D5) requires nuisance_indices=")
@@ -277,14 +317,38 @@ class PMHTrainer:
         elif method == "D4":
             if source_batches is None or target_batches is None:
                 raise ValueError("domain_shift (D4) requires source_batches and target_batches")
-            h_src = collect_features(
-                self.encoder, source_batches, max_batches=max_batches, device=dev
+            from pmh.estimators.d4_domain import estimate_d4_from_paired_diffs
+            from pmh.features import collect_domain_paired_diffs
+
+            diff, aligned = collect_domain_paired_diffs(
+                self.encoder,
+                source_batches,
+                target_batches,
+                align_by_class=True,
+                max_batches=max_batches,
+                device=dev,
             )
-            h_tgt = collect_features(
-                self.encoder, target_batches, max_batches=max_batches, device=dev
+            cfg = self._sigma_config(diff.shape[1], diff.shape[0])
+            sigma = estimate_d4_from_paired_diffs(
+                diff, rank=cfg.rank, shrinkage=cfg.shrinkage
             )
-            cfg = self._sigma_config(h_src.shape[1], h_src.shape[0] + h_tgt.shape[0])
-            self.artifact_ = estimate_from_config(cfg, h_src, h_tgt)
+            meta = {"d4_class_aligned": aligned}
+            cov = sigma
+            preflight = None
+            eigengap = None
+            if cfg.rank is not None:
+                from pmh.preflight import preflight_eigengap
+
+                status, eigengap = preflight_eigengap(cov, cfg.rank)
+                preflight = status.value
+            self.artifact_ = SigmaTaskEstimate(
+                sigma=sigma,
+                method="D4",
+                config=cfg,
+                eigengap=eigengap,
+                preflight=preflight,
+                metadata=meta,
+            )
         else:
             raise ValueError(f"Unknown method {method}")
 
@@ -347,7 +411,87 @@ class PMHTrainer:
                 f"Artifact dim {sig_d} != hook dim {d}. Re-estimate with the same hook layer."
             )
 
+    @torch.no_grad()
+    def estimate_multilayer(
+        self,
+        source_batches: Iterable[Any] | None,
+        target_batches: Iterable[Any] | None,
+        *,
+        forward_features: Callable[[torch.Tensor], dict[str, torch.Tensor]] | None = None,
+        layer_names: Sequence[str] | None = None,
+        max_batches: int = 50,
+        save: bool = True,
+    ) -> dict[str, torch.Tensor]:
+        """Class-aligned D4 Gram per layer (paper E1_multiscale estimate phase)."""
+        from pmh.vision.domain_multilayer import estimate_multilayer_domain_sigmas
+
+        ff = forward_features or self.forward_features
+        layers = tuple(layer_names or self.layer_names)
+        if ff is None or not layers:
+            raise ValueError("estimate_multilayer requires forward_features= and layer_names=")
+        if source_batches is None or target_batches is None:
+            raise ValueError("estimate_multilayer requires source_batches and target_batches")
+        self.model.eval()
+        self.layer_sigmas_ = estimate_multilayer_domain_sigmas(
+            ff,
+            source_batches,
+            target_batches,
+            layers,
+            rank=int(self.rank or 32),
+            max_batches=max_batches,
+            device=self.device,
+        )
+        primary = layers[0]
+        d = int(self.layer_sigmas_[primary].shape[0])
+        cfg = self._sigma_config(d, max_batches * 16)
+        self.artifact_ = SigmaTaskEstimate(
+            sigma=self.layer_sigmas_[primary],
+            method="D4",
+            config=cfg,
+            metadata={
+                "multilayer": True,
+                "layers": list(layers),
+                "d4_class_aligned": True,
+            },
+        )
+        if self.train_mode == "jacobian":
+            self._bind_pmh_loss()
+        else:
+            self._bind_feature_diff()
+        if save and self.artifact_path:
+            self.artifact_.save(self.artifact_path)
+        return self.layer_sigmas_
+
+    def _bind_feature_diff(self) -> None:
+        from pmh.vision.domain_multilayer import FeatureDiffCallback, build_multilayer_domain_trainer
+
+        if self.forward_features is None or not self.layer_names:
+            raise ValueError("feature_diff mode requires forward_features and layer_names")
+        if not self.layer_sigmas_:
+            raise RuntimeError("Call estimate_multilayer() first")
+        ml_loss, noisy_forward = build_multilayer_domain_trainer(
+            self.model,
+            self.forward_features,
+            self.layer_sigmas_,
+            self.layer_names,
+            pmh_config=self.pmh_config,
+            noise_std=self.noise_std,
+            noise_rank=self.noise_rank,
+        )
+        self._feature_diff_callback = FeatureDiffCallback(
+            self.model,
+            self.forward_features,
+            noisy_forward,
+            ml_loss,
+            head=self.head,
+            head_layer=self.head_layer,
+            layer_names=self.layer_names,
+        )
+
     def _bind_pmh_loss(self) -> None:
+        if self.train_mode == "feature_diff":
+            self._bind_feature_diff()
+            return
         arts = self._all_artifacts()
         if not arts:
             raise RuntimeError("Call estimate() or load artifact first.")
@@ -390,6 +534,19 @@ class PMHTrainer:
         estimate_kwargs: dict[str, Any] | None = None,
     ) -> dict[str, float]:
         """Phase A (if needed) + Phase B training loop."""
+        if self.train_mode == "feature_diff":
+            return self._fit_feature_diff(
+                train_loader,
+                source_batches=source_batches,
+                target_batches=target_batches,
+                epochs=epochs,
+                optimizer=optimizer,
+                max_batches_estimate=max_batches_estimate,
+                max_steps_per_epoch=max_steps_per_epoch,
+                reestimate=reestimate,
+                estimate_kwargs=estimate_kwargs,
+            )
+
         est_kw = estimate_kwargs or {}
         if reestimate or self.artifact_ is None:
             if source_batches is None and sequences_batches is None and not est_kw.get("style_jsonl"):
@@ -426,7 +583,63 @@ class PMHTrainer:
             )
         return last
 
+    def _fit_feature_diff(
+        self,
+        train_loader: Iterable[Any],
+        *,
+        source_batches: Iterable[Any] | None,
+        target_batches: Iterable[Any] | None,
+        epochs: int,
+        optimizer: torch.optim.Optimizer | None,
+        max_batches_estimate: int,
+        max_steps_per_epoch: int | None,
+        reestimate: bool,
+        estimate_kwargs: dict[str, Any] | None,
+    ) -> dict[str, float]:
+        from pmh.vision.domain_multilayer import train_epoch_feature_diff
+
+        est_kw = estimate_kwargs or {}
+        if reestimate or not self.layer_sigmas_:
+            if source_batches is None or target_batches is None:
+                raise ValueError(
+                    "feature_diff fit requires source_batches= and target_batches= "
+                    "(or pre-call estimate_multilayer)"
+                )
+            self.estimate_multilayer(
+                source_batches,
+                target_batches,
+                max_batches=max_batches_estimate,
+                **{k: v for k, v in est_kw.items() if k in ("forward_features", "layer_names")},
+            )
+        elif self._feature_diff_callback is None:
+            self._bind_feature_diff()
+
+        if optimizer is None:
+            optimizer = torch.optim.Adam(self.model.parameters(), lr=1e-3)
+
+        last: dict[str, float] = {}
+        assert self._feature_diff_callback is not None
+        for epoch in range(1, epochs + 1):
+            last = train_epoch_feature_diff(
+                self._feature_diff_callback,
+                train_loader,
+                optimizer,
+                epoch=epoch,
+                device=self.device,
+                max_steps=max_steps_per_epoch,
+            )
+        return last
+
     def training_step(self, batch: Any) -> tuple[torch.Tensor, dict[str, float]]:
+        if self.train_mode == "feature_diff":
+            if self._feature_diff_callback is None:
+                self._bind_feature_diff()
+            loss, step = self._feature_diff_callback.training_step(batch)
+            return loss, {
+                "task_loss": step.task_loss,
+                "pmh_loss": step.pmh_loss,
+                "total_loss": step.total_loss,
+            }
         loss, step = self.callback.training_step(batch)
         return loss, {
             "task_loss": step.task_loss,

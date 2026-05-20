@@ -22,5 +22,5 @@ pmh-train evaluate --demo          # G2 Step 5 (sklearn)
 python pytorch_minimal.py          # G1 + Step 5
 ```
 
-Parameters: [PMH_PARAMETERS.md](https://github.com/vishalstark512/matching-pmh/blob/main/docs/PMH_PARAMETERS.md)  
-Docs: [GOLDEN_PATHS](https://github.com/vishalstark512/matching-pmh/blob/main/docs/GOLDEN_PATHS.md) · [60s script](https://github.com/vishalstark512/matching-pmh/blob/main/docs/PIPELINE_60S.md)
+Parameters: see [task docs](https://github.com/vishalstark512/matching-pmh/blob/main/docs/tasks/index.md) and `pmh-train route --list`.  
+Docs: [13 tasks](https://github.com/vishalstark512/matching-pmh/blob/main/docs/tasks/index.md) · [Quickstart](https://github.com/vishalstark512/matching-pmh/blob/main/docs/QUICKSTART.md)

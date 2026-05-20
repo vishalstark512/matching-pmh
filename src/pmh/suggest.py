@@ -40,7 +40,7 @@ def suggest_nuisance(
 ) -> NuisanceSuggestion:
     """Rule-based **deployment shift type** (``nuisance=`` key) from data you have.
 
-    Prefer ``pmh-train shifts`` or :func:`explain_nuisance_key` for plain English.
+    Prefer :func:`format_shift_types` or :func:`explain_nuisance_key` for plain English.
     """
     if has_style_pairs:
         return NuisanceSuggestion("style", "D7", "Style/content-fixed pairs -> D7 alignment Gram.")

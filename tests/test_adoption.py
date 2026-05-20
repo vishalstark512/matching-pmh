@@ -56,8 +56,7 @@ def test_format_shift_types_includes_isotropic():
     assert "isotropic" in format_shift_types()
 
 
-def test_cli_shifts(capsys):
-    from pmh.cli.main import main
+def test_format_shift_types_mentions_deploy():
+    from pmh import format_shift_types
 
-    assert main(["shifts"]) == 0
-    assert "deploy shift" in capsys.readouterr().out.lower()
+    assert "deploy shift" in format_shift_types().lower()

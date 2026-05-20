@@ -1,6 +1,6 @@
 # Estimators (D1–D7)
 
-One \(\hat\Sigma_{\mathrm{task}}\) per lemma. Pick subtype via [NUISANCE_SUBTYPES.md](../NUISANCE_SUBTYPES.md) or `suggest_subtype`.
+One $\hat{\Sigma}_{\text{task}}$ per lemma. Pick your row in [tasks/index.md](../tasks/index.md) or use `suggest_subtype()`.
 
 ```python
 from pmh import SigmaTaskConfig, estimate_from_config
@@ -24,4 +24,4 @@ SigmaTaskConfig.for_alignment(rank=128)          # D7 — style / PGD deltas
 | D6 | Temporal | `for_temporal` | `sequences` |
 | D7 | Alignment | `for_alignment` | `style_jsonl` or deltas |
 
-`pmh-train list-methods` · optional calibrators: `pmh.calibrate.*` · paper detail: [PAPER_ALIGNMENT.md](../PAPER_ALIGNMENT.md)
+`pmh.estimators` registry · optional calibrators: `pmh.calibrate.*` · theory: [`main.pdf`](../../main.pdf)

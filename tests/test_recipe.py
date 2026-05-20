@@ -49,7 +49,7 @@ def test_format_five_step_guide():
     text = format_five_step_guide(stack="sklearn")
     assert "Step 1" in text
     assert "Mode A" in text
-    assert "pmh.evidence" in text
+    assert "compare_arms" in text or "pmh.benchmark" in text
 
 
 def test_step_estimate_arrays_smoke():
@@ -63,9 +63,3 @@ def test_step_estimate_arrays_smoke():
     assert result.eigengap > 0
 
 
-def test_cli_recipe(capsys):
-    from pmh.cli.main import main
-
-    assert main(["recipe", "--stack", "pytorch"]) == 0
-    out = capsys.readouterr().out
-    assert "Step 2" in out

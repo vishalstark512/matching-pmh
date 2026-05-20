@@ -121,9 +121,13 @@ def cap_pmh_term(
     task_loss: torch.Tensor,
     *,
     cap_ratio: float = 0.3,
-    basis: str = "total",
+    basis: str = "task",
 ) -> torch.Tensor:
-    """Cap PMH so it does not dominate task loss (paper cap proposition)."""
+    """Cap PMH relative to task loss (paper cap proposition).
+
+    **Recommended:** ``basis='task'`` — PMH term ≤ ``cap_ratio × task_loss``
+    (e.g. ``cap_ratio=0.25`` → PMH is at most 25% of task loss).
+    """
     if cap_ratio <= 0:
         return pmh_term
     lt = task_loss.detach().float()

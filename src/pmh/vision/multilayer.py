@@ -106,7 +106,11 @@ class MultiLayerPMHLoss(nn.Module):
         feats_noisy: Mapping[str, torch.Tensor],
     ) -> tuple[torch.Tensor, torch.Tensor]:
         raw = self.forward(feats_clean, feats_noisy)
-        if self.config.cap_ratio > 0:
+        if self.config.cap_basis == "task" and self.config.pmh_max_task_ratio > 0:
+            from pmh.loss_budget import budget_pmh_to_task_loss
+
+            raw, _ = budget_pmh_to_task_loss(raw, task_loss, self.config)
+        elif self.config.cap_ratio > 0:
             raw = cap_pmh_term(
                 raw,
                 task_loss,

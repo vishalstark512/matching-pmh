@@ -18,6 +18,7 @@ tmp_notebook_out/
 *.pt
 .DS_Store
 /main.pdf
+/paper_code/
 
 # --- Datasets and large downloads (never commit to git or ship in wheels) ---
 /data/*
@@ -44,7 +45,9 @@ tmp.tar.gz
 *.feather
 *.ckpt
 *.safetensors
-# Keep tiny JSONL demos under examples/data/ only (tracked on purpose).
+# Tiny JSONL demos: scripts/data/ (tracked on purpose).
 
 # Local benchmark outputs with raw tensors
 docs/benchmarks/raw/
+
+# paper_code/ is local reproduction only (see README); never push to GitHub

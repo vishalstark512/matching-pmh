@@ -32,6 +32,9 @@ class PMHStepResult:
     task_loss: float
     pmh_loss: float
     total_loss: float
+    pmh_task_ratio: float | None = None
+    pmh_capped: bool = False
+    pmh_underpowered: bool = False
 
 
 @dataclass
@@ -42,21 +45,29 @@ class PMHEpochStats:
     pmh_loss: float = 0.0
     total_loss: float = 0.0
     n_steps: int = 0
+    _ratio_sum: float = 0.0
+    _ratio_n: int = 0
 
     def update(self, step: PMHStepResult) -> None:
         self.task_loss += step.task_loss
         self.pmh_loss += step.pmh_loss
         self.total_loss += step.total_loss
         self.n_steps += 1
+        if step.pmh_task_ratio is not None:
+            self._ratio_sum += step.pmh_task_ratio
+            self._ratio_n += 1
 
     def averages(self) -> dict[str, float]:
         n = max(self.n_steps, 1)
-        return {
+        out = {
             "task_loss": self.task_loss / n,
             "pmh_loss": self.pmh_loss / n,
             "total_loss": self.total_loss / n,
             "n_steps": float(self.n_steps),
         }
+        if self._ratio_n > 0:
+            out["pmh_task_ratio"] = self._ratio_sum / self._ratio_n
+        return out
 
 
 class PMHCallback:
@@ -128,11 +139,30 @@ class PMHCallback:
         logits = self.head(h) if self.head is not None else h
         task = self.task_loss_fn(logits, y)
         total, pmh_raw = self.pmh_loss.capped_total(task, h)
+        budget = getattr(self.pmh_loss, "last_budget", None)
+        ratio = budget.pmh_task_ratio if budget is not None else None
+        if ratio is None and float(task.detach()) > 1e-12:
+            ratio = float(pmh_raw.detach()) / float(task.detach())
         step = PMHStepResult(
             task_loss=float(task.detach()),
             pmh_loss=float(pmh_raw.detach()),
             total_loss=float(total.detach()),
+            pmh_task_ratio=ratio,
+            pmh_capped=budget.capped if budget else False,
+            pmh_underpowered=budget.underpowered if budget else False,
         )
+        if budget is not None and budget.underpowered:
+            cfg = getattr(self.pmh_loss, "config", None)
+            if cfg is not None and getattr(cfg, "warn_underpowered_pmh", True):
+                import warnings
+
+                warnings.warn(
+                    f"PMH term is {100*budget.pmh_task_ratio:.1f}% of task loss "
+                    f"(target {100*cfg.pmh_min_task_ratio:.0f}--"
+                    f"{100*cfg.pmh_max_task_ratio:.0f}%). "
+                    "Increase PMHConfig.weight or check hook/estimate.",
+                    stacklevel=2,
+                )
         self._stats.update(step)
         return total, step
 

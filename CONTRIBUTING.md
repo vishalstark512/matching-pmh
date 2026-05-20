@@ -14,7 +14,7 @@ python -m venv .venv
 # Unix:    source .venv/bin/activate
 pip install -e ".[dev,all]"
 pytest -q
-ruff check src tests examples
+ruff check src tests
 ```
 
 ---
@@ -31,7 +31,7 @@ See [docs/DATA_POLICY.md](docs/DATA_POLICY.md). Benchmark docs may include **met
 | Type | Where |
 |------|--------|
 | Bug fix | PR + test in `tests/` |
-| New walkthrough | `docs/walkthroughs/` + `examples/*.py` + index table |
+| New paper task | `docs/tasks/<task>.md` + `notebooks/tasks/<task>.ipynb` + `paper_tasks.py` subtasks |
 | Estimator improvement | `src/pmh/estimators/` + `tests/` |
 | Integration (framework X) | `src/pmh/integrations/` + doc page |
 | Docs only | `docs/`, `README.md` |
@@ -43,7 +43,7 @@ See [docs/DATA_POLICY.md](docs/DATA_POLICY.md). Benchmark docs may include **met
 - [ ] `pytest -q` passes locally
 - [ ] New behavior has a test or a smoke-runnable example
 - [ ] `CHANGELOG.md` updated under “Unreleased” or new version
-- [ ] User-facing changes reflected in walkthroughs, `docs/GOLDEN_PATHS.md`, or `docs/index.md` (see `docs/DOCS_GUIDE.md`)
+- [ ] User-facing changes reflected in `docs/tasks/` and `python scripts/render_handcrafted_tasks.py` if needed
 - [ ] No secrets or API tokens in the diff
 
 ---

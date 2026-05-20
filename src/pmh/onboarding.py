@@ -21,7 +21,7 @@ def preflight_plain_english(status: str | None) -> str:
     if status is None:
         return "No preflight run yet."
     key = str(status).strip().lower()
-    return _PREFLIGHT_HINTS.get(key, f"Status {status!r}. See docs/TROUBLESHOOTING.md#glossary.")
+    return _PREFLIGHT_HINTS.get(key, f"Status {status!r}. See docs/WHEN_PMH_HELPS.md.")
 
 
 @dataclass(frozen=True)
@@ -79,8 +79,8 @@ def recommend_setup(
             title="LLM style / format shift",
             summary="Same factual content, different formatting — style-pair JSONL + HF hidden states.",
             install_extra='pip install "matching-pmh[hf]"',
-            example_script="examples/08_hf_style_d7.py",
-            doc_link="docs/GOLDEN_PATHS.md#g3",
+            example_script="notebooks/tasks/t07a-llm-style.ipynb",
+            doc_link="docs/tasks/t07a-llm-style.md",
             subtype_doc=subtype_doc,
             snippet=(
                 "from pmh import PMHTrainer, PMHConfig\n"
@@ -100,8 +100,8 @@ def recommend_setup(
             title="Frozen features + sklearn",
             summary="You already have embeddings; adapt source features using target domain geometry.",
             install_extra='pip install "matching-pmh[sklearn]"',
-            example_script="examples/06_office31_sklearn.py",
-            doc_link="docs/NUISANCE_SUBTYPES.md",
+            example_script="scripts/demos/office31_sklearn.py",
+            doc_link="docs/tasks/t01-classical.md",
             subtype_doc=f"docs/{get_subtype(lem).doc_anchor}",
             snippet=(
                 "from pmh import PMHMatcher\n"
@@ -126,8 +126,8 @@ def recommend_setup(
         title=title,
         summary=summary,
         install_extra="pip install matching-pmh torch",
-        example_script="examples/00_first_run_domain_shift.py",
-        doc_link="docs/NUISANCE_SUBTYPES.md",
+        example_script="scripts/demos/first_run_domain_shift.py",
+        doc_link="docs/tasks/t04a-vision-domain.md",
         subtype_doc=subtype_doc,
         snippet=(
             "from pmh import PMHTrainer, PMHConfig\n"
@@ -135,7 +135,7 @@ def recommend_setup(
             "    model, hook=backbone, nuisance='"
             + nuisance
             + "',\n"
-            "    pmh_config=PMHConfig.balanced(),\n"
+            "    pmh_config=PMHConfig.golden_path(),  # PMH capped at ~25% of task loss\n"
             ")\n"
             "trainer.fit(train_loader, source_batches=src, target_batches=tgt, epochs=20)"
         ),
@@ -154,13 +154,23 @@ def format_setup_guide(rec: SetupRecommendation) -> str:
     ]
     if rec.stack == "pytorch":
         lines.append(
-            "  Colab: https://colab.research.google.com/github/vishalstark512/matching-pmh/blob/main/notebooks/domain_shift_first_run.ipynb"
+            "  Colab: https://colab.research.google.com/github/vishalstark512/matching-pmh/blob/main/notebooks/tasks/t04a-vision-domain.ipynb"
         )
     if rec.stack == "sklearn":
         lines.append(
-            "  Colab: https://colab.research.google.com/github/vishalstark512/matching-pmh/blob/main/notebooks/sklearn_frozen_features_first_run.ipynb"
+            "  Colab: https://colab.research.google.com/github/vishalstark512/matching-pmh/blob/main/notebooks/tasks/t01-classical.ipynb"
         )
-    lines.extend(["", "Snippet:", rec.snippet])
+    lines.extend(
+        [
+            "",
+            "Loss scale: PMH term is hard-capped to 5--30% of task loss (PMHConfig.pmh_max_task_ratio).",
+            "  Quick try: pmh-train try --quick",
+            "  Docs: docs/LOSS_SCALING.md",
+            "",
+            "Snippet:",
+            rec.snippet,
+        ]
+    )
     return "\n".join(lines)
 
 
@@ -232,7 +242,13 @@ def run_wizard(
         from pmh.adoption import format_recipe_banner
 
         print("matching-pmh setup wizard")
-        print(format_recipe_banner(trailing="Guide: docs/FIVE_STEP_RECIPE.md\n"))
+        print(format_recipe_banner(trailing="Guide: docs/START.md\n"))
+        if not _ask_yes_no(
+            "Same label semantics on train (site A) and deploy (site B)?",
+            default=True,
+            input_fn=input_fn,
+        ):
+            print("  PMH is for label-preserving deploy shift only. See docs/WHEN_PMH_HELPS.md")
         print(format_task_menu())
         from pmh.task_router import TASK_IDS
 
@@ -350,17 +366,22 @@ def run_wizard(
     else:
         print(f"  1. {rec.install_extra}")
         print(f"  2. python {rec.example_script}")
-        print("  3. docs/START_HERE.md")
+        print("  3. docs/tasks/index.md")
+    print("  Golden path: pmh-train try --quick")
     if rec.stack == "pytorch":
         print(
-            "  Colab: https://colab.research.google.com/github/vishalstark512/matching-pmh/blob/main/notebooks/domain_shift_first_run.ipynb"
+            "  Colab T4A: https://colab.research.google.com/github/vishalstark512/matching-pmh/blob/main/notebooks/tasks/t04a-vision-domain.ipynb"
+        )
+        print(
+            "  Colab T4B: https://colab.research.google.com/github/vishalstark512/matching-pmh/blob/main/notebooks/tasks/t04b-multilayer-vision.ipynb"
         )
     if rec.stack == "sklearn":
         print(
-            "  Colab: https://colab.research.google.com/github/vishalstark512/matching-pmh/blob/main/notebooks/sklearn_frozen_features_first_run.ipynb"
+            "  Colab T1: https://colab.research.google.com/github/vishalstark512/matching-pmh/blob/main/notebooks/tasks/t01-classical.ipynb"
         )
-    print("  Glossary: docs/TROUBLESHOOTING.md#plain-language-glossary")
-    print("  Demo output: docs/DEMO_OUTPUT.md")
+    print("  Loss scale (5--30% of task): docs/LOSS_SCALING.md")
+    print("  Expectations: docs/WHEN_PMH_HELPS.md")
+    print("  Start: docs/START.md")
     return rec
 
 
@@ -381,7 +402,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument(
         "--wizard",
         action="store_true",
-        help="Interactive questionnaire (same as pmh-train wizard)",
+        help="Interactive questionnaire (same as pmh-train route --wizard)",
     )
     args = p.parse_args(argv)
     if args.wizard:

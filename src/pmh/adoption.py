@@ -4,9 +4,10 @@ from __future__ import annotations
 
 PRODUCT_TAGLINE = "Train on site A. Deploy on site B. Same labels."
 
+# Perturbation Matching Hypothesis — five-step product spine (see main.pdf §7).
 RECIPE_ONE_LINER = (
-    "Estimate deployment geometry once -> train with capped PMH -> "
-    "compare matched / wrong-W / isotropic on deploy holdout."
+    "Scope -> estimate Sigma_task -> matched PMH on h -> "
+    "Step 5 evidence (matched > wrong-W > isotropic on deploy holdout)."
 )
 
 STEP5_HEADING = "Step 5 (deploy holdout — falsification arms)"
@@ -17,7 +18,7 @@ STEP5_PASS = (
 
 STEP5_FAIL = (
     "Matched did not beat both controls on deploy holdout — "
-    "see docs/WHEN_PMH_HELPS.md and docs/TROUBLESHOOTING.md before claiming gains."
+    "see docs/WHEN_PMH_HELPS.md before claiming gains."
 )
 
 STEP5_PYTORCH_HINT = (
@@ -36,7 +37,7 @@ NEWBIE_CHECKLIST_SKLEARN = [
     "0. Scope: frozen embeddings, same classes on source and target",
     "1. Hold out target rows for test — never pass them to PMHMatcher.fit",
     "2. Step 5: evaluate_baseline_vs_pmh(...) — falsification arms on by default",
-    "3. Real data: python examples/06_office31_sklearn.py --office31-root PATH",
+    "3. Real data: python scripts/demos/office31_sklearn.py --office31-root PATH",
     "4. Demo arrays: from pmh import load_g2_demo_arrays",
 ]
 
@@ -47,6 +48,19 @@ NEWBIE_CHECKLIST_HF = [
 ]
 
 FALSIFICATION_ARM_ORDER = ("b0", "matched", "wrong_w", "isotropic", "coral", "signal_w")
+
+ARM_PLAIN_NAMES: dict[str, str] = {
+    "b0": "ERM baseline (no PMH)",
+    "matched": "shift-matched PMH",
+    "wrong_w": "wrong-direction control",
+    "isotropic": "generic isotropic control",
+    "coral": "CORAL (linear adapt)",
+    "signal_w": "signal-aligned control",
+}
+
+SHIP_VERDICT_SHIP = "PASS — matched beats both controls on deploy holdout (Step 5)."
+SHIP_VERDICT_NO_SHIP = "FAIL — matched did not beat both controls on deploy holdout."
+SHIP_VERDICT_INCONCLUSIVE = "INCONCLUSIVE — run Step 5 controls (need matched, wrong, isotropic)."
 
 
 def falsification_step5_ok(arms: dict[str, float]) -> bool | None:
@@ -88,10 +102,21 @@ def format_falsification_block(arms: dict[str, float], *, metric_name: str = "ac
     lines = [STEP5_HEADING + f" ({metric_name}):"]
     for arm in FALSIFICATION_ARM_ORDER:
         if arm in arms:
-            lines.append(f"  {arm}: {arms[arm]:.3f}")
+            label = ARM_PLAIN_NAMES.get(arm, arm)
+            lines.append(f"  {label}: {arms[arm]:.3f}")
     ok = falsification_step5_ok(arms)
     if ok is True:
-        lines.append(f"  -> {STEP5_PASS}")
+        lines.append(f"  -> {SHIP_VERDICT_SHIP}")
     elif ok is False:
-        lines.append(f"  -> {STEP5_FAIL}")
+        lines.append(f"  -> {SHIP_VERDICT_NO_SHIP}")
     return lines
+
+
+def ship_verdict_label(arms: dict[str, float]) -> str:
+    """One-line ship / don't ship from falsification arms."""
+    ok = falsification_step5_ok(arms)
+    if ok is True:
+        return SHIP_VERDICT_SHIP
+    if ok is False:
+        return SHIP_VERDICT_NO_SHIP
+    return SHIP_VERDICT_INCONCLUSIVE

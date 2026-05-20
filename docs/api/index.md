@@ -1,34 +1,25 @@
 # API reference
 
-Lookup after [Five-step recipe](../FIVE_STEP_RECIPE.md) and [Integrate](../INTEGRATE.md).
+Start with [Quickstart](../QUICKSTART.md) and [13 tasks](../tasks/index.md). Import from **`pmh`** (flat public API in 2.0).
 
 ---
 
-## Tier 0 — `from pmh import …` (stable)
+## Tier 0 — `from pmh import …`
 
 | Symbol | Role |
 |--------|------|
-| `robust_fit` | Mode A bundle (steps 0–3) |
+| `robust_fit` | Mode A bundle (estimate + train) |
 | `PMHTrainer` | Estimate + train |
 | `PMHMatcher` | Mode B adapt |
 | `PMHConfig` | Cap / warmup |
 | `check_applicability` | Scope gate |
-| `evaluate_baseline_vs_pmh` | Mode B eval |
-| `evaluate_robust_fit` | Mode A eval |
-| `explain_task`, `get_task`, `list_tasks` | Routing |
+| `evaluate_baseline_vs_pmh` | Mode B eval + falsification |
+| `evaluate_robust_fit` | Mode A eval + falsification |
+| `explain_task`, `get_task`, `list_tasks` | Application routing |
 
----
+Recipe spine: `pmh.recipe` (`plan_recipe`, `control_modes`, `default_protocol_config`).
 
-## Meta-layer packages
-
-| Package | Layer |
-|---------|--------|
-| `pmh.recipe` | Five-step spine |
-| `pmh.scope` | Step 0 |
-| `pmh.identify` | Step 1 |
-| `pmh.apply` | Step 3 (A/B) |
-| `pmh.protocol` | Step 4 |
-| `pmh.evidence` | Step 5 |
+Benchmark / Step 5 arms: `pmh.benchmark`, `compare_arms_sklearn`.
 
 ---
 
@@ -47,5 +38,3 @@ Lookup after [Five-step recipe](../FIVE_STEP_RECIPE.md) and [Integrate](../INTEG
 ::: pmh.developer.robust_fit
 
 ::: pmh.recipe.format_five_step_guide
-
-Paper contracts: [CORRECT_USAGE.md](../CORRECT_USAGE.md) (Evidence).

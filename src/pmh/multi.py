@@ -64,13 +64,18 @@ class MultiPMHLoss(nn.Module):
     ) -> tuple[torch.Tensor, torch.Tensor]:
         """Apply cap to the **combined** raw PMH sum (single cap vs task loss)."""
         raw = self.forward(h)
-        if self._terms and self._terms[0].config.cap_ratio > 0:
+        cfg = self._terms[0].config if self._terms else None
+        if cfg is not None and cfg.cap_basis == "task" and cfg.pmh_max_task_ratio > 0:
+            from pmh.loss_budget import budget_pmh_to_task_loss
+
+            raw, _ = budget_pmh_to_task_loss(raw, task_loss, cfg)
+        elif cfg is not None and cfg.cap_ratio > 0:
             from pmh.penalty import cap_pmh_term
 
             raw = cap_pmh_term(
                 raw,
                 task_loss,
-                cap_ratio=self._terms[0].config.cap_ratio,
-                basis=self._terms[0].config.cap_basis,
+                cap_ratio=cfg.cap_ratio,
+                basis=cfg.cap_basis,
             )
         return task_loss + raw, raw

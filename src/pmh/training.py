@@ -9,7 +9,8 @@ import torch.nn as nn
 
 from pmh.artifact import SigmaTaskEstimate
 from pmh.config import PMHConfig
-from pmh.penalty import cap_pmh_term, pmh_penalty_on_rep
+from pmh.loss_budget import PMHLossBudget, budget_pmh_to_task_loss
+from pmh.penalty import pmh_penalty_on_rep
 
 # Training falsification modes (see docs/PAPER_ALIGNMENT.md)
 # - matched: Phase-A Sigma_task
@@ -57,6 +58,7 @@ class PMHLoss(nn.Module):
         self.wrong_rank = wrong_rank
         self.wrong_seed = wrong_seed
         self._epoch = 0
+        self.last_budget: PMHLossBudget | None = None
 
     def set_epoch(self, epoch: int) -> None:
         self._epoch = epoch
@@ -111,13 +113,22 @@ class PMHLoss(nn.Module):
         task_loss: torch.Tensor,
         h: torch.Tensor,
     ) -> tuple[torch.Tensor, torch.Tensor]:
-        """Return ``(total_loss, raw_pmh_term)`` with cap applied."""
+        """Return ``(total_loss, pmh_applied)`` with task-ratio cap (5--30% band)."""
         raw = self.forward(h)
-        if self.config.cap_ratio > 0:
-            raw = cap_pmh_term(
+        max_r = self.config.pmh_max_task_ratio
+        if self.config.cap_basis == "task" and max_r > 0:
+            applied, self.last_budget = budget_pmh_to_task_loss(raw, task_loss, self.config)
+        elif self.config.cap_ratio > 0:
+            from pmh.penalty import cap_pmh_term
+
+            applied = cap_pmh_term(
                 raw,
                 task_loss,
                 cap_ratio=self.config.cap_ratio,
                 basis=self.config.cap_basis,
             )
-        return task_loss + raw, raw
+            self.last_budget = None
+        else:
+            applied = raw
+            self.last_budget = None
+        return task_loss + applied, applied

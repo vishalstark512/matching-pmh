@@ -1,7 +1,7 @@
 """Five-step matching-principle recipe (paper §7, Fig. 4).
 
 This module is the **product spine**: scope → identify A_k → estimate Σ̂_task → apply PMH → evidence.
-Paper blocks T1–T7 are evidence only; use :mod:`pmh.evidence` for replication presets.
+Paper blocks T1–T7 are worked examples; use ``pmh.benchmark`` and ``docs/tasks/`` for replication.
 """
 
 from __future__ import annotations
@@ -215,6 +215,11 @@ def default_protocol_config(*, preset: str = "balanced") -> PMHConfig:
     return fn()
 
 
+def control_modes() -> tuple[str, ...]:
+    """PMHLoss ``mode`` values for falsification (Step 5)."""
+    return ("matched", "wrong_w", "isotropic", "trace_iso", "signal_w")
+
+
 def plan_recipe(
     *,
     stack: Literal["pytorch", "sklearn", "hf"] = "pytorch",
@@ -247,7 +252,7 @@ def format_five_step_guide(
     task_id: str | None = None,
     stack: Literal["pytorch", "sklearn", "hf"] | None = None,
 ) -> str:
-    """Human-readable §7 recipe (docs / CLI ``pmh-train recipe``)."""
+    """Human-readable §7 recipe (docs / ``format_five_step_guide``)."""
     from pmh.task_router import explain_task
 
     from pmh.adoption import RECIPE_ONE_LINER, format_recipe_banner
@@ -262,11 +267,11 @@ def format_five_step_guide(
         "",
         "Step 0 — Scope",
         "  Label-preserving deploy shift? Same class semantics on A and B?",
-        "  → check_applicability() or pmh.scope.check()",
+        "  → check_applicability()",
         "",
         "Step 1 — Identify A_k (nuisance family)",
         "  Symptom → assumption A1–A7 → lemma D1–D7 → nuisance key",
-        "  → suggest_subtype() / pmh.identify.suggest()",
+        "  → suggest_subtype() / suggest_nuisance()",
         "",
         "Step 2 — Estimate Σ̂_task",
         "  One artifact type: SigmaTaskEstimate (+ eigengap preflight)",
@@ -275,19 +280,19 @@ def format_five_step_guide(
         "Step 3 — Apply matched PMH",
         "  Mode A (Jacobian): PMHLoss, PMHTrainer, robust_fit — deep hook h",
         "  Mode B (projection): PMHMatcher — frozen features / sklearn",
-        "  → pmh.apply.mode_a / mode_b (see docs/FIVE_STEP_RECIPE.md#step-3-mode-a-vs-b)",
+        "  Mode A: PMHTrainer / robust_fit · Mode B: PMHMatcher (see docs/tasks/)",
         "",
         "Step 4 — Protocol",
-        "  Cap PMH vs task loss (PMHConfig.cap_ratio); pmh.protocol; optional hybrid compose",
+        "  Cap PMH vs task loss (PMHConfig.cap_ratio); recipe.control_modes(); hybrid compose",
         "",
         "Step 5 — Evidence (required before you trust PMH)",
         "  On deploy holdout: matched > wrong-W and matched > isotropic",
         "  sklearn: evaluate_baseline_vs_pmh(..., include_falsification=True) — default",
-        "  PyTorch: compare_arms on val_loader · report metric and geometry separately",
-        "  → compare_arms / pmh.evidence",
+        "  PyTorch: evaluate_robust_fit(..., include_falsification=True)",
+        "  → compare_arms_sklearn / compare_arms / pmh.benchmark",
         "",
-        "Paper blocks T1–T7 = worked examples under Evidence tab, not the product API.",
-        "Full meta-structure: docs/META_STRUCTURE.md",
+        "Paper blocks T1–T7 = docs/tasks/ + notebooks/tasks/, not a separate API layer.",
+        "Task index: docs/tasks/index.md",
     ]
     if task_id:
         lines.extend(["", f"Task profile: {task_id}", "-" * 40, explain_task(task_id)])

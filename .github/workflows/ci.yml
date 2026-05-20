@@ -49,7 +49,7 @@ jobs:
       - name: Smoke-run example scripts
         env:
           PMH_QUICK: "1"
-        run: pytest tests/test_examples_smoke.py -q -k "not optional"
+        run: pytest tests/test_demos_smoke.py -q
 
   notebooks-smoke:
     runs-on: ubuntu-latest
@@ -67,7 +67,7 @@ jobs:
           PMH_QUICK: "1"
           USE_TF: "0"
           USE_FLAX: "0"
-        run: pytest tests/test_notebooks_smoke.py -q -k "not optional"
+        run: pytest tests/test_notebooks.py -q -m slow
 
   test-extras:
     runs-on: ubuntu-latest
@@ -94,7 +94,7 @@ jobs:
       - name: Install sklearn extra
         run: pip install -e ".[dev,sklearn]"
       - name: sklearn estimator checks (subset)
-        run: pytest tests/test_sklearn_compat.py tests/test_matcher.py -q
+        run: pytest tests/test_sklearn.py tests/test_matcher.py -q
 
   build:
     runs-on: ubuntu-latest

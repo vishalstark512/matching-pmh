@@ -1,4 +1,4 @@
-"""Small PyTorch falsification benchmark for CI / ``pmh-train validate``."""
+"""Small PyTorch falsification benchmark for CI / slow tests."""
 
 from __future__ import annotations
 

@@ -104,7 +104,7 @@ def explain_nuisance_key(nuisance: str) -> str:
     method = resolve_method(nuisance)
     return (
         f"nuisance={nuisance!r} maps to estimator {method}.\n"
-        f"  See docs/WHAT_IS_DEPLOYMENT_SHIFT.md or pmh-train shifts"
+        f"  See docs/WHEN_PMH_HELPS.md or format_shift_types()"
     )
 
 
@@ -136,7 +136,7 @@ def format_application_finder() -> str:
         lines.append(f"{i:<3} {r.title[:40]:<42} {what:<28} {tag}")
         lines.append(f"    pmh-train route --task {r.task_id}")
     lines.append("")
-    lines.append("Full walkthroughs: docs/APPLICATIONS.md")
+    lines.append("Task pages: docs/tasks/index.md")
     return "\n".join(lines)
 
 

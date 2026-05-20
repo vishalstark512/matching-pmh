@@ -101,15 +101,24 @@ class SigmaTaskConfig:
 
 @dataclass
 class PMHConfig:
-    """Training-time PMH hyperparameters."""
+    """Training-time PMH hyperparameters.
+
+    **Loss scale (practitioner default):** keep the PMH term between roughly
+    ``pmh_min_task_ratio`` and ``pmh_max_task_ratio`` of the task loss (5--30%
+    is the usual band). ``cap_ratio`` is synced to ``pmh_max_task_ratio``; training
+    uses ``cap_basis='task'`` so PMH never dominates classification loss.
+    """
 
     weight: float = 0.3
-    cap_ratio: float = 0.3
-    cap_basis: Literal["total", "task"] = "total"
+    cap_ratio: float = 0.25
+    cap_basis: Literal["total", "task"] = "task"
+    pmh_max_task_ratio: float = 0.30
+    pmh_min_task_ratio: float = 0.05
     n_probes: int = 4
     shrinkage: float = 1e-6
-    warmup_epochs: int = 0
+    warmup_epochs: int = 2
     warmup_ramp_epochs: int = 10
+    warn_underpowered_pmh: bool = True
 
     def pmh_weight_for_epoch(self, epoch: int) -> float:
         """Ramp multiplier in [0, 1] after warmup."""
@@ -125,6 +134,9 @@ class PMHConfig:
             "weight": self.weight,
             "cap_ratio": self.cap_ratio,
             "cap_basis": self.cap_basis,
+            "pmh_max_task_ratio": self.pmh_max_task_ratio,
+            "pmh_min_task_ratio": self.pmh_min_task_ratio,
+            "warn_underpowered_pmh": self.warn_underpowered_pmh,
             "n_probes": self.n_probes,
             "shrinkage": self.shrinkage,
             "warmup_epochs": self.warmup_epochs,
@@ -137,18 +149,47 @@ class PMHConfig:
 
     @classmethod
     def conservative(cls) -> PMHConfig:
-        """Small PMH influence; good first try."""
-        return cls(weight=0.15, cap_ratio=0.2, warmup_epochs=3, warmup_ramp_epochs=5)
+        """Small PMH influence (~5--15% of task); good first try."""
+        return cls(
+            weight=0.15,
+            cap_ratio=0.15,
+            cap_basis="task",
+            pmh_max_task_ratio=0.15,
+            pmh_min_task_ratio=0.05,
+            warmup_epochs=3,
+            warmup_ramp_epochs=5,
+        )
 
     @classmethod
     def balanced(cls) -> PMHConfig:
-        """Default-style settings."""
-        return cls(weight=0.3, cap_ratio=0.3, warmup_epochs=2, warmup_ramp_epochs=10)
+        """Default: PMH capped at 25% of task loss (inside 5--30% band)."""
+        return cls(
+            weight=0.3,
+            cap_ratio=0.25,
+            cap_basis="task",
+            pmh_max_task_ratio=0.25,
+            pmh_min_task_ratio=0.05,
+            warmup_epochs=2,
+            warmup_ramp_epochs=10,
+        )
 
     @classmethod
     def aggressive(cls) -> PMHConfig:
-        """Stronger geometry regularization (still capped)."""
-        return cls(weight=0.5, cap_ratio=0.4, warmup_epochs=1, warmup_ramp_epochs=5)
+        """Stronger geometry (still capped at 30% of task)."""
+        return cls(
+            weight=0.5,
+            cap_ratio=0.30,
+            cap_basis="task",
+            pmh_max_task_ratio=0.30,
+            pmh_min_task_ratio=0.05,
+            warmup_epochs=1,
+            warmup_ramp_epochs=5,
+        )
+
+    @classmethod
+    def golden_path(cls) -> PMHConfig:
+        """``try_pmh`` / ``pmh-train try`` default — strict task-ratio cap."""
+        return cls.balanced()
 
     @classmethod
     def finetune_llm(cls) -> PMHConfig:
