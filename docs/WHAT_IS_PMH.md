@@ -27,6 +27,8 @@ You train a model on **one environment** and deploy on **another** — same task
 | You have no signal from environment B | Collect a small unlabeled target sample (typical domain-adaptation setup) |
 | Labels are not comparable across domains | Fix labeling / merge classes first |
 
+**Full guide (expectations, benchmarks, controls):** [When PMH helps](WHEN_PMH_HELPS.md).
+
 ---
 
 ## How it compares to tools you may know

@@ -39,6 +39,9 @@ For frozen sklearn tables use `tdi_feature_isotropic` as a fast proxy.
 
 ## Paper block presets
 
+**One-page recipes:** [T1 Office-31](recipes/t1-office31-d1.md) · [T4 domain D4](recipes/t4-domain-d4.md) · [all presets](walkthroughs/paper-presets-by-block.md)
+
+
 ```python
 from pmh.benchmark import list_presets, get_preset
 from pmh import compare_arms_sklearn
@@ -67,7 +70,7 @@ Regenerate locally (no datasets committed):
 ```bash
 pip install -e ".[sklearn,vision]"
 # Download Office-31 once (outside repo), e.g. Paper2 script or Tsinghua mirrors:
-#   python path/to/download_office31.py --root D:/data/office31
+python scripts/download_office31.py --root D:/data/office31
 python scripts/generate_reference_benchmark.py --office31-root D:/data/office31 --output docs/benchmarks/office31_amazon_to_dslr.md
 ```
 

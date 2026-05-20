@@ -46,6 +46,7 @@ from pmh.developer import (
     RobustFitResult,
     check_applicability,
     evaluate_baseline_vs_pmh,
+    evaluate_robust_fit,
     evaluate_trainer_on_loader,
     robust_fit,
     robust_fit_text_domains,
@@ -128,6 +129,7 @@ __all__ = [
     "suggest_hook",
     "HookSuggestion",
     "evaluate_baseline_vs_pmh",
+    "evaluate_robust_fit",
     "evaluate_trainer_on_loader",
     "EvaluationReport",
     "resolve_hook",
@@ -150,7 +152,7 @@ __all__ = [
     "tune_result_from_grid_search",
 ]
 
-__version__ = "1.5.0"
+__version__ = "1.5.1"
 
 
 def __getattr__(name: str):

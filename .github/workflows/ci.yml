@@ -49,6 +49,24 @@ jobs:
           PMH_QUICK: "1"
         run: pytest tests/test_examples_smoke.py -q -k "not optional"
 
+  notebooks-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: |
+          pip install -e ".[dev,sklearn]"
+          pip install nbconvert ipykernel jupyter
+      - name: Execute onboarding notebooks
+        env:
+          PMH_QUICK: "1"
+          USE_TF: "0"
+          USE_FLAX: "0"
+        run: pytest tests/test_notebooks_smoke.py -q -k "not optional"
+
   test-extras:
     runs-on: ubuntu-latest
     steps:

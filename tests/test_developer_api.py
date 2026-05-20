@@ -8,7 +8,13 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset
 
-from pmh import check_applicability, evaluate_baseline_vs_pmh, robust_fit, suggest_hook
+from pmh import (
+    check_applicability,
+    evaluate_baseline_vs_pmh,
+    evaluate_robust_fit,
+    robust_fit,
+    suggest_hook,
+)
 from pmh.developer import DomainPair
 
 
@@ -51,6 +57,21 @@ def test_robust_fit_quick():
     out = robust_fit(m, tr, source_batches=src, target_batches=tgt, hook=m.enc, head=m.head, epochs=1)
     assert out.stats
     assert out.preflight is not None
+
+
+def test_evaluate_robust_fit():
+    torch.manual_seed(0)
+    m = Tiny()
+    tr = DataLoader(TensorDataset(torch.randn(40, 8), torch.randint(0, 2, (40,))), batch_size=8)
+    val = DataLoader(TensorDataset(torch.randn(20, 8) + 0.3, torch.randint(0, 2, (20,))), batch_size=10)
+    src = DataLoader(TensorDataset(torch.randn(24, 8), torch.randint(0, 2, (24,))), batch_size=8)
+    tgt = DataLoader(TensorDataset(torch.randn(24, 8) + 0.5, torch.randint(0, 2, (24,))), batch_size=8)
+    rep = evaluate_robust_fit(
+        m, tr, val, source_batches=src, target_batches=tgt, hook=m.enc, head=m.head, epochs=1
+    )
+    assert 0 <= rep.baseline_metric <= 1
+    assert 0 <= rep.pmh_metric <= 1
+    assert rep.summary()
 
 
 def test_evaluate_baseline_vs_pmh():

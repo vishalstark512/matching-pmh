@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "matching-pmh"
-version = "1.5.0"
+version = "1.5.1"
 description = "Domain-robust PyTorch and sklearn: train on site A, deploy on site B with the same labels."
 readme = "README.md"
 license = "MIT"
@@ -35,7 +35,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0", "ruff>=0.4"]
+dev = ["pytest>=8.0", "ruff>=0.4", "nbconvert>=7.0", "ipykernel>=6.0", "jupyter>=1.0"]
 sklearn = ["scikit-learn>=1.3"]
 hf = ["transformers>=4.36", "accelerate>=0.25"]
 hf-lora = ["matching-pmh[hf]", "peft>=0.7", "datasets>=2.14"]
@@ -49,7 +49,7 @@ pmh-train = "pmh.cli.main:main"
 
 [project.urls]
 Homepage = "https://github.com/vishalstark512/matching-pmh"
-Documentation = "https://github.com/vishalstark512/matching-pmh#readme"
+Documentation = "https://vishalstark512.github.io/matching-pmh/"
 Repository = "https://github.com/vishalstark512/matching-pmh"
 Issues = "https://github.com/vishalstark512/matching-pmh/issues"
 Changelog = "https://github.com/vishalstark512/matching-pmh/blob/main/CHANGELOG.md"

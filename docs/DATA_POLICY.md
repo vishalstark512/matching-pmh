@@ -31,7 +31,13 @@ python examples/21_benchmark_sklearn_table.py \
   --report /tmp/pmh_benchmark   # or ./results/ (gitignored)
 ```
 
-Office-31 is downloaded or placed by **you**; the library only reads it at runtime.
+Office-31 is downloaded or placed by **you**; the library only reads it at runtime:
+
+```bash
+python scripts/download_office31.py --root /path/outside/repo/office31
+```
+
+See [Walkthrough 19 — Office-31 real data](walkthroughs/19-office31-real-data.md).
 
 ## PyPI package contents
 

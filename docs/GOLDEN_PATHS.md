@@ -23,6 +23,16 @@ out = robust_fit(
     epochs=20,
 )
 print(out.preflight_message)
+
+# Optional: ERM vs PMH on labeled target holdout (same report shape as sklearn)
+from pmh import evaluate_robust_fit
+
+report = evaluate_robust_fit(
+    model, train_loader, val_loader,
+    source_batches=source_loader, target_batches=target_loader,
+    hook="auto", head=classifier, epochs=20, pmh_result=out,
+)
+print(report.summary())
 ```
 
 - Colab: [domain_shift_first_run.ipynb](https://colab.research.google.com/github/vishalstark512/matching-pmh/blob/main/notebooks/domain_shift_first_run.ipynb)

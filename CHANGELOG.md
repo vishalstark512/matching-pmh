@@ -1,5 +1,26 @@
 # Changelog
 
+## 1.5.1 (2026-05-19)
+
+### Documentation
+
+- **[WHEN_PMH_HELPS.md](docs/WHEN_PMH_HELPS.md)** — honest expectations, Office-31 reference table, PMH vs CORAL/ERM, success checklist
+- PyPI `Documentation` URL → GitHub Pages
+
+### Developer API
+
+- **`evaluate_robust_fit`** — PyTorch ERM vs PMH on a labeled target loader; same `EvaluationReport` as sklearn
+
+### Research docs
+
+- **Block recipe cards** — T1, T2A, T4, T7A under [docs/recipes/](docs/recipes/)
+- **[Walkthrough 19](docs/walkthroughs/19-office31-real-data.md)** + `scripts/download_office31.py` (data stays outside git)
+- **API reference** — [api/developer.md](docs/api/developer.md), [api/pmh-trainer.md](docs/api/pmh-trainer.md)
+
+### CI
+
+- **Notebook smoke** — `tests/test_notebooks_smoke.py` (nbconvert, `PMH_QUICK=1`)
+
 ## 1.5.0 (2026-05-19)
 
 Developer-first release: plain-language docs, golden paths (G1–G3), high-level API, and interactive setup — without changing core estimator semantics from 1.4.1.

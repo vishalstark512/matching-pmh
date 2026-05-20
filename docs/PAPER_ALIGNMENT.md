@@ -29,13 +29,13 @@ Mode B was broken for Office-31 before v1.4.1 (random split, wrong isotropic arm
 
 | Block | Lemma | Identify nuisance / \(\hat W\) | Apply PMH | Paper tuning (indicative) | Library entry | Falsification arms |
 |-------|-------|----------------------------------|-----------|---------------------------|---------------|-------------------|
-| **T1** Office-31 | D1 | Class-aligned cross-domain SVD + mean shift | **Mode B** projection | rank 32, pool 200, test 250 | `compare_arms_sklearn`, `paper_protocol=True` | matched, wrong-W⊥W, D4-iso; CORAL baseline |
+| **T1** Office-31 | D1 | Class-aligned cross-domain SVD + mean shift | **Mode B** projection | rank 32, pool 200, test 250 | [Recipe T1](recipes/t1-office31-d1.md) · `compare_arms_sklearn`, `paper_protocol=True` | matched, wrong-W⊥W, D4-iso; CORAL baseline |
 | **T1** synthetic ridge | D1 | Oracle or estimated W | Mode B | \(\lambda_W,\lambda_\perp\) | `project_onto_complement`, examples | B0, matched, wrong-W, iso |
 | **T2A** ViT | D2 | \(\sigma^2 I\) input noise | Mode A on CLS | σ=0.10, w=0.3, cap 0.3 | `nuisance="isotropic"`, `PMHLoss` | ERM vs iso PMH (no wrong-W) |
 | **T2B** CheXpert | D2 | \(\sigma^2 I\) on embeddings | Mode A | σ=0.08, w=0.5, warmup 5 | D2 + augment path | aug-only vs embed PMH |
 | **T3A** pose | D3† | †Paper aug-delta; **code** gradient-SVD | Mode A along W | r=16, aniso σ=0.05 | `aug_deltas` or custom W | E1 iso, VAT mismatch |
 | **T3B** depth | D3 | Photometric aug-delta Gram | Mode A | r=32, wrong-W flag | `collect_augmentation_deltas` | E1, E1_wrong |
-| **T4A/B** DA vision | D4 | Per-layer domain Gram | Mode A multilayer | gram_rank 64, layer hooks | `nuisance="domain_shift"`, `MultiLayerPMHLoss` | E1 pixel iso vs multiscale |
+| **T4A/B** DA vision | D4 | Per-layer domain Gram | Mode A multilayer | gram_rank 64, layer hooks | [Recipe T4](recipes/t4-domain-d4.md) · `nuisance="domain_shift"`, `MultiLayerPMHLoss` | E1 pixel iso vs multiscale |
 | **T5A** QM9 | D5 | Position / node noise covariance | Mode A graph | σ_pos, σ_node, cap | `nuisance_indices`, `perturb` patterns | VAT as mismatch |
 | **T5B** clone | D5 | Identifier token block | Mode A on token emb | w=0.5, ramp | D5 indices + HF hook | E1 vs E1S (wrong partition) |
 | **T6A** Whisper | D6† | †Temporal spec; **code** content-residual | Mode A on speech emb | λ=0.05, r=32 | `sequences_batches` or custom W | content vs wrong_W |

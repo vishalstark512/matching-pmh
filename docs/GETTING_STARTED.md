@@ -16,7 +16,7 @@ What changes at deployment **without changing the label**?
 
 > *Example:* “Images from a new hospital camera, but the disease label still means the same thing.”
 
-If that does not describe your problem, see [What is PMH — when not to use](WHAT_IS_PMH.md#when-not-to-use-it).  
+If that does not describe your problem, see [When PMH helps](WHEN_PMH_HELPS.md) (expectations and benchmarks) and [What is PMH — when not to use](WHAT_IS_PMH.md#when-not-to-use-it).  
 Advanced estimator choice (only if domain shift is not enough): [nuisance_types.md](nuisance_types.md).
 
 ---

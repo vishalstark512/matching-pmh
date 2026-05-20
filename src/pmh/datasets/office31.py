@@ -2,15 +2,93 @@
 
 from __future__ import annotations
 
+import shutil
+import tarfile
+import urllib.request
 from pathlib import Path
 
 import numpy as np
 
 DOMAIN_NAMES = ("amazon", "dslr", "webcam")
 
+# Official domain-adaptation page (Judy Hoffman). Override with download_office31(url=...).
+DEFAULT_OFFICE31_TAR_URL = "https://faculty.cc.gatech.edu/~judy/domainadapt/office31.tar"
+
 
 def list_office31_domains() -> tuple[str, ...]:
     return DOMAIN_NAMES
+
+
+def verify_office31_layout(root: str | Path) -> None:
+    """Raise ``FileNotFoundError`` if any domain folder is missing under *root*."""
+    root = Path(root)
+    missing = []
+    for domain in DOMAIN_NAMES:
+        try:
+            domain_path(root, domain)
+        except FileNotFoundError:
+            missing.append(domain)
+    if missing:
+        raise FileNotFoundError(
+            f"Office-31 domains missing under {root}: {missing}. "
+            "Run: python scripts/download_office31.py --root YOUR_PATH"
+        )
+
+
+def download_office31(
+    root: str | Path,
+    *,
+    url: str | None = None,
+    force: bool = False,
+) -> Path:
+    """Download and extract Office-31 into *root* (no data committed to git).
+
+    Returns path to the downloaded archive file under *root*.
+    """
+    root = Path(root).expanduser().resolve()
+    root.mkdir(parents=True, exist_ok=True)
+
+    if not force:
+        try:
+            verify_office31_layout(root)
+            print(f"Office-31 already present under {root}; skip download (use force=True to re-fetch)")
+            return root / "office31.tar"
+        except FileNotFoundError:
+            pass
+
+    tar_url = url or DEFAULT_OFFICE31_TAR_URL
+    archive = root / "office31.tar"
+    print(f"Downloading {tar_url} -> {archive} (this may take several minutes)...")
+
+    def _report(block_num: int, block_size: int, total_size: int) -> None:
+        if total_size <= 0:
+            return
+        done = block_num * block_size
+        pct = min(100, done * 100 // total_size)
+        if block_num % 500 == 0:
+            print(f"  ... {pct}%", flush=True)
+
+    urllib.request.urlretrieve(tar_url, archive, reporthook=_report)
+    print("Extracting...")
+    with tarfile.open(archive, "r:*") as tf:
+        if hasattr(tarfile, "data_filter"):
+            tf.extractall(path=root, filter="data")
+        else:
+            tf.extractall(path=root)
+
+    # Common layouts: office31/amazon or amazon/ at root
+    for sub in ("office31", "Office31", "images"):
+        candidate = root / sub
+        if candidate.is_dir() and any((candidate / d).is_dir() for d in DOMAIN_NAMES):
+            for domain in DOMAIN_NAMES:
+                src = candidate / domain
+                dst = root / domain
+                if src.is_dir() and not dst.exists():
+                    shutil.move(str(src), str(dst))
+            break
+
+    verify_office31_layout(root)
+    return archive
 
 
 def _require_torchvision() -> tuple:

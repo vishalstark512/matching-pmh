@@ -26,6 +26,7 @@ Each walkthrough is a **complete guide** to adapt PMH to **your** task: prerequi
 | 1 | [PyTorch domain shift (D4)](01-pytorch-domain-d4.md) | D4 | PyTorch model · preset `t4_domain_d4` | `01_domain_shift_d4.py` |
 | 2 | [ResNet / torchvision D4](02-resnet-vision-d4.md) | D4 | Image folders, ResNet hook | `12_resnet_hook_d4.py` |
 | 3 | [Frozen features + sklearn (D1)](03-office31-sklearn-d1.md) | D1 | `.npy` or extract features · preset `t1_office31_sklearn` | `06_office31_sklearn.py` |
+| 19 | [**Office-31 real data**](19-office31-real-data.md) | D1 | Download images outside repo · T1 table | `download_office31.py`, `21_…` |
 | 4 | [Multi-layer CNN](04-multilayer-convnet.md) | D3/D4 | Multi-scale feature maps | `07_vision_multilayer.py` |
 | 5 | [Compositional D5](05-compositional-d5.md) | D5 | Known nuisance indices | `03_…`, `13_…` |
 | 6 | [LLM style D7](06-llm-style-d7.md) | D7 | Style JSONL · preset `t7a_style_d7` | `08_hf_style_d7.py` |

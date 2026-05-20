@@ -28,6 +28,7 @@ print_setup_guide(stack="pytorch", has_target_domain=True)
 | Goal | Document |
 |------|----------|
 | **Understand the idea** | [WHAT_IS_PMH.md](WHAT_IS_PMH.md) |
+| **Will it help my problem?** | [WHEN_PMH_HELPS.md](WHEN_PMH_HELPS.md) |
 | **Run a 5-minute demo** | [Colab](COLAB.md) · [FIRST_HOUR](FIRST_HOUR.md) · `examples/00_first_run_domain_shift.py` |
 | **Integrate PyTorch / sklearn** | [GETTING_STARTED.md](GETTING_STARTED.md) |
 | **Pick by stack** | [CHOOSE_YOUR_SETUP.md](CHOOSE_YOUR_SETUP.md) · [Gallery](gallery/README.md) |
@@ -35,7 +36,7 @@ print_setup_guide(stack="pytorch", has_target_domain=True)
 | **What success looks like** | [DEMO_OUTPUT.md](DEMO_OUTPUT.md) |
 | **vs CORAL** | [COMPARE_TO_CORAL.md](COMPARE_TO_CORAL.md) |
 | **Prove it (controls)** | [Walkthrough 8](walkthroughs/08-falsification-controls.md) |
-| **Paper / benchmarks** | [CORRECT_USAGE](CORRECT_USAGE.md) · [PAPER_ALIGNMENT](PAPER_ALIGNMENT.md) |
+| **Paper / benchmarks** | [Recipe cards](recipes/README.md) · [CORRECT_USAGE](CORRECT_USAGE.md) · [PAPER_ALIGNMENT](PAPER_ALIGNMENT.md) |
 
 ---
 

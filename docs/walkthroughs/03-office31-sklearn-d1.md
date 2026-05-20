@@ -12,7 +12,7 @@
 
 [Adaptation workbook](../ADAPTATION_WORKBOOK.md) · [sklearn.md](../sklearn.md) · [BENCHMARKS.md](../BENCHMARKS.md) · [Paper presets](paper-presets-by-block.md)
 
-**Paper preset:** `t1_office31_sklearn` (rank **32**, pool=200, test=250, T1 D1 protocol). List all: `pmh-train list-presets`.
+**Paper preset:** `t1_office31_sklearn` (rank **32**, pool=200, test=250, T1 D1 protocol). **Recipe card:** [T1 one-pager](../recipes/t1-office31-d1.md) · List all: `pmh-train list-presets`.
 
 ---
 

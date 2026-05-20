@@ -10,7 +10,7 @@
 
 [hooks.md](../hooks.md) · [Walkthrough 2](02-resnet-vision-d4.md) · [Paper presets](paper-presets-by-block.md)
 
-**Paper preset (T2A isotropic):** `t2a_vit_isotropic` — D2, σ=0.10, Jacobian mode, arms `b0` + `matched` only.
+**Paper preset (T2A isotropic):** `t2a_vit_isotropic` — D2, σ=0.10, Jacobian mode, arms `b0` + `matched` only. **Recipe:** [T2A one-pager](../recipes/t2a-vit-isotropic.md).
 
 ---
 

@@ -12,7 +12,7 @@
 
 [Adaptation workbook](../ADAPTATION_WORKBOOK.md) · [Choose setup](../CHOOSE_YOUR_SETUP.md) · [Paper presets](paper-presets-by-block.md)
 
-**Paper preset:** `t4_domain_d4` (D4, rank 64, weight 0.5 / cap 0.3, warmup 2). `pmh-train list-presets`.
+**Paper preset:** `t4_domain_d4` (D4, rank 64, weight 0.5 / cap 0.3, warmup 2). **Recipe card:** [T4 one-pager](../recipes/t4-domain-d4.md) · `pmh-train list-presets`.
 
 ---
 

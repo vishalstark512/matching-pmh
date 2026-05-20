@@ -23,6 +23,7 @@ nav:
   - "Start here":
       - Golden paths (G1–G3): GOLDEN_PATHS.md
       - What is PMH?: WHAT_IS_PMH.md
+      - When PMH helps: WHEN_PMH_HELPS.md
       - Your first hour: FIRST_HOUR.md
       - CLI wizard: cli.md
       - Colab (no install): COLAB.md
@@ -40,6 +41,11 @@ nav:
       - Theory: THEORY.md
       - Correct usage: CORRECT_USAGE.md
       - Paper alignment: PAPER_ALIGNMENT.md
+      - Block recipe cards: recipes/README.md
+      - "Recipe T1 Office-31": recipes/t1-office31-d1.md
+      - "Recipe T2A ViT D2": recipes/t2a-vit-isotropic.md
+      - "Recipe T4 domain D4": recipes/t4-domain-d4.md
+      - "Recipe T7A LLM D7": recipes/t7a-style-d7.md
       - Benchmarks & TDI: BENCHMARKS.md
       - Paper presets (T1–T7): walkthroughs/paper-presets-by-block.md
       - Reference table (synthetic): benchmarks/office31_synthetic_reference.md
@@ -78,6 +84,7 @@ nav:
       - "16 Augmentations D3": walkthroughs/16-augmentation-d3.md
       - "17 Compare arms": walkthroughs/17-compare-arms-your-pipeline.md
       - "18 PMHTrainer": walkthroughs/18-pmh-trainer-quickstart.md
+      - "19 Office-31 real data": walkthroughs/19-office31-real-data.md
   - Reference:
       - Nuisance cookbook: nuisance_types.md
       - CLI: cli.md
@@ -100,6 +107,8 @@ nav:
   - Datasets: datasets.md
   - API:
       - Overview: api/index.md
+      - Developer API: api/developer.md
+      - PMHTrainer: api/pmh-trainer.md
 
 plugins:
   - search

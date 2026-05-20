@@ -218,8 +218,11 @@ def encode_texts(
             out = model(**enc)
             hidden = out.hidden_states[-1].float() if hasattr(out, "hidden_states") else out.float()
         att = enc["attention_mask"]
-        if pool == "last":
-            last_pos = att.sum(dim=1).clamp(min=1) - 1
+        if hidden.dim() == 2:
+            vec = hidden
+        elif pool == "last":
+            last_pos = att.sum(dim=1).clamp(min=1).long() - 1
+            last_pos = last_pos.clamp(max=hidden.size(1) - 1)
             vec = hidden[torch.arange(hidden.size(0), device=device), last_pos]
         elif pool == "mean":
             mask = att.unsqueeze(-1).float()

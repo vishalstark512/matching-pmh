@@ -10,7 +10,7 @@
 
 [Walkthrough 7](07-hf-trainer-d7-dpo.md) · [gallery/nlp.md](../gallery/nlp.md) · [Paper presets](paper-presets-by-block.md)
 
-**Paper preset:** `t7a_style_d7` — D7 rank 128, shrinkage 0.1, `PMHConfig(weight=0.7, cap_ratio=0.3, warmup_epochs=5)`.
+**Paper preset:** `t7a_style_d7` — D7 rank 128, shrinkage 0.1, `PMHConfig(weight=0.7, cap_ratio=0.3, warmup_epochs=5)`. **Recipe:** [T7A one-pager](../recipes/t7a-style-d7.md).
 
 ---
 

@@ -16,7 +16,7 @@ Add a domain-robustness regularizer to your PyTorch model or sklearn pipeline �
 ## Developer API (start here)
 
 ```python
-from pmh import check_applicability, robust_fit, evaluate_baseline_vs_pmh
+from pmh import check_applicability, robust_fit, evaluate_baseline_vs_pmh, evaluate_robust_fit
 
 # Go / marginal / no-go before training
 print(check_applicability(stack="pytorch", n_source=500, n_target=400).summary())
@@ -26,6 +26,10 @@ out = robust_fit(model, train_loader, source_batches=src, target_batches=tgt, ho
 
 # sklearn: baseline vs PMH on target holdout
 report = evaluate_baseline_vs_pmh(x_source, y_source, x_target, y_target, compare_to=("coral",))
+print(report.summary())
+
+# PyTorch: same report shape on val_loader
+report = evaluate_robust_fit(model, train_loader, val_loader, source_batches=src, target_batches=tgt, hook="auto", epochs=10)
 print(report.summary())
 ```
 
@@ -43,7 +47,7 @@ print(report.summary())
 
 **Not for:** new test-time classes, unrelated label definitions, or “make any model robust to everything.”
 
-[When to use it / when not →](docs/WHAT_IS_PMH.md)
+[When PMH helps (honest expectations) →](docs/WHEN_PMH_HELPS.md) · [What is PMH →](docs/WHAT_IS_PMH.md)
 
 ---
 

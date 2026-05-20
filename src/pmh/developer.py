@@ -384,18 +384,18 @@ def evaluate_baseline_vs_pmh(
     )
 
 
-def evaluate_trainer_on_loader(
-    trainer: PMHTrainer,
+def _accuracy_on_loader(
+    model: Any,
     encoder: Any,
-    head: Any,
+    head: Any | None,
     loader: Any,
     device: Any = None,
 ) -> float:
-    """Accuracy of a trained model on a labeled loader."""
+    """Labeled-loader accuracy for a PyTorch model + hook (+ optional head)."""
     import torch
 
-    device = device or next(trainer.model.parameters()).device
-    trainer.model.eval()
+    device = device or next(model.parameters()).device
+    model.eval()
     correct = total = 0
     with torch.no_grad():
         for batch in loader:
@@ -408,13 +408,143 @@ def evaluate_trainer_on_loader(
                 raise TypeError("batch must be tuple or dict")
             xb = xb.to(device)
             yb = yb.to(device)
-            logits = head(encoder(xb)) if head is not None else trainer.model(xb)
+            logits = head(encoder(xb)) if head is not None else model(xb)
             if hasattr(logits, "logits"):
                 logits = logits.logits
             pred = logits.argmax(dim=-1)
             correct += (pred == yb).sum().item()
             total += yb.numel()
     return correct / max(total, 1)
+
+
+def evaluate_trainer_on_loader(
+    trainer: PMHTrainer,
+    encoder: Any,
+    head: Any,
+    loader: Any,
+    device: Any = None,
+) -> float:
+    """Accuracy of a trained model on a labeled loader."""
+    return _accuracy_on_loader(trainer.model, encoder, head, loader, device=device)
+
+
+def _train_erm_epochs(
+    model: Any,
+    encoder: Any,
+    head: Any | None,
+    train_loader: Any,
+    *,
+    epochs: int,
+    lr: float = 1e-3,
+    device: Any = None,
+) -> None:
+    """Task-loss-only training (ERM baseline) on ``train_loader``."""
+    import torch
+    import torch.nn as nn
+
+    device = device or next(model.parameters()).device
+    params = list(model.parameters())
+    if head is not None and hasattr(head, "parameters"):
+        params += list(head.parameters())
+    opt = torch.optim.Adam(params, lr=lr)
+    crit = nn.CrossEntropyLoss()
+    model.train()
+    if head is not None and hasattr(head, "train"):
+        head.train()
+    for _ in range(epochs):
+        for batch in train_loader:
+            if isinstance(batch, (tuple, list)):
+                xb, yb = batch[0], batch[1]
+            elif isinstance(batch, dict):
+                xb = batch.get("input_ids", batch.get("x"))
+                yb = batch["labels"]
+            else:
+                raise TypeError("batch must be tuple or dict")
+            xb, yb = xb.to(device), yb.to(device)
+            opt.zero_grad(set_to_none=True)
+            logits = head(encoder(xb)) if head is not None else model(xb)
+            if hasattr(logits, "logits"):
+                logits = logits.logits
+            crit(logits, yb).backward()
+            opt.step()
+
+
+def evaluate_robust_fit(
+    model: Any,
+    train_loader: Any,
+    val_loader: Any,
+    *,
+    source_batches: Any,
+    target_batches: Any,
+    hook: str | Any = "auto",
+    head: Any = None,
+    epochs: int = 5,
+    rank: int | None = None,
+    nuisance: str | None = None,
+    pmh_result: RobustFitResult | None = None,
+    seed: int = 0,
+) -> EvaluationReport:
+    """PyTorch path: ERM baseline vs PMH on a labeled target ``val_loader``.
+
+    Trains two copies of ``model`` (ERM-only, then PMH via :func:`robust_fit`) unless
+    ``pmh_result`` is already available. Returns the same :class:`EvaluationReport` shape
+    as :func:`evaluate_baseline_vs_pmh`.
+    """
+    import copy
+
+    import torch
+    from pmh.hooks import resolve_hook
+
+    torch.manual_seed(seed)
+    app = check_applicability(
+        stack="pytorch",
+        has_target_domain=target_batches is not None,
+    )
+
+    hook_used: str | Any = hook
+    if hook == "auto":
+        hook_used = suggest_hook(model).hook
+
+    model_erm = copy.deepcopy(model)
+    encoder_erm = resolve_hook(model_erm, hook_used)
+    _train_erm_epochs(model_erm, encoder_erm, head, train_loader, epochs=epochs)
+
+    if pmh_result is not None:
+        pmh_out = pmh_result
+    else:
+        model_pmh = copy.deepcopy(model)
+        pmh_out = robust_fit(
+            model_pmh,
+            train_loader,
+            source_batches=source_batches,
+            target_batches=target_batches,
+            hook=hook_used,
+            head=head,
+            nuisance=nuisance,
+            rank=rank,
+            epochs=epochs,
+            applicability=app,
+        )
+
+    acc_b0 = _accuracy_on_loader(model_erm, encoder_erm, head, val_loader)
+    acc_pmh = _accuracy_on_loader(
+        pmh_out.trainer.model,
+        pmh_out.trainer.encoder,
+        head,
+        val_loader,
+    )
+
+    notes = list(app.reasons[:1]) if app.reasons else []
+    notes.append("Run compare_arms for matched / wrong_w / isotropic controls (advanced).")
+    notes.append("See docs/WHEN_PMH_HELPS.md for when to expect gains.")
+
+    return EvaluationReport(
+        baseline_metric=acc_b0,
+        pmh_metric=acc_pmh,
+        preflight=pmh_out.preflight,
+        preflight_message=preflight_plain_english(pmh_out.preflight),
+        notes=[n for n in notes if n],
+    )
 
 
 def robust_fit_text_domains(
