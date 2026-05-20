@@ -34,6 +34,7 @@ def _apply_preset(
     p = get_preset(preset)
     kw = {**p.sklearn_benchmark, **kwargs}
     r = rank if rank is not None else kw.pop("rank", p.default_rank)
+    kw.pop("rank", None)  # explicit rank wins; avoid duplicate in run_kw
     if pmh_config is None:
         pmh_config = p.pmh_config
     if arms is None:
