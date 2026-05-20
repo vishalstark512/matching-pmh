@@ -6,15 +6,6 @@ This is the failure mode behind many "model worked in validation, failed in prod
 
 PMH turns that risk into a concrete workflow:
 
-```mermaid
-flowchart LR
-  Problem["Deploy world changes"] --> StableLabels["Labels stay stable"]
-  StableLabels --> SayChange["Say what changed"]
-  SayChange --> Learn["Learn that change"]
-  Learn --> Train["Train model to ignore it"]
-  Train --> Evidence["Prove on production-like data"]
-```
-
 ```
 production changes, answer stays the same
   -> learn what changed

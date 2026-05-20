@@ -48,16 +48,6 @@ Data augmentation helps when you already know the transform. Adversarial trainin
 
 PMH is practical: it asks you to say what changed in production, learn that change from examples, and train the model to be less sensitive to it while keeping your normal task loss primary.
 
-```mermaid
-flowchart LR
-  TrainEnv["Train environment A"] --> Shift["Deployment changes inputs"]
-  DeployEnv["Deploy environment B"] --> Shift
-  Shift --> SameLabels["Labels still mean the same thing"]
-  SameLabels --> Learn["Learn what changed"]
-  Learn --> Train["Train model to ignore it"]
-  Train --> Evidence["Prove before shipping"]
-```
-
 ```
 Train A + Deploy B, same labels
         -> learn what changed

@@ -2,14 +2,6 @@
 
 Use this workflow when you want a model to work better in production than standard training alone: same task, same labels, different environment.
 
-```mermaid
-flowchart LR
-  Pick["1 Pick task"] --> Change["2 Say what changed"]
-  Change --> Learn["3 Learn that change"]
-  Learn --> Train["4 Train with PMH"]
-  Train --> Prove["5 Prove it worked"]
-```
-
 ```
 pick task -> say what changed -> learn that change -> train -> prove it worked
 ```

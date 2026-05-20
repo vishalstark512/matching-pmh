@@ -49,14 +49,6 @@ Examples that do not fit:
 
 ## The Workflow
 
-```mermaid
-flowchart LR
-  Task["Pick your task"] --> Change["Say what changed"]
-  Change --> Learn["Learn that change"]
-  Learn --> Train["Train model with PMH"]
-  Train --> Prove["Prove on production-like data"]
-```
-
 ```
 pick task -> say what changed -> learn that change -> train -> prove before shipping
 ```
