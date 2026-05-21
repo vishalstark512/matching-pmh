@@ -1,6 +1,6 @@
 # T1 — Classical ML + matched projection (Type 1)
 
-**Source of truth:** `paper_code/T1/classical_pmh/FINAL.md`
+**Paper evidence:** [main.pdf](../../main.pdf) · [Block findings](../findings.html)
 
 **Nuisance:** D1 subspace · **Mode B:** estimate $\hat{W}$, project features (or matched ridge penalty), then **classical** models — ridge, SVM, k-NN, logistic.
 
@@ -60,7 +60,7 @@ Every T1 script follows the same pattern:
 | EB-GP | `eb_gp.py` | Synthetic GP inputs | GP regression |
 | **Office-31** | `office31_pmh.py` | `download_office31.py` → ResNet-18 per domain | SVM, k-NN, logistic |
 
-Full battery: `python run_full_experiments.py` in `paper_code/T1/classical_pmh/`.
+Full T1 battery: see [main.pdf](../../main.pdf) §T1 (seven sub-experiments).
 
 ---
 
@@ -140,7 +140,7 @@ Built-in arrays (`load_g2_demo_arrays`) check D1 + falsification arms without do
 | `coral_align` | arm `coral` |
 | Office-31 feature extract | `pmh.datasets.office31.extract_office31_features` |
 
-[← 13 tasks](index.md) · [Quickstart](../QUICKSTART.md) · [Paper code README](../../paper_code/T1/classical_pmh/FINAL.md)
+[← 13 tasks](index.md) · [Quickstart](../QUICKSTART.md) · [main.pdf](../../main.pdf)
 
 <a id="t01-classical"></a>
 <a id="t1-ridge-theorem"></a>

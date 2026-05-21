@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pmh.adoption import ARM_PLAIN_NAMES, FALSIFICATION_ARM_ORDER
-from pmh.paper_findings import list_paper_findings, synthesis_paragraphs
+from pmh.paper_findings import FINDINGS_HTML, MAIN_PDF, list_paper_findings, synthesis_paragraphs
 
 if TYPE_CHECKING:
     from pmh.developer import EvaluationReport
@@ -178,7 +178,7 @@ def evaluation_report_html(
 
 
 def paper_findings_html(*, title: str = "PMH paper — block findings") -> str:
-    """Synthesized outcomes from ``paper_code`` (not library demo numbers)."""
+    """Synthesized block outcomes from the paper (not library demo numbers)."""
     blocks = list_paper_findings()
     n_pass = sum(1 for b in blocks if b.status == "pass")
     n_partial = sum(1 for b in blocks if b.status != "pass")
@@ -192,7 +192,7 @@ def paper_findings_html(*, title: str = "PMH paper — block findings") -> str:
             f"<td>{html.escape(b.title)}<br/>Lemma {html.escape(b.lemma)} · {html.escape(b.stack)}</td>"
             f"<td>{html.escape(b.headline)}</td>"
             f"<td>{_status_badge(b.status)}</td>"
-            f"<td><code style='font-size:0.8rem'>{html.escape(b.final_path)}</code></td>"
+            f"<td><code style='font-size:0.8rem'>{html.escape(b.evidence_page)}</code></td>"
             "</tr>"
         )
 
@@ -200,13 +200,13 @@ def paper_findings_html(*, title: str = "PMH paper — block findings") -> str:
 
     body = f"""
 <h1>{html.escape(title)}</h1>
-<p class="meta">Synthesized from <code>paper_code/T*/**/FINAL.md</code> · Train on A, deploy on B, same labels</p>
+<p class="meta">Synthesized from <code>{html.escape(MAIN_PDF)}</code> · Train on A, deploy on B, same labels</p>
 
 <div class="note note-lib">
-  <strong>Library vs paper:</strong> These numbers come from block-specific reproduction code in
-  <code>paper_code/</code>, not from <code>pip install matching-pmh</code> on demo loaders.
-  The library implements the same recipe for <em>your</em> stack; expect iteration until Step 5 passes
-  on your deploy holdout. See <a href="https://github.com/vishalstark512/matching-pmh/blob/main/docs/START.md">docs/START.md</a>.
+  <strong>Library vs paper:</strong> Headline metrics here are from the <strong>paper</strong>, not from
+  <code>pip install matching-pmh</code> on demo loaders. Use notebooks and <code>pmh-train try</code> on
+  <em>your</em> stack; expect iteration until Step 5 passes on deploy holdout.
+  See <a href="docs/START.md">docs/START.md</a>.
 </div>
 
 <div class="card">
@@ -219,7 +219,7 @@ def paper_findings_html(*, title: str = "PMH paper — block findings") -> str:
 <div class="card" style="overflow-x:auto">
   <table>
     <thead>
-      <tr><th>Block</th><th>Task</th><th>Headline result (paper code)</th><th>Status</th><th>FINAL.md</th></tr>
+      <tr><th>Block</th><th>Task</th><th>Headline result (paper)</th><th>Status</th><th>Task doc</th></tr>
     </thead>
     <tbody>{"".join(rows)}</tbody>
   </table>
@@ -230,7 +230,7 @@ def paper_findings_html(*, title: str = "PMH paper — block findings") -> str:
   <ul>
     <li><strong>Golden path:</strong> <code>pmh-train try --quick</code> or <code>try_pmh(...)</code> → ship verdict</li>
     <li><strong>Your metrics:</strong> <code>report.save_html("deploy_report.html")</code> after <code>evaluate_robust_fit</code></li>
-    <li><strong>Reproduce a block:</strong> run scripts under <code>paper_code/</code> for that task's FINAL.md</li>
+    <li><strong>Read a block:</strong> <code>{html.escape(MAIN_PDF)}</code> + task pages under <code>docs/tasks/</code></li>
   </ul>
 </div>
 """

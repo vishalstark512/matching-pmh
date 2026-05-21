@@ -58,17 +58,17 @@ Human-readable checklist: `format_five_step_guide()` from `pmh.recipe`.
 
 | Layer | What you use | When |
 |-------|--------------|------|
-| **Theory** | `main.pdf`, `paper_code/T*/**/FINAL.md` | Proofs, block numbers, reproduction |
+| **Theory** | [`main.pdf`](../main.pdf), [findings.html](findings.html) | Proofs, block numbers |
 | **Library** | `pmh` trainers, estimators, `compare_arms`, benchmarks | Ship on your stack |
 | **Demos** | `notebooks/tasks/`, `docs/tasks/` | Copy §8 into your pipeline |
 
-**Library vs paper:** Headline metrics in the paper and task docs (e.g. DomainNet +3 pp, Cityscapes mIoU) are produced by **`paper_code/`** — block-specific reproduction scripts, not by `pip install matching-pmh` alone. The **library** implements the same estimators and Step 5 protocol for **your** data; you should expect to **tune and validate** (hook, rank, loss scale, data volume) rather than match `FINAL.md` numbers on first run. Notebooks use **demo loaders** unless noted; see each task page “Paper vs library” note.
+**Library vs paper:** Headline metrics in the paper and task docs (e.g. DomainNet +3 pp, Cityscapes mIoU) are **paper results**, not guaranteed from `pip install matching-pmh` on demos alone. The **library** implements the same estimators and Step 5 protocol for **your** data; expect to **tune and validate** (hook, rank, loss scale, data volume) rather than match every table row on first run.
 
 ---
 
 ## Evidence you should expect
 
-- **12/13 blocks** pass pre-registered criteria in `paper_code` (see block `FINAL.md` files).
+- **12/13 blocks** pass pre-registered criteria in the paper (see [findings.html](findings.html)).
 - **Office-31 (T1):** documented **D1 eigengap failure** — PMH does not silently “fix” every domain benchmark; wrong estimator or weak gap means stop or change nuisance family.
 - **Step 5 is mandatory:** matched must beat wrong-direction and isotropic on deploy holdout before you ship.
 
@@ -89,5 +89,5 @@ Benchmark-style arms (matched / wrong / isotropic + geometry): `run_benchmark_pr
 | PyTorch train + estimate | [QUICKSTART.md](QUICKSTART.md) · `PMHTrainer` |
 | Frozen sklearn / Office-31 | [tasks/t01-classical.md](tasks/t01-classical.md) · `compare_arms_sklearn` |
 | Multilayer vision (T4B) | [tasks/t04b-multilayer-vision.md](tasks/t04b-multilayer-vision.md) · `pmh.vision.domain_multilayer` |
-| Full block reproduction | `paper_code/` + `main.pdf` |
+| Full theory + block table | [`main.pdf`](../main.pdf) + [findings.html](findings.html) |
 | API reference | [api/index.md](api/index.md) |

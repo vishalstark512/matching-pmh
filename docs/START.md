@@ -4,7 +4,7 @@
 
 You do **not** need to know nuisance types (D1–D7). The library infers the shift type from what data you have, trains, then tells you **ship** or **do not ship** on deploy holdout.
 
-**Note:** Published block numbers live in [`paper_code/`](../paper_code/) (paper reproduction). The library is for general integration — it follows the same recipe but **will not automatically replicate** those results; plan on iteration until Step 5 passes on your deploy holdout.
+**Note:** Published block numbers are in [`main.pdf`](../main.pdf) and [findings.html](findings.html). The library is for general integration — it follows the same recipe but **will not automatically replicate** those results; plan on iteration until Step 5 passes on your deploy holdout.
 
 ---
 

@@ -10,8 +10,8 @@
 - **CLI (Track B)** — only `pmh-train doctor`, `evaluate`, `route`, `try`. Removed: `recipe`, `shifts`, `list-methods`, `list-presets`, `wizard`, `estimate`, `benchmark`, `validate`, `run`, `preflight`.
 - **Namespace** — removed subpackages `guide/`, `core/`, `adapt/`, `train/`, `apply/`, `evidence/`, `research/`, `scope/`, `identify/`, `protocol/`; flat `from pmh import …`.
 - **Examples** — deleted `examples/`; demos under `scripts/demos/`, configs under `scripts/configs/`.
-- **Docs** — `docs/START.md`, `MIGRATE.md`, `GLOSSARY.md`, task hub + notebooks; `docs/findings.html` (paper synthesis; numbers from local `paper_code/`, not shipped).
-- **Repo policy** — `main.pdf` and `paper_code/` are gitignored (reproduce locally; not on GitHub/PyPI wheel).
+- **Docs** — `docs/START.md`, `MIGRATE.md`, `GLOSSARY.md`, task hub + notebooks; `docs/findings.html` (paper synthesis from `main.pdf`).
+- **Repo policy** — `main.pdf` tracked in git; `paper_code/` gitignored (optional local reproduction, not in repo or PyPI wheel).
 
 ## 1.6.2 (2026-05-20)
 

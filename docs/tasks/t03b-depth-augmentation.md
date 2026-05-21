@@ -1,6 +1,6 @@
 # T3B — Depth estimation — photometric shift
 
-**Source of truth:** `paper_code/T3/Task3B/FINAL.md`
+**Paper evidence:** [main.pdf](../../main.pdf) · [Block findings](../findings.html)
 
 **Lemma:** D3 · **Stack:** pytorch
 **Nuisance key:** `augmentation`
@@ -24,17 +24,13 @@ pip install matching-pmh torch
 
 **Paper preset:** `t3b_depth_d3` · `from pmh.benchmark.presets import get_preset`
 
-## Subtasks (paper_code)
+## Subtasks (paper)
 
 <a id="t3b-pipeline"></a>
 
 ### NYU depth pipeline (train + calibrate)
 
 E1_aniso wins photometric hard stress.
-
-```bash
-python paper_code/T3/Task3B/run_pipeline.py
-```
 
 Preset: `t3b_depth_d3`
 
@@ -44,10 +40,6 @@ Preset: `t3b_depth_d3`
 
 Aug-delta Gram rank 32.
 
-```bash
-python paper_code/T3/Task3B/calibrate_subspace.py
-```
-
 Preset: `t3b_depth_d3`
 
 <a id="t3b-wrong-w"></a>
@@ -55,10 +47,6 @@ Preset: `t3b_depth_d3`
 ### E1_wrong control (random W)
 
 Strengthening / falsification arm.
-
-```bash
-python paper_code/T3/Task3B/run_strengthening.py
-```
 
 ## Run with matching-pmh
 

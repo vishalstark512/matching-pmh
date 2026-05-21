@@ -1,6 +1,6 @@
 # T5B — Code models — token-group shift
 
-**Source of truth:** `paper_code/T5/Task5B/FINAL.md`
+**Paper evidence:** [main.pdf](../../main.pdf) · [Block findings](../findings.html)
 
 **Lemma:** D5 · **Stack:** pytorch
 **Nuisance key:** `compositional`
@@ -24,17 +24,13 @@ pip install "matching-pmh[hf]"
 
 **Paper preset:** `t5_compositional_d5` · `from pmh.benchmark.presets import get_preset`
 
-## Subtasks (paper_code)
+## Subtasks (paper)
 
 <a id="t5b-pipeline"></a>
 
 ### Clone detection train + eval
 
 E1 rename_bacc 0.9383.
-
-```bash
-python paper_code/T5/Task5B/run_pipeline.py
-```
 
 Preset: `t5_compositional_d5`
 
@@ -44,10 +40,6 @@ Preset: `t5_compositional_d5`
 
 
 
-```bash
-python paper_code/T5/Task5B/train.py
-```
-
 Preset: `t5_compositional_d5`
 
 <a id="t5b-eval"></a>
@@ -55,10 +47,6 @@ Preset: `t5_compositional_d5`
 ### Rename / reformat eval suites
 
 
-
-```bash
-python paper_code/T5/Task5B/eval.py
-```
 
 Preset: `t5_compositional_d5`
 

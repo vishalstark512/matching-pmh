@@ -17,7 +17,6 @@ tmp_pmh_trainer/
 tmp_notebook_out/
 *.pt
 .DS_Store
-/main.pdf
 /paper_code/
 
 # --- Datasets and large downloads (never commit to git or ship in wheels) ---

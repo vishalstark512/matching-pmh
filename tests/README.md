@@ -14,4 +14,4 @@ Optional slow checks:
 pytest -m slow
 ```
 
-`paper_code/` is excluded via `norecursedirs` (paper reproduction only).
+`paper_code/` is gitignored and excluded via `norecursedirs` (optional local reproduction only).

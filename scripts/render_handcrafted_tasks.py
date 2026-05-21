@@ -15,7 +15,7 @@ NB = REPO / "notebooks" / "tasks"
 
 HANDCRAFTED = frozenset(PAPER_TASK_IDS)
 SKIP_NOTEBOOK = frozenset({"t01-classical"})  # multi-subtask sklearn hub (hand-maintained body)
-SKIP_DOC = frozenset({"t01-classical", "t02a-vit-isotropic", "t02b-chexpert-isotropic"})
+SKIP_DOC = frozenset({"t01-classical"})  # multi-subtask sklearn hub (hand-maintained)
 
 # GitHub-flavored math in markdown (use in f-strings via _SIGMA_TASK_MD — avoid "\\text" → tab).
 _SIGMA_TASK_MD = r"$\Sigma_{\text{task}}$"
@@ -28,7 +28,7 @@ STANDARD_SECTIONS: tuple[str, ...] = (
     "## 4 — Scope (applicability)",
     "## 5 — Estimate " + _SIGMA_TASK_MD + " + PMH train",
     "## 6 — Step 5 (deploy holdout)",
-    "## 7 — Paper reproduction",
+    "## 7 — Paper results",
     "## 8 — Your pipeline",
 )
 
@@ -122,74 +122,65 @@ def _nb(cells: list[dict]) -> dict:
     }
 
 
-# Doc bodies keyed by task_id (FINAL.md summaries)
+# Doc bodies keyed by task_id (headlines from the paper; evidence in main.pdf)
 DOC_EXTRA: dict[str, dict] = {
     "t02a-vit-isotropic": {
-        "final": "paper_code/T2/Task2A/FINAL.md",
         "headline": "Isotropic PMH on ViT-B/16: +4.29 pp mean ImageNet-C, TDI −58% at σ=0.10.",
         "metrics": "",
         "nuisance_key": "isotropic",
         "preset": "t2a_vit_isotropic",
     },
     "t02b-chexpert-isotropic": {
-        "final": "paper_code/T2/Task2B/FINAL.md",
         "headline": "Chest X-ray E1: best saliency (0.723) and ~9× lower embedding drift vs B0.",
         "metrics": "",
         "nuisance_key": "isotropic",
         "preset": "t2b_chexpert_isotropic",
     },
     "t03a-pose-gradient": {
-        "final": "paper_code/T3/Task3A/FINAL.md",
         "headline": "E1_aniso subspace PMH on COCO pose: **54.49%** clean PCK@0.05 (+22.4 pp vs baseline 32.07%).",
         "metrics": "| baseline | E1_aniso |\n|----------|----------|\n| 32.07% PCK | **54.49%** PCK |\n| — | 35.21% @ occ 0.40 |",
         "nuisance_key": "augmentation",
         "preset": None,
     },
     "t03b-depth-augmentation": {
-        "final": "paper_code/T3/Task3B/FINAL.md",
         "headline": "E1_aniso beats E1 on hard photometric depth stress (combined_hard AbsRel **0.2152** vs 0.2191).",
         "metrics": "| baseline | E1 | E1_aniso |\n|----------|-----|----------|\n| 0.2033 AbsRel | 0.1951 | **0.2152** (photo hard) |",
         "nuisance_key": "augmentation",
         "preset": "t3b_depth_d3",
     },
     "t04a-vision-domain": {
-        "final": "paper_code/T4/Task4A/FINAL.md",
         "headline": "E1_multiscale Gram PMH on DomainNet real→sketch: **42.15%** test acc (+3.31 pp vs B0 38.84%).",
         "metrics": "| B0 | E1 | E1_multiscale |\n|----|-----|---------------|\n| 38.84% | 39.34% | **42.15%** |",
         "nuisance_key": "domain_shift",
         "preset": "t4_domain_d4",
         "note": (
             "Notebook = single-hook D4 with **class-aligned** Gram when loaders are `(x,y)`. "
-            "Paper multiscale DomainNet: `paper_code/T4/Task4A/`."
+            "Paper multiscale DomainNet: `the paper (DomainNet multiscale)`."
         ),
     },
     "t04b-multilayer-vision": {
-        "final": "paper_code/T4/Task4B/FINAL.md",
         "headline": "E1_multiscale rare-5 Cityscapes mIoU **30.75%** (+11.1 pp vs B0 19.68%).",
         "metrics": "| B0 | E1 | E1_multiscale |\n|----|-----|---------------|\n| 19.68% mIoU | 19.99% | **30.75%** |",
         "nuisance_key": "domain_shift",
         "preset": "t4_domain_d4",
         "note": (
             "Notebook runs `PMHTrainer(train_mode='feature_diff')` + `estimate_multilayer` on demo "
-            "loaders. Paper GTA5→Cityscapes: `paper_code/T4/Task4B/`."
+            "loaders. Paper GTA5→Cityscapes: `the paper (GTA5→Cityscapes)`."
         ),
     },
     "t05a-qm9-molecule": {
-        "final": "paper_code/T5/Task5A/FINAL.md",
         "headline": "E1 matched position PMH: clean MAE **24.921** (−0.155 vs B0); σ=0.2 Å noise MAE **47.415** vs B0.",
         "metrics": "| B0 MAE | E1 MAE | @ σ=0.2 |\n|--------|--------|--------|\n| 25.076 | **24.921** | **47.415** |",
         "nuisance_key": "compositional",
         "preset": "t5_compositional_d5",
     },
     "t05b-code-tokens": {
-        "final": "paper_code/T5/Task5B/FINAL.md",
         "headline": "E1 identifier PMH: rename_bacc_ratio **0.9383** vs B0 **0.8297**.",
         "metrics": "| B0 | E1 | E1S (wrong blocks) |\n|----|-----|------------------|\n| 0.8297 | **0.9383** | 0.7379 (fails) |",
         "nuisance_key": "compositional",
         "preset": "t5_compositional_d5",
     },
     "t06a-speech-whisper": {
-        "final": "paper_code/T6/task6A/FINAL.md",
         "headline": "pmh_content_residual: Libri **other-WER 14.63%** (−8.6 pp vs baseline 23.26%); TDI **0.381**.",
         "metrics": "| baseline WER | pmh_content_residual |\n|--------------|----------------------|\n| 23.26% | **14.63%** |",
         "nuisance_key": "temporal",
@@ -197,21 +188,18 @@ DOC_EXTRA: dict[str, dict] = {
         "note": "Paper uses **content-residual W** (`pmh.calibrate.content_residual_subspace`). Demo uses `temporal` on sequence embeddings.",
     },
     "t06b-temporal-har": {
-        "final": "paper_code/T6/task6B/FINAL.md",
         "headline": "Matched PMH wins HAR stress 3.0: bal. acc **0.4099** vs baseline **0.2794** (3 seeds).",
         "metrics": "| baseline | PMH | wrong_W |\n|----------|-----|--------|\n| 0.2794 @ stress 3 | **0.4099** | fails geometry |",
         "nuisance_key": "temporal",
         "preset": "t6_temporal_d6",
     },
     "t07a-llm-style": {
-        "final": "paper_code/T7/task7A/FINAL.md",
         "headline": r"Matched $\Sigma_{\text{style}}$ RM: sycophancy **38.5%→13.5%**, style gap **2.199→0.803**; margin_pmh DPO Style TDI **1.836**.",
         "metrics": "| matched MC1 | sycophancy | style gap |\n|-------------|------------|----------|\n| 0.548 | **13.5%** | **0.803** |",
         "nuisance_key": "style",
         "preset": "t7a_style_d7",
     },
     "t07b-adversarial-pgd": {
-        "final": "paper_code/T7/task7B/FINAL.md",
         "headline": "pmh_aniso (PGD-W): TDI **0.878** (−19% vs baseline 1.090); clean **80.9%**.",
         "metrics": "| baseline TDI | pmh_aniso TDI | clean acc |\n|--------------|---------------|----------|\n| 1.090 | **0.878** | **80.9%** |",
         "nuisance_key": "style",
@@ -227,7 +215,7 @@ def render_doc_page(task_id: str) -> str:
     lines = [
         f"# {t.block} — {t.title}",
         "",
-        f"**Source of truth:** `{extra.get('final', 'paper_code/')}`",
+        "**Paper evidence:** [main.pdf](../../main.pdf) · [Block findings](../findings.html)",
         "",
         f"**Lemma:** {t.lemma} · **Stack:** {t.stack}",
         f"**Nuisance key:** `{extra.get('nuisance_key', t.lemma.lower())}`",
@@ -256,7 +244,7 @@ def render_doc_page(task_id: str) -> str:
     if extra.get("note"):
         lines += [f"**Note:** {extra['note']}", ""]
     if t.subtasks:
-        lines += ["## Subtasks (paper_code)", ""]
+        lines += ["## Subtasks (paper)", ""]
         for s in t.subtasks:
             lines += [
                 f'<a id="{s.subtask_id}"></a>',
@@ -265,11 +253,16 @@ def render_doc_page(task_id: str) -> str:
                 "",
                 s.blurb,
                 "",
-                "```bash",
-                f"python {s.script}" if s.script.endswith(".py") else f"# see {s.script}",
-                "```",
-                "",
             ]
+            if s.in_repo_script:
+                lines += [
+                    "**Library runnable:**",
+                    "",
+                    "```bash",
+                    f"python {s.in_repo_script}",
+                    "```",
+                    "",
+                ]
             if s.preset:
                 lines += [f"Preset: `{s.preset}`", ""]
     lines += [
@@ -333,7 +326,6 @@ def _banner_md(task_id: str) -> str:
     t = get_paper_task(task_id)
     extra = DOC_EXTRA.get(task_id, {})
     nuisance = extra.get("nuisance_key", t.lemma.lower())
-    final = extra.get("final", "paper_code/")
     headline = extra.get("headline", t.what_changes)
     demo_note = ""
     spec = NOTEBOOK_SPECS.get(task_id)
@@ -341,7 +333,7 @@ def _banner_md(task_id: str) -> str:
         demo_note = f"\n\n**Demo note:** {spec.demo_note}"
     return f"""# {t.block} — {t.title}
 
-**Lemma {t.lemma}** · `nuisance="{nuisance}"` · [Task doc](../../docs/tasks/{task_id}.md) · FINAL: `{final}`
+**Lemma {t.lemma}** · `nuisance="{nuisance}"` · [Task doc](../../docs/tasks/{task_id}.md) · [main.pdf](../../main.pdf)
 
 > {headline}
 
@@ -349,7 +341,7 @@ def _banner_md(task_id: str) -> str:
 |---|-------------|
 | 1–4 | Install → load demo → `check_applicability` |
 | 5–6 | Estimate {_SIGMA_TASK_MD} → PMH train → Step 5 on deploy holdout |
-| 7–8 | Reproduce paper scripts → plug in your data |
+| 7–8 | Read paper block → plug in your data |
 {demo_note}"""
 
 
@@ -601,9 +593,15 @@ if hasattr(report, "baseline_metric"):
 
 def _paper_md(spec: NotebookSpec) -> str:
     t = get_paper_task(spec.task_id)
-    lines = [f"Frozen results: `{DOC_EXTRA.get(spec.task_id, {}).get('final', 'paper_code/')}`", ""]
+    lines = [
+        "Paper headlines: [main.pdf](../../main.pdf) · [findings.html](../../docs/findings.html)",
+        "",
+    ]
     for s in t.subtasks[:4]:
-        lines.append(f"- **{s.title}:** `python {s.script}`")
+        if s.in_repo_script:
+            lines.append(f"- **{s.title}:** `python {s.in_repo_script}`")
+        else:
+            lines.append(f"- **{s.title}:** {s.blurb}")
     if len(t.subtasks) > 4:
         lines.append(f"- … plus {len(t.subtasks) - 4} more subtasks in [task doc](../../docs/tasks/{spec.task_id}.md)")
     return "\n".join(lines)
@@ -683,7 +681,7 @@ print("trajectory_tdi:", tdi.get("trajectory_tdi"))""",
     "t02b-chexpert-isotropic": NotebookSpec(
         "t02b-chexpert-isotropic",
         "iso",
-        demo_note="Medical-style σ=0.08 eval noise; full Pneumonia run in paper_code.",
+        demo_note="Medical-style σ=0.08 eval noise; full CheXpert-scale runs in the paper.",
         falsification=False,
         extra_after_step5=[
             (
@@ -770,7 +768,7 @@ pgd_art = estimate_pgd_subspace_from_model(
     rank=8, epsilon=0.15, steps=2, max_batches=6 if QUICK else 20, device=device,
 )
 print("PGD artifact", pgd_art.method, "preflight", pgd_art.preflight)
-# Full margin PMH + DPO: paper_code/T7/task7B/""",
+# Full margin PMH + DPO: see paper T7B""",
             ),
         ],
     ),
@@ -908,7 +906,7 @@ def render_index() -> str:
         )
     lines += [
         "",
-        "**T1** bundles seven classical subtasks in one notebook. **T2–T7** map to `paper_code/T2` … `T7`. Clone any row for a *similar* deploy change — not only the benchmark named in the paper.",
+        "**T1** bundles seven classical subtasks in one notebook. **T2–T7** map to blocks in [main.pdf](../main.pdf). Clone any row for a *similar* deploy change — not only the benchmark named in the paper.",
         "",
         "Regenerate: `python scripts/render_handcrafted_tasks.py`",
         "",

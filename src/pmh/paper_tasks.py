@@ -7,13 +7,21 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class PaperSubtask:
-    """T1 experiment line inside FINAL.md (one page lists all; no extra doc files)."""
+    """Paper experiment line (anchors for docs); optional in-repo runnable script."""
 
     subtask_id: str
     title: str
-    script: str
+    script: str | None = None  # e.g. scripts/demos/... when shipped in this repo
     preset: str | None = None
     blurb: str = ""
+
+    @property
+    def in_repo_script(self) -> str | None:
+        if not self.script:
+            return None
+        if self.script.startswith(("scripts/", "notebooks/", "pmh-train")):
+            return self.script
+        return None
 
 
 @dataclass(frozen=True)
@@ -54,48 +62,48 @@ PAPER_TASK_IDS: tuple[str, ...] = (
     "t07b-adversarial-pgd",
 )
 
-# T1 lines from paper_code/T1/classical_pmh/FINAL.md (anchors for CLI/tests only)
+# T1 sub-experiments (anchors for docs/tests; runnable script only when in this repo)
 _SUBTASKS: dict[str, tuple[PaperSubtask, ...]] = {
     "t01-classical": (
         PaperSubtask(
             "t1-ridge-theorem",
             "Ridge Theorem 1 (closed-form invariance)",
-            "paper_code/T1/classical_pmh/ridge_theory.py",
+            None,
             None,
             "Synthetic Gaussian; matched MSE flat in σ_test.",
         ),
         PaperSubtask(
             "t1-oracle-mnist-fashion",
             "Oracle-W: MNIST / Fashion-MNIST × SVM, k-NN, logistic",
-            "paper_code/T1/classical_pmh/run_benchmarks.py",
+            None,
             None,
             "Strict B0 < E1_matched; E1_wrong ≈ B0.",
         ),
         PaperSubtask(
             "t1-dct-drift",
             "Data-driven W: DCT drift + soft k-NN",
-            "paper_code/T1/classical_pmh/mnist_drift.py",
+            None,
             None,
             "Cross-domain SVD; Fashion-MNIST flagship (+15 pp SVM).",
         ),
         PaperSubtask(
             "t1-baselines-coral",
             "PMH vs CORAL / LMNN / IRM",
-            "paper_code/T1/classical_pmh/baselines.py",
+            None,
             None,
             "Head-to-head on oracle-W and drift.",
         ),
         PaperSubtask(
             "t1-svhn",
             "SVHN real digits (SVM)",
-            "paper_code/T1/classical_pmh/svhn_subspace.py",
+            None,
             None,
             "E1_matched +20 pp vs B0.",
         ),
         PaperSubtask(
             "t1-ridge-tabular",
             "California Housing + ridge",
-            "paper_code/T1/classical_pmh/ridge_tabular.py",
+            None,
             None,
             "Real tabular; theorem behaviour on UCI.",
         ),
@@ -111,21 +119,21 @@ _SUBTASKS: dict[str, tuple[PaperSubtask, ...]] = {
         PaperSubtask(
             "t2a-vit-imagenet",
             "ImageNet ViT-B/16 + isotropic PMH (Type 2A)",
-            "paper_code/T2/Task2A/train.py",
+            None,
             "t2a_vit_isotropic",
             "PMH ≈ ERM clean; +4.29 pp mean ImageNet-C; TDI −58% at σ=0.10.",
         ),
         PaperSubtask(
             "t2a-geometry-tdi",
             "TDI / Jacobian probes (label-free)",
-            "paper_code/T2/Task2A/recompute_task1a_tdi.py",
+            None,
             None,
             "Layer-averaged CLS displacement under input Gaussian.",
         ),
         PaperSubtask(
             "t2a-imagenet-c",
             "ImageNet-C transfer (15 corruptions, severity 3)",
-            "paper_code/T2/Task2A/eval_imagenet_c.py",
+            None,
             None,
             "Train on Gaussian only; largest gains on noise/frost/blur.",
         ),
@@ -134,21 +142,21 @@ _SUBTASKS: dict[str, tuple[PaperSubtask, ...]] = {
         PaperSubtask(
             "t2b-pneumonia-clean",
             "Pneumonia chest X-ray — clean test (B0 vs E1 arms)",
-            "paper_code/T2/Task2B/train.py",
+            None,
             "t2b_chexpert_isotropic",
             "B0 best clean (91.7%); E1_no_pmh / E1 trade clean for shift robustness.",
         ),
         PaperSubtask(
             "t2b-robust-shift",
             "Robust eval — Gaussian + acquisition shifts",
-            "paper_code/T2/Task2B/eval_robust.py",
+            None,
             "t2b_chexpert_isotropic",
             "E1_no_pmh best worst-shift; E1 best saliency + embedding drift.",
         ),
         PaperSubtask(
             "t2b-saliency",
             "Saliency stability under noise",
-            "paper_code/T2/Task2B/saliency_stability.py",
+            None,
             None,
             "E1 (PMH) 0.723 vs B0 0.560 cosine stability.",
         ),
@@ -157,21 +165,21 @@ _SUBTASKS: dict[str, tuple[PaperSubtask, ...]] = {
         PaperSubtask(
             "t3a-calibrate-w",
             "Calibrate occlusion subspace W",
-            "paper_code/T3/Task3A/calibrate_subspace.py",
+            None,
             None,
             "Gradient-SVD on COCO pose features.",
         ),
         PaperSubtask(
             "t3a-train-arms",
             "Train baseline / E1 / E1_aniso / VAT",
-            "paper_code/T3/Task3A/train.py",
+            None,
             None,
             "E1_aniso +22.4 pp PCK vs baseline.",
         ),
         PaperSubtask(
             "t3a-eval-robust",
             "Robustness + embedding eval",
-            "paper_code/T3/Task3A/eval.py",
+            None,
             None,
             "Occlusion stress + drift metrics.",
         ),
@@ -180,21 +188,21 @@ _SUBTASKS: dict[str, tuple[PaperSubtask, ...]] = {
         PaperSubtask(
             "t3b-pipeline",
             "NYU depth pipeline (train + calibrate)",
-            "paper_code/T3/Task3B/run_pipeline.py",
+            None,
             "t3b_depth_d3",
             "E1_aniso wins photometric hard stress.",
         ),
         PaperSubtask(
             "t3b-calibrate",
             "Photometric subspace calibration",
-            "paper_code/T3/Task3B/calibrate_subspace.py",
+            None,
             "t3b_depth_d3",
             "Aug-delta Gram rank 32.",
         ),
         PaperSubtask(
             "t3b-wrong-w",
             "E1_wrong control (random W)",
-            "paper_code/T3/Task3B/run_strengthening.py",
+            None,
             None,
             "Strengthening / falsification arm.",
         ),
@@ -203,21 +211,21 @@ _SUBTASKS: dict[str, tuple[PaperSubtask, ...]] = {
         PaperSubtask(
             "t4a-domainnet",
             "DomainNet real→sketch",
-            "paper_code/T4/Task4A/run_pipeline.py",
+            None,
             "t4_domain_d4",
             "E1_multiscale +3.31 pp test acc.",
         ),
         PaperSubtask(
             "t4a-tdi",
             "Per-layer TDI geometry",
-            "paper_code/T4/Task4A/tdi.py",
+            None,
             "t4_domain_d4",
             "Domain Gram on hook features.",
         ),
         PaperSubtask(
             "t4a-train",
             "B0 / E1 / E1_multiscale training",
-            "paper_code/T4/Task4A/train.py",
+            None,
             "t4_domain_d4",
             "",
         ),
@@ -226,21 +234,21 @@ _SUBTASKS: dict[str, tuple[PaperSubtask, ...]] = {
         PaperSubtask(
             "t4b-rare5",
             "Cityscapes rare-5 mIoU",
-            "paper_code/T4/Task4B/run_rare5_all.py",
+            None,
             "t4_domain_d4",
             "E1_multiscale +11.1 pp mIoU.",
         ),
         PaperSubtask(
             "t4b-subset",
             "Build rare-5 training subset",
-            "paper_code/T4/Task4B/build_subset.py",
+            None,
             None,
             "",
         ),
         PaperSubtask(
             "t4b-tdi",
             "Pixel-aligned per-layer TDI",
-            "paper_code/T4/Task4B/tdi.py",
+            None,
             "t4_domain_d4",
             "",
         ),
@@ -249,21 +257,21 @@ _SUBTASKS: dict[str, tuple[PaperSubtask, ...]] = {
         PaperSubtask(
             "t5a-pipeline",
             "QM9 train + noise + embedding eval",
-            "paper_code/T5/Task5A/run_pipeline.py",
+            None,
             "t5_compositional_d5",
             "E1 clean MAE 24.921.",
         ),
         PaperSubtask(
             "t5a-train",
             "MolGCN training",
-            "paper_code/T5/Task5A/train.py",
+            None,
             "t5_compositional_d5",
             "",
         ),
         PaperSubtask(
             "t5a-noise",
             "Position-noise eval sweep",
-            "paper_code/T5/Task5A/eval_noise.py",
+            None,
             "t5_compositional_d5",
             "",
         ),
@@ -272,21 +280,21 @@ _SUBTASKS: dict[str, tuple[PaperSubtask, ...]] = {
         PaperSubtask(
             "t5b-pipeline",
             "Clone detection train + eval",
-            "paper_code/T5/Task5B/run_pipeline.py",
+            None,
             "t5_compositional_d5",
             "E1 rename_bacc 0.9383.",
         ),
         PaperSubtask(
             "t5b-train",
             "CodeBERT clone training",
-            "paper_code/T5/Task5B/train.py",
+            None,
             "t5_compositional_d5",
             "",
         ),
         PaperSubtask(
             "t5b-eval",
             "Rename / reformat eval suites",
-            "paper_code/T5/Task5B/eval.py",
+            None,
             "t5_compositional_d5",
             "",
         ),
@@ -295,21 +303,21 @@ _SUBTASKS: dict[str, tuple[PaperSubtask, ...]] = {
         PaperSubtask(
             "t6a-run",
             "LibriSpeech four arms + WER",
-            "paper_code/T6/task6A/run_task6a.py",
+            None,
             None,
             "pmh_content_residual WER 14.63%.",
         ),
         PaperSubtask(
             "t6a-collect-w",
             "Content-residual subspace",
-            "paper_code/T6/task6A/collect_W.py",
+            None,
             None,
             "Only matched W fixes geometry.",
         ),
         PaperSubtask(
             "t6a-export",
             "Strengthening analysis JSON",
-            "paper_code/T6/task6A/export_analysis.py",
+            None,
             None,
             "",
         ),
@@ -318,21 +326,21 @@ _SUBTASKS: dict[str, tuple[PaperSubtask, ...]] = {
         PaperSubtask(
             "t6b-multi-seed",
             "HAR multi-seed paper runs",
-            "paper_code/T6/task6B/run_multi_seed.py",
+            None,
             "t6_temporal_d6",
             "PMH 0.4099 vs 0.2794 @ stress 3.",
         ),
         PaperSubtask(
             "t6b-collect-w",
             "Collect W from baseline",
-            "paper_code/T6/task6B/collect_W.py",
+            None,
             "t6_temporal_d6",
             "",
         ),
         PaperSubtask(
             "t6b-stress",
             "Stress robustness eval",
-            "paper_code/T6/task6B/stress_probe.py",
+            None,
             "t6_temporal_d6",
             "",
         ),
@@ -341,21 +349,21 @@ _SUBTASKS: dict[str, tuple[PaperSubtask, ...]] = {
         PaperSubtask(
             "t7a-rm-eval",
             "RM behavioral eval (TQA n=500)",
-            "paper_code/T7/task7A/evaluate_7a_behavioral.py",
+            None,
             "t7a_style_d7",
             "Matched sycophancy 13.5%.",
         ),
         PaperSubtask(
             "t7a-dpo",
             "Geometric DPO + style geometry",
-            "paper_code/T7/task7A/train_geometric_dpo.py",
+            None,
             "t7a_style_d7",
             "margin_pmh Style TDI 1.836.",
         ),
         PaperSubtask(
             "t7a-pipeline",
             "Synthetic alignment pipeline",
-            "paper_code/T7/task7A/run_task7a_pipeline.py",
+            None,
             "t7a_style_d7",
             "",
         ),
@@ -364,21 +372,21 @@ _SUBTASKS: dict[str, tuple[PaperSubtask, ...]] = {
         PaperSubtask(
             "t7b-train",
             "CIFAR ViT PGD arms (seed 7)",
-            "paper_code/T7/task7B/run_task7b.py",
+            None,
             "t7b_pgd_d7",
             "pmh_aniso TDI 0.878.",
         ),
         PaperSubtask(
             "t7b-eval",
             "Adversarial + geometry eval",
-            "paper_code/T7/task7B/run_task7b.py",
+            None,
             "t7b_pgd_d7",
             "Correct W +8.6 pp PGD@4 vs wrong_W.",
         ),
         PaperSubtask(
             "t7b-summary",
             "Bootstrap CI summary",
-            "paper_code/T7/task7B/run_task7b.py",
+            None,
             None,
             "",
         ),

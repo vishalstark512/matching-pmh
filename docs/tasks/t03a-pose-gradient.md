@@ -1,6 +1,6 @@
 # T3A — Pose / keypoints — camera & studio shift
 
-**Source of truth:** `paper_code/T3/Task3A/FINAL.md`
+**Paper evidence:** [main.pdf](../../main.pdf) · [Block findings](../findings.html)
 
 **Lemma:** D3 · **Stack:** pytorch
 **Nuisance key:** `augmentation`
@@ -23,7 +23,7 @@ pip install matching-pmh torch
 | 32.07% PCK | **54.49%** PCK |
 | — | 35.21% @ occ 0.40 |
 
-## Subtasks (paper_code)
+## Subtasks (paper)
 
 <a id="t3a-calibrate-w"></a>
 
@@ -31,29 +31,17 @@ pip install matching-pmh torch
 
 Gradient-SVD on COCO pose features.
 
-```bash
-python paper_code/T3/Task3A/calibrate_subspace.py
-```
-
 <a id="t3a-train-arms"></a>
 
 ### Train baseline / E1 / E1_aniso / VAT
 
 E1_aniso +22.4 pp PCK vs baseline.
 
-```bash
-python paper_code/T3/Task3A/train.py
-```
-
 <a id="t3a-eval-robust"></a>
 
 ### Robustness + embedding eval
 
 Occlusion stress + drift metrics.
-
-```bash
-python paper_code/T3/Task3A/eval.py
-```
 
 ## Run with matching-pmh
 

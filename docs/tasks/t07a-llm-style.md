@@ -1,6 +1,6 @@
 # T7A — LLM — format / tone / template
 
-**Source of truth:** `paper_code/T7/task7A/FINAL.md`
+**Paper evidence:** [main.pdf](../../main.pdf) · [Block findings](../findings.html)
 
 **Lemma:** D7 · **Stack:** hf
 **Nuisance key:** `style`
@@ -24,17 +24,13 @@ pip install "matching-pmh[hf]"
 
 **Paper preset:** `t7a_style_d7` · `from pmh.benchmark.presets import get_preset`
 
-## Subtasks (paper_code)
+## Subtasks (paper)
 
 <a id="t7a-rm-eval"></a>
 
 ### RM behavioral eval (TQA n=500)
 
 Matched sycophancy 13.5%.
-
-```bash
-python paper_code/T7/task7A/evaluate_7a_behavioral.py
-```
 
 Preset: `t7a_style_d7`
 
@@ -44,10 +40,6 @@ Preset: `t7a_style_d7`
 
 margin_pmh Style TDI 1.836.
 
-```bash
-python paper_code/T7/task7A/train_geometric_dpo.py
-```
-
 Preset: `t7a_style_d7`
 
 <a id="t7a-pipeline"></a>
@@ -55,10 +47,6 @@ Preset: `t7a_style_d7`
 ### Synthetic alignment pipeline
 
 
-
-```bash
-python paper_code/T7/task7A/run_task7a_pipeline.py
-```
 
 Preset: `t7a_style_d7`
 

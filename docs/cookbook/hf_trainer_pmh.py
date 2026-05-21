@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Hugging Face Trainer + PMH artifact (sketch).
 
-Full DPO / margin PMH: ``paper_code/T7/task7B/``.
+Full DPO / margin PMH: see ``main.pdf`` T7B.
 Library estimate: ``estimate_style_sigma`` or ``robust_fit_text_domains``.
 
 This script shows the **estimate-once, attach artifact** pattern without

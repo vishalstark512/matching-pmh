@@ -19,7 +19,7 @@ Examples: new camera or hospital (vision), new microphone (speech), new writing 
 Add a PMH term that penalizes encoder Jacobian energy along a matrix $\Sigma'$ whose **column space covers** the nuisance range. When $\Sigma'$ is **matched** to $\Sigma_{\text{task}}$, deployment drift in representations can be driven down; when $\Sigma'$ is **isotropic** or **wrong**, the theory predicts specific failure modes — and the library runs those arms as **controls**, not optional extras.
 
 **What makes this a theory, not a hack.**  
-The paper proves range coverage is necessary for quadratic Jacobian penalties, gives matched sufficiency in the linear model, extends to deep global minima under stated assumptions, and supplies falsification lemmas (wrong subspace, signal-aligned penalty) tested before you trust a deploy gain. See [`main.pdf`](main.pdf) §2–5; block-level evidence in `paper_code/T*/**/FINAL.md`.
+The paper proves range coverage is necessary for quadratic Jacobian penalties, gives matched sufficiency in the linear model, extends to deep global minima under stated assumptions, and supplies falsification lemmas (wrong subspace, signal-aligned penalty) tested before you trust a deploy gain. See [`main.pdf`](main.pdf) §2–5 and [block findings](docs/findings.html).
 
 ---
 
@@ -51,17 +51,17 @@ Details: [Quickstart](docs/QUICKSTART.md) · [Will PMH help?](docs/WHEN_PMH_HELP
 | A **closed, falsifiable** training recipe once $\Sigma_{\text{task}}$ is identified | Universality on every leaderboard |
 | **13 pre-registered blocks** (T1–T7) as copy-paste playbooks | That matched PMH always beats CORAL, DANN, or PGD-AT |
 | Built-in **matched / wrong / isotropic** arms (Lemma C, Cor. E in the paper) | PMH on label-changing shifts (e.g. spurious correlation) |
-| Theory-aligned estimators D1–D7 + geometry probes (`tdi`, …) | One demo preset replaces your domain data or reproduces every `FINAL.md` number without tuning |
+| Theory-aligned estimators D1–D7 + geometry probes (`tdi`, …) | One demo preset replaces your domain data or reproduces every paper table row without tuning |
 
 Honest boundaries (from the paper): Colored MNIST / Waterbirds-style **label-correlated** nuisance is out of scope; Office-31 is a documented case where **estimator eigengap** can fail (Lemma D1), not a silent bug.
 
-**Pre-registered evidence:** **12/13** paper blocks pass their criteria in `paper_code/T*/**/FINAL.md`; Office-31 is the predicted **D1 failure** when the cross-domain subspace is ill-conditioned — run Step 5 before shipping.
+**Pre-registered evidence:** **12/13** paper blocks pass their criteria in [`main.pdf`](main.pdf) (see [findings.html](docs/findings.html)); Office-31 is the predicted **D1 failure** when the cross-domain subspace is ill-conditioned — run Step 5 before shipping.
 
 ### Paper numbers vs this library
 
-Block accuracies, mIoU gains, and other **reported figures in the README, task pages, and [`main.pdf`](main.pdf) tables** come from **`paper_code/`** — scripts written specifically to reproduce each paper block (datasets, architectures, schedules, and ablations frozen in each `FINAL.md`). That code is the **source of truth for the paper**.
+Block accuracies, mIoU gains, and other **reported figures** in the README, task pages, and [`main.pdf`](main.pdf) tables are **paper results** — full benchmarks, datasets, and schedules described in the PDF.
 
-The **`pmh` library** on PyPI is for **general use** on your stack: same estimators and five-step recipe, but **different** demo loaders, defaults, and integration paths. It will **not** automatically replicate those paper numbers out of the box. Expect **iteration** on your side — hook choice, rank, `PMHConfig` / loss scale ([LOSS_SCALING](docs/LOSS_SCALING.md)), more target data, and Step 5 on **your** deploy holdout — before you treat a run as “correct.” Notebooks under `notebooks/tasks/` teach the workflow; **`paper_code/`** is for reproduction and citation.
+The **`pmh` library** on PyPI is for **general use** on your stack: same estimators and five-step recipe, but **different** demo loaders, defaults, and integration paths. It will **not** automatically replicate those paper numbers out of the box. Expect **iteration** on your side — hook choice, rank, `PMHConfig` / loss scale ([LOSS_SCALING](docs/LOSS_SCALING.md)), more target data, and Step 5 on **your** deploy holdout — before you treat a run as “correct.” Notebooks under `notebooks/tasks/` teach the workflow on built-in demos.
 
 Short theory spine (no PDF required to start): **[docs/PRINCIPLE.md](docs/PRINCIPLE.md)**.  
 **Synthesized block outcomes (HTML):** [docs/findings.html](docs/findings.html) — regenerate with `python scripts/build_findings_html.py`.
@@ -78,7 +78,7 @@ Short theory spine (no PDF required to start): **[docs/PRINCIPLE.md](docs/PRINCI
 | Sklearn / frozen embeddings (T1) | [t01-classical](docs/tasks/t01-classical.md) · `compare_arms_sklearn` |
 | PyTorch site/camera (T4) | [t04a-vision-domain](docs/tasks/t04a-vision-domain.md) · `PMHTrainer` (class-aligned D4) |
 | Per-layer domain Gram (T4B) | [t04b-multilayer-vision](docs/tasks/t04b-multilayer-vision.md) · `PMHTrainer(train_mode="feature_diff")` |
-| Full proofs + block numbers | [`main.pdf`](main.pdf) · `paper_code/` |
+| Full proofs + block numbers | [`main.pdf`](main.pdf) · [findings.html](docs/findings.html) |
 | Matched / wrong / isotropic benchmark | `run_benchmark_protocol` · `compare_arms` |
 
 ---
@@ -132,7 +132,7 @@ If two rows sound similar, start with **T1** (frozen vectors) or **T4A** (end-to
 3. Replace demo loaders with your data; keep the same `nuisance=` and estimate call.  
 4. Run **Step 5** on deploy holdout; ship only if **matched** beats **wrong-direction** and **generic isotropic** (see [WHEN_PMH_HELPS](docs/WHEN_PMH_HELPS.md)).
 
-The demos in `scripts/demos/`, `notebooks/tasks/`, and `paper_code/` exist to show the **same ordering** the theory predicts (`matched` → `isotropic` → `wrong` on geometry and drift metrics), not to define thirteen separate products.
+The demos in `scripts/demos/` and `notebooks/tasks/` exist to show the **same ordering** the theory predicts (`matched` → `isotropic` → `wrong` on geometry and drift metrics), not to define thirteen separate products.
 
 ---
 
@@ -172,7 +172,7 @@ pmh-train try --stack multilayer --quick   # T4B RGB CNN feature-diff demo
 | **T4A** vision domain | [t04a-vision-domain.ipynb](notebooks/tasks/t04a-vision-domain.ipynb) · [Colab](https://colab.research.google.com/github/vishalstark512/matching-pmh/blob/main/notebooks/tasks/t04a-vision-domain.ipynb) | PyTorch site/camera |
 | **T4B** multilayer vision | [t04b-multilayer-vision.ipynb](notebooks/tasks/t04b-multilayer-vision.ipynb) · [Colab](https://colab.research.google.com/github/vishalstark512/matching-pmh/blob/main/notebooks/tasks/t04b-multilayer-vision.ipynb) | Per-layer feature-diff PMH |
 
-Read the theory: **[`main.pdf`](main.pdf)** · Reproduce block numbers: **`paper_code/`**
+Read the theory: **[`main.pdf`](main.pdf)** · Block summary: **[findings.html](docs/findings.html)**
 
 ---
 

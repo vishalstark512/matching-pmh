@@ -1,6 +1,6 @@
 # T5A — Molecules / graphs (QM9-style)
 
-**Source of truth:** `paper_code/T5/Task5A/FINAL.md`
+**Paper evidence:** [main.pdf](../../main.pdf) · [Block findings](../findings.html)
 
 **Lemma:** D5 · **Stack:** pytorch
 **Nuisance key:** `compositional`
@@ -24,17 +24,13 @@ pip install matching-pmh torch
 
 **Paper preset:** `t5_compositional_d5` · `from pmh.benchmark.presets import get_preset`
 
-## Subtasks (paper_code)
+## Subtasks (paper)
 
 <a id="t5a-pipeline"></a>
 
 ### QM9 train + noise + embedding eval
 
 E1 clean MAE 24.921.
-
-```bash
-python paper_code/T5/Task5A/run_pipeline.py
-```
 
 Preset: `t5_compositional_d5`
 
@@ -44,10 +40,6 @@ Preset: `t5_compositional_d5`
 
 
 
-```bash
-python paper_code/T5/Task5A/train.py
-```
-
 Preset: `t5_compositional_d5`
 
 <a id="t5a-noise"></a>
@@ -55,10 +47,6 @@ Preset: `t5_compositional_d5`
 ### Position-noise eval sweep
 
 
-
-```bash
-python paper_code/T5/Task5A/eval_noise.py
-```
 
 Preset: `t5_compositional_d5`
 

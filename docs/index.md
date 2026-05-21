@@ -6,7 +6,7 @@ This library implements the **Perturbation Matching Hypothesis** from [`main.pdf
 
 The thirteen tasks are **worked examples** of one theory — not thirteen different products.
 
-**Paper vs library:** Metrics cited in tasks and the paper come from **`paper_code/`** reproduction scripts. The **`pmh` library** is for your pipeline; expect tuning — it does not guarantee the same numbers as `FINAL.md` without that block-specific setup.
+**Paper vs library:** Headline metrics in tasks and [findings.html](findings.html) come from the **paper** ([`main.pdf`](../main.pdf)). The **`pmh` library** is for your pipeline; expect tuning — demos will not match every table row without your data and Step 5.
 
 ---
 

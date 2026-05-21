@@ -69,7 +69,7 @@ _NOTEBOOK_STANDARD_SECTIONS = (
     "## 4 — Scope (applicability)",
     "## 5 — Estimate $\\Sigma_{\\text{task}}$ + PMH train",
     "## 6 — Step 5 (deploy holdout)",
-    "## 7 — Paper reproduction",
+    "## 7 — Paper results",
     "## 8 — Your pipeline",
 )
 
@@ -105,15 +105,13 @@ def test_router_maps_to_paper_page(tasks_text: dict[str, str]):
 
 
 def test_task_paths_exist():
+    assert (REPO / "main.pdf").is_file(), "main.pdf should be tracked in the repo"
     for t in list_paper_tasks():
         assert (REPO / t.notebook).is_file(), t.task_id
         if t.demo_script:
             assert (REPO / t.demo_script).is_file(), t.task_id
     for t in list_tasks():
         assert (REPO / t.example_script).is_file(), t.task_id
-    final = REPO / "paper_code/T1/classical_pmh/FINAL.md"
-    if final.is_file():
-        assert (REPO / "paper_code/T1/classical_pmh/office31_pmh.py").is_file()
 
 
 @pytest.mark.parametrize("task_id", PAPER_TASK_IDS)

@@ -1,6 +1,6 @@
 # T6B — Time-series / HAR — sensor drift
 
-**Source of truth:** `paper_code/T6/task6B/FINAL.md`
+**Paper evidence:** [main.pdf](../../main.pdf) · [Block findings](../findings.html)
 
 **Lemma:** D6 · **Stack:** pytorch
 **Nuisance key:** `temporal`
@@ -24,17 +24,13 @@ pip install matching-pmh torch
 
 **Paper preset:** `t6_temporal_d6` · `from pmh.benchmark.presets import get_preset`
 
-## Subtasks (paper_code)
+## Subtasks (paper)
 
 <a id="t6b-multi-seed"></a>
 
 ### HAR multi-seed paper runs
 
 PMH 0.4099 vs 0.2794 @ stress 3.
-
-```bash
-python paper_code/T6/task6B/run_multi_seed.py
-```
 
 Preset: `t6_temporal_d6`
 
@@ -44,10 +40,6 @@ Preset: `t6_temporal_d6`
 
 
 
-```bash
-python paper_code/T6/task6B/collect_W.py
-```
-
 Preset: `t6_temporal_d6`
 
 <a id="t6b-stress"></a>
@@ -55,10 +47,6 @@ Preset: `t6_temporal_d6`
 ### Stress robustness eval
 
 
-
-```bash
-python paper_code/T6/task6B/stress_probe.py
-```
 
 Preset: `t6_temporal_d6`
 

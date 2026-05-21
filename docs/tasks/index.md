@@ -40,7 +40,7 @@ Matching principle ([main.pdf](../../main.pdf)): estimate $\Sigma_{\text{task}}$
 | **T7A** | Tone/format; facts unchanged | Bulleted vs prose; formal vs casual bot | Style pairs (same content) | `style` | [t07a-llm-style.md](t07a-llm-style.md) |
 | **T7B** | Adversarial perturbations at deploy | PGD robustness; spoof patches | Subspace from attack deltas | `style` (PGD path) | [t07b-adversarial-pgd.md](t07b-adversarial-pgd.md) |
 
-**T1** bundles seven classical subtasks in one notebook. **T2–T7** map to `paper_code/T2` … `T7`. Clone any row for a *similar* deploy change — not only the benchmark named in the paper.
+**T1** bundles seven classical subtasks in one notebook. **T2–T7** map to blocks in [main.pdf](../main.pdf). Clone any row for a *similar* deploy change — not only the benchmark named in the paper.
 
 Regenerate: `python scripts/render_handcrafted_tasks.py`
 

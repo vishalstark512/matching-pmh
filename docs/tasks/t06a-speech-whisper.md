@@ -1,6 +1,6 @@
 # T6A — Speech / ASR — mic & room shift
 
-**Source of truth:** `paper_code/T6/task6A/FINAL.md`
+**Paper evidence:** [main.pdf](../../main.pdf) · [Block findings](../findings.html)
 
 **Lemma:** D6 · **Stack:** pytorch
 **Nuisance key:** `temporal`
@@ -24,7 +24,7 @@ pip install matching-pmh torch
 
 **Note:** Paper uses **content-residual W** (`pmh.calibrate.content_residual_subspace`). Demo uses `temporal` on sequence embeddings.
 
-## Subtasks (paper_code)
+## Subtasks (paper)
 
 <a id="t6a-run"></a>
 
@@ -32,29 +32,17 @@ pip install matching-pmh torch
 
 pmh_content_residual WER 14.63%.
 
-```bash
-python paper_code/T6/task6A/run_task6a.py
-```
-
 <a id="t6a-collect-w"></a>
 
 ### Content-residual subspace
 
 Only matched W fixes geometry.
 
-```bash
-python paper_code/T6/task6A/collect_W.py
-```
-
 <a id="t6a-export"></a>
 
 ### Strengthening analysis JSON
 
 
-
-```bash
-python paper_code/T6/task6A/export_analysis.py
-```
 
 ## Run with matching-pmh
 

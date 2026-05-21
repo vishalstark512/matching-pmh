@@ -69,7 +69,7 @@ If your deploy stress *is* a known transform list, set `has_augmentation_modes=T
 
 **Two corpora (same labels):** `robust_fit_text_domains(model, tokenizer, train_loader, source_texts, target_texts)`.
 
-Full DPO + margin PMH: `paper_code/T7/task7B/` (library: `estimate_pgd_subspace_from_model` for the estimate phase).
+Full DPO + margin PMH: see paper T7B (library: `estimate_pgd_subspace_from_model` for the estimate phase).
 
 ---
 
@@ -87,7 +87,7 @@ artifact = estimate_pgd_subspace_from_model(
 # attach artifact → PMHTrainer.from_artifact(...) for training
 ```
 
-Paper-scale DPO runs: `paper_code/T7/task7B/`.
+Paper-scale DPO runs: see [`main.pdf`](../main.pdf) T7B.
 
 ---
 

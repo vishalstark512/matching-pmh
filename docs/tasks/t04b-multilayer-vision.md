@@ -1,6 +1,6 @@
 # T4B — Vision domain shift (multilayer FPN / U-Net)
 
-**Source of truth:** `paper_code/T4/Task4B/FINAL.md`
+**Paper evidence:** [main.pdf](../../main.pdf) · [Block findings](../findings.html)
 
 **Lemma:** D4 · **Stack:** pytorch
 **Nuisance key:** `domain_shift`
@@ -24,19 +24,15 @@ pip install matching-pmh torch
 
 **Paper preset:** `t4_domain_d4` · `from pmh.benchmark.presets import get_preset`
 
-**Note:** Notebook runs `PMHTrainer(train_mode='feature_diff')` + `estimate_multilayer` on demo loaders. Paper GTA5→Cityscapes: `paper_code/T4/Task4B/`.
+**Note:** Notebook runs `PMHTrainer(train_mode='feature_diff')` + `estimate_multilayer` on demo loaders. Paper GTA5→Cityscapes: `the paper (GTA5→Cityscapes)`.
 
-## Subtasks (paper_code)
+## Subtasks (paper)
 
 <a id="t4b-rare5"></a>
 
 ### Cityscapes rare-5 mIoU
 
 E1_multiscale +11.1 pp mIoU.
-
-```bash
-python paper_code/T4/Task4B/run_rare5_all.py
-```
 
 Preset: `t4_domain_d4`
 
@@ -46,19 +42,11 @@ Preset: `t4_domain_d4`
 
 
 
-```bash
-python paper_code/T4/Task4B/build_subset.py
-```
-
 <a id="t4b-tdi"></a>
 
 ### Pixel-aligned per-layer TDI
 
 
-
-```bash
-python paper_code/T4/Task4B/tdi.py
-```
 
 Preset: `t4_domain_d4`
 

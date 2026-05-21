@@ -1,6 +1,6 @@
 # T7B — Adversarial / PGD perturbations
 
-**Source of truth:** `paper_code/T7/task7B/FINAL.md`
+**Paper evidence:** [main.pdf](../../main.pdf) · [Block findings](../findings.html)
 
 **Lemma:** D7 · **Stack:** pytorch
 **Nuisance key:** `style`
@@ -24,17 +24,13 @@ pip install matching-pmh torch
 
 **Paper preset:** `t7b_pgd_d7` · `from pmh.benchmark.presets import get_preset`
 
-## Subtasks (paper_code)
+## Subtasks (paper)
 
 <a id="t7b-train"></a>
 
 ### CIFAR ViT PGD arms (seed 7)
 
 pmh_aniso TDI 0.878.
-
-```bash
-python paper_code/T7/task7B/run_task7b.py
-```
 
 Preset: `t7b_pgd_d7`
 
@@ -44,10 +40,6 @@ Preset: `t7b_pgd_d7`
 
 Correct W +8.6 pp PGD@4 vs wrong_W.
 
-```bash
-python paper_code/T7/task7B/run_task7b.py
-```
-
 Preset: `t7b_pgd_d7`
 
 <a id="t7b-summary"></a>
@@ -55,10 +47,6 @@ Preset: `t7b_pgd_d7`
 ### Bootstrap CI summary
 
 
-
-```bash
-python paper_code/T7/task7B/run_task7b.py
-```
 
 ## Run with matching-pmh
 
