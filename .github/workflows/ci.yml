@@ -126,5 +126,8 @@ jobs:
           python -m build
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
-        # PyPI: Project -> Publishing -> Trusted publisher
-        #   Owner: vishalstark512  Repo: matching-pmh  Workflow: ci.yml  Environment: (blank)
+        with:
+          # Optional: repo secret PYPI_API_TOKEN (pypi-… prefix) skips trusted publishing
+          password: ${{ secrets.PYPI_API_TOKEN }}
+        # Trusted publishing (no token): PyPI project matching-pmh → Publishing → Add:
+        #   Owner vishalstark512 | Repository matching-pmh | Workflow ci.yml | Environment (empty)

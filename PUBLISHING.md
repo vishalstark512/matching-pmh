@@ -1,6 +1,6 @@
 # Publishing `matching-pmh` on PyPI (production)
 
-**PyPI name:** `matching-pmh` (available — not taken yet)  
+**PyPI name:** `matching-pmh` — https://pypi.org/project/matching-pmh/  
 **Import:** `import pmh`  
 **CLI:** `pmh-train`
 
@@ -28,17 +28,30 @@ On [pypi.org/manage/projects/](https://pypi.org/manage/projects/), the **first s
 
 ### 3. Trusted publishing (recommended — no long-lived API token in GitHub)
 
-**On PyPI** → Account settings → **Publishing** → Add pending publisher:
+**On PyPI** → [matching-pmh → Publishing](https://pypi.org/manage/project/matching-pmh/settings/publishing/) (or Account → Publishing) → **Add a new pending publisher**:
 
-| Field | Value |
+| Field | Value (must match CI claims exactly) |
 |--------|--------|
 | PyPI project name | `matching-pmh` |
-| Owner | your GitHub user or org |
-| Repository | `matching-pmh` |
+| Owner | `vishalstark512` |
+| Repository name | `matching-pmh` |
 | Workflow name | `ci.yml` |
-| Environment name | *(leave empty unless you use one)* |
+| Environment name | *(leave completely empty)* |
+
+GitHub’s token claims include `environment: MISSING` — if you type `pypi` or anything here, publish will fail with `invalid-publisher`.
+
+**Not** `publish-pypi.yml` — the publish job lives in **`ci.yml`** only.
 
 Repeat for **TestPyPI** if you use `publish-testpypi.yml` (workflow name `publish-testpypi.yml`).
+
+#### `invalid-publisher` troubleshooting
+
+| Symptom | Fix |
+|---------|-----|
+| `valid token, but no corresponding publisher` | Add the publisher row above on the **matching-pmh** project, or delete a stale publisher with wrong workflow/repo. |
+| Publisher on wrong workflow | Workflow must be `ci.yml`, not `publish-pypi.yml`. |
+| Environment mismatch | Clear **Environment name** on PyPI (workflow does not use a GitHub Environment). |
+| Project does not exist yet | One manual `twine upload` first (Path A), then add trusted publisher. |
 
 ### 4. GitHub repository
 
@@ -105,9 +118,21 @@ Workflow `.github/workflows/ci.yml` runs tests, builds, and publishes to **pypi.
 
 ---
 
-## Fallback: API token in GitHub Actions
+## Fallback: API token in GitHub Actions (fastest if trusted publishing is blocked)
 
-If trusted publishing is not set up, add repo secret `PYPI_API_TOKEN` and the publish step still works with `pypa/gh-action-pypi-publish`.
+1. PyPI → Account → **API tokens** → Add token (scope: project `matching-pmh` or entire account).
+2. GitHub → `vishalstark512/matching-pmh` → **Settings → Secrets and variables → Actions** → New secret:
+   - Name: `PYPI_API_TOKEN`
+   - Value: `pypi-…` (full token, once)
+3. Re-run the failed **publish** job, or re-push the tag:
+
+```powershell
+git push origin :refs/tags/v2.0.0
+git tag -a v2.0.0 -m "Release matching-pmh 2.0.0"
+git push origin v2.0.0
+```
+
+When `PYPI_API_TOKEN` is set, CI uses the token instead of OIDC.
 
 ---
 
